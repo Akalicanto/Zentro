@@ -29,5 +29,11 @@
         "required_birthDate": "Birthdate is required",
         "register_error": "Error registering user",
         "already_account": "Already have an account?"
+    },
+    "titles": {
+        "welcome": "Welcome to Zentro",
+        "home": "Home",
+        "my-profile": "My profile",
+        "my-accounts": "My accounts"
     }
 }

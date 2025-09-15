@@ -2,14 +2,11 @@ import { Box, List, ListItem, ListItemButton, ListItemText } from "@mui/material
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next";
 
 interface SidebarProps {
     drawerWidth: number;
 }
-
-const menuItems = [
-    { text: "Home", path: "/home" }
-];
 
 const Sidebar = ({ drawerWidth }: SidebarProps) => {
     const { logout } = useAuth();
@@ -19,6 +16,14 @@ const Sidebar = ({ drawerWidth }: SidebarProps) => {
         logout();
         navigate("/login");
     };
+
+    const { t } = useTranslation();
+
+    const menuItems = [
+        { text: t('titles.home'), path: "/home" },
+        { text: t('titles.my-profile'), path: "/my-profile" },
+        { text: t('titles.my-accounts'), path: "/my-accounts" }
+    ];
 
     return (
         <Box
