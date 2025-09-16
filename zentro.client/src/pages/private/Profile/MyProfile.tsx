@@ -1,17 +1,16 @@
 import { Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-
-const Home = () => {
+const MyProfile = () => {
     const { t } = useTranslation();
     
      return (
         <>
             <Typography variant="h4" gutterBottom>
-                {t('titles.welcome')}
+                MI PERFIL
             </Typography>
         </>
     );
 };
 
-export default Home;
+export default MyProfile;
