@@ -1,10 +1,18 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { UserLoginRequest, UserTokenResponse } from "../types/userTypes";
 import { login as loginService } from "../services/userService";
+import { jwtDecode } from "jwt-decode";
+
+interface DecodedToken {
+    name: string;
+    surname: string;
+    email: string;
+}
 
 interface AuthContextType {
     token: string | null;
+    currentUser : DecodedToken | null;
     isAuthenticated: boolean;
     login: (data: UserLoginRequest) => Promise<void>;
     logout: () => void;
@@ -19,6 +27,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const isAuthenticated = !!token;
 
+    const currentUser = useMemo(() => {
+        if (!token) return null;
+        try {
+            return jwtDecode<DecodedToken>(token);
+        } catch {
+            return null;
+        }
+    }, [token]);
+
     const login = async (data: UserLoginRequest) => {
         const result: UserTokenResponse = await loginService(data);
         setToken(result.token);
@@ -31,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ token, isAuthenticated, login, logout }}>
+        <AuthContext.Provider value={{ token, currentUser, isAuthenticated, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
