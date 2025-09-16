@@ -1,7 +1,6 @@
 import { Box, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next";
 
 interface SidebarProps {
@@ -11,19 +10,23 @@ interface SidebarProps {
 const Sidebar = ({ drawerWidth }: SidebarProps) => {
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { t } = useTranslation();
 
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
 
-    const { t } = useTranslation();
-
     const menuItems = [
-        { text: t('titles.home'), path: "/home" },
-        { text: t('titles.my-profile'), path: "/my-profile" },
-        { text: t('titles.my-accounts'), path: "/my-accounts" }
+        { text: t("titles.home"), path: "/home" },
+        { text: t("titles.my-profile"), path: "/my-profile" },
+        { text: t("titles.my-accounts"), path: "/my-accounts" },
     ];
+
+    const isActive = (path: string) => {
+        return location.pathname.startsWith(path);
+    };
 
     return (
         <Box
@@ -41,6 +44,7 @@ const Sidebar = ({ drawerWidth }: SidebarProps) => {
                         <ListItemButton
                             component={Link}
                             to={item.path}
+                            selected={isActive(item.path)}
                             sx={{
                                 "&:hover": {
                                     bgcolor: "secondary.main",
