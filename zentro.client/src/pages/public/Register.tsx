@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Box, TextField, Button, Typography, Paper, Link } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { createOrUpdate } from "../../services/userService";
-import type { User } from "../../types/userTypes";
+import { User } from "../../types/userTypes";
 import { useTranslation } from "react-i18next";
+import { useLoading } from "../../context/LoadingContext";
 
 const Register = () => {
     const { t } = useTranslation();
+    const { setLoading } = useLoading();
 
     const [formData, setFormData] = useState<Omit<User, "id">>({
         name: "",
@@ -43,11 +45,15 @@ const Register = () => {
         if (!validate()) return;
 
         try {
+            setLoading(true);
+
             const response: boolean = await createOrUpdate(formData);
 
             navigate("/login");
         } catch (error) {
             console.error(t("messages.register_error"), error);
+        } finally {
+            setLoading(false);
         }
     };
 

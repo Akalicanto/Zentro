@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { UserLoginRequest, UserTokenResponse, User } from "../types/userTypes";
+import { UserLoginRequest, UserTokenResponse, User } from "../types/userTypes";
 import { API_BASE_URL } from "./apiConfig";
 
 export const login = async (data: UserLoginRequest): Promise<UserTokenResponse> => {

@@ -28,12 +28,14 @@
         "password_mismatch": "Die Passwörter stimmen nicht überein",
         "required_birthDate": "Das Geburtsdatum ist erforderlich",
         "register_error": "Fehler bei der Benutzerregistrierung",
-        "already_account": "Hast du schon ein Konto?"
+        "already_account": "Hast du schon ein Konto?",
+        "loading": "Wird geladen..."
     },
     "titles": {
         "welcome": "Willkommen bei Zentro",
         "home": "Startseite",
         "my-profile": "Mein Profil",
-        "my-accounts": "Meine Konten"
+        "my-accounts": "Meine Konten",
+        "logout": "Abmelden"
     }
 }

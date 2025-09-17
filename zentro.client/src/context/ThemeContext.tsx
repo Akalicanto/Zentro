@@ -1,5 +1,5 @@
 import { createContext, useState, useMemo, useEffect } from "react";
-import type { ReactNode } from "react";
+import { ReactNode } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { getTheme } from "../theme";

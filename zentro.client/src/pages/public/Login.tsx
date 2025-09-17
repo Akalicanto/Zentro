@@ -3,12 +3,14 @@ import { Box, TextField, Button, Typography, Paper, Link } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useSnackbar } from "../../context/SnackbarContext";
-import type { UserLoginRequest } from "../../types/userTypes";
+import { UserLoginRequest } from "../../types/userTypes";
 import { useTranslation } from "react-i18next";
+import { useLoading } from "../../context/LoadingContext";
 
 const Login = () => {
     const { t } = useTranslation();
-
+    const { setLoading } = useLoading();
+    
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -20,6 +22,8 @@ const Login = () => {
         e.preventDefault();
 
         try {
+            setLoading(true);
+
             const data: UserLoginRequest = { email, password };
             await login(data);
 
@@ -27,6 +31,8 @@ const Login = () => {
             navigate("/");
         } catch (err: any) {
             showMessage(err?.response?.data || t("messages.logged_error"), "error");
+        } finally {
+            setLoading(false);
         }
     };
 

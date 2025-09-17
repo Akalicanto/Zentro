@@ -71,7 +71,7 @@ const Sidebar = ({ drawerWidth }: SidebarProps) => {
                             },
                         }}
                     >
-                        <ListItemText primary="Cerrar sesión" />
+                        <ListItemText primary={t('titles.logout')} />
                     </ListItemButton>
                 </ListItem>
             </List>
