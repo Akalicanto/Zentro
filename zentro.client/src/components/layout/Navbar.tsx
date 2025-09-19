@@ -4,6 +4,7 @@ import { CustomThemeContext } from "../../context/ThemeContext";
 import { useContext, useState } from "react";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 import esFlag from "../../assets/flags/es.png";
 import enFlag from "../../assets/flags/en.png";
@@ -35,8 +36,14 @@ const Navbar = () => {
     return (
         <AppBar position="static">
             <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="h6">Zentro</Typography>
-
+                <Typography
+                    variant="h6"
+                    component={Link}
+                    to="/home"
+                    sx={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                >
+                    Zentro
+                </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {/* Botón que muestra la bandera del idioma actual */}
                     <IconButton onClick={handleMenuOpen} color="inherit">

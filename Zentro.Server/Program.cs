@@ -37,13 +37,14 @@ var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy
-                            .WithOrigins("https://localhost:3001") // tu frontend
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
-                      });
+        policy =>
+        {
+            policy
+                .WithOrigins("https://localhost:3001")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
 });
 
 // Swagger

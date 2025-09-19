@@ -21,6 +21,8 @@ const AppRouter = () => {
 
             {/* Privadas */}
             <Route path="/" element={<PrivateRoute><PrivateLayout /></PrivateRoute>}>
+                <Route index element={<Navigate to="/home" replace />} />
+
                 <Route path="home" element={<Home />} />
                 <Route path="my-profile" element={<MyProfile />} />
                 <Route path="my-accounts" element={<MyAccounts />} />
