@@ -37,5 +37,8 @@
         "my-profile": "Mein Profil",
         "my-accounts": "Meine Konten",
         "logout": "Abmelden"
+    },
+    "buttons": {
+        "new": "Neu"
     }
 }
