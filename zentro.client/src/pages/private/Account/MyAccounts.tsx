@@ -1,4 +1,4 @@
-import { Typography, Card, CardContent, Box, CardActionArea } from "@mui/material";
+import { Typography, Card, CardContent, Box, CardActionArea, Avatar, Stack } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import MenuBar from "../../../components/layout/menubar";
@@ -9,10 +9,38 @@ const MyAccounts = () => {
 
     // Datos simulados
     const accounts = [
-        { id: 1, bank: "Banco Santander", iban: "ES12 3456 7890 1234 5678 9012", balance: "3.500 €" },
-        { id: 2, bank: "BBVA", iban: "ES98 7654 3210 9876 5432 1098", balance: "7.200 €" },
-        { id: 3, bank: "CaixaBank", iban: "ES56 1111 2222 3333 4444 5555", balance: "1.150 €" },
-        { id: 4, bank: "ING", iban: "ES22 4444 5555 6666 7777 8888", balance: "9.820 €" },
+        {
+            id: 1,
+            bank: "Banco Santander",
+            type: "Cuenta corriente",
+            iban: "ES12 3456 7890 1234 5678 9012",
+            balance: "3.500 €",
+            logo: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Banco_Santander_Logotipo.svg"
+        },
+        {
+            id: 2,
+            bank: "BBVA",
+            type: "Cuenta nómina",
+            iban: "ES98 7654 3210 9876 5432 1098",
+            balance: "7.200 €",
+            logo: "https://upload.wikimedia.org/wikipedia/commons/3/3f/BBVA_2019_logo.svg"
+        },
+        {
+            id: 3,
+            bank: "CaixaBank",
+            type: "Cuenta de ahorro",
+            iban: "ES56 1111 2222 3333 4444 5555",
+            balance: "1.150 €",
+            logo: "https://upload.wikimedia.org/wikipedia/commons/f/fb/Logo_CaixaBank.svg"
+        },
+        {
+            id: 4,
+            bank: "ING",
+            type: "Cuenta naranja",
+            iban: "ES22 4444 5555 6666 7777 8888",
+            balance: "9.820 €",
+            logo: "https://upload.wikimedia.org/wikipedia/commons/3/3c/ING_Group_N.V._Logo.svg"
+        },
     ];
 
     const handleCardClick = (id: number) => {
@@ -32,7 +60,7 @@ const MyAccounts = () => {
                     <Box
                         key={acc.id}
                         flex="1 1 calc(25% - 16px)"
-                        minWidth="220px"
+                        minWidth="250px"
                     >
                         <CardActionArea
                             onClick={() => handleCardClick(acc.id)}
@@ -46,13 +74,28 @@ const MyAccounts = () => {
                                 },
                             }}
                         >
-                            <Card>
+                            <Card sx={{ borderRadius: 2, p: 1 }}>
                                 <CardContent>
-                                    <Typography variant="h6">{acc.bank}</Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Stack direction="row" alignItems="center" spacing={2}>
+                                        <Avatar
+                                            src={acc.logo}
+                                            alt={acc.bank}
+                                            variant="square"
+                                            sx={{ width: 48, height: 48, borderRadius: 1 }}
+                                        />
+                                        <Box>
+                                            <Typography variant="h6">{acc.bank}</Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {acc.type}
+                                            </Typography>
+                                        </Box>
+                                    </Stack>
+
+                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                                         {acc.iban}
                                     </Typography>
-                                    <Typography variant="h5" sx={{ mt: 1 }}>
+
+                                    <Typography variant="h5" sx={{ mt: 1, fontWeight: 'bold' }}>
                                         {acc.balance}
                                     </Typography>
                                 </CardContent>
