@@ -1,34 +1,24 @@
-# Zentro
+# Zentro.Front
 
-Aplicación personal de finanzas en español, React + TypeScript + Vite, conectada a Zentro.Api (.NET 10 + SQLite). Sin conexiones bancarias.
+React, TypeScript y Vite. Arranque conjunto y requisitos en el [README de la raíz](../README.md). El front utiliza el puerto 5187 y la API el 5080.
 
-## Arranque
+## Modelo
 
-El arranque conjunto y las instrucciones de VS Code están en el [README de la raíz](../README.md). Desde esta carpeta, `npm.cmd run dev` arranca únicamente el front y necesita la API en el puerto 5080.
+- `src/model.ts`: perfil v2, ahorro, inversión, intereses, día a día y deuda interna. Importes enteros en céntimos.
+- `src/Dashboard.tsx`: cuatro páginas, tablas, formularios y gráficas de importes realizados y previstos.
+- `src/profileStorage.ts`: carga desde SQLite mediante la API y cola ordenada de escrituras con pendientes conservados en el navegador.
+- `src/format.ts`: fechas, meses, formato de euros y conversión decimal.
 
-Dependencias ya instaladas localmente. Para reinstalarlas: `npm.cmd ci`. Verificación: `npm.cmd test`, `npm.cmd run build` y, con ambos servicios iniciados, `node browser-test.mjs` (Chromium de Playwright). La prueba de navegador usa temporalmente la demostración y restaura el documento anterior al terminar; ejecútala sin editar en otras pestañas. Las capturas se guardan en `checks/`.
+El ahorro por trabajo procede del historial mensual neto más reposiciones nuevas menos retiradas nuevas. Los intereses tienen saldo inicial y sus propios abonos. La inversión refleja aportaciones netas. Las reposiciones históricas no alteran de nuevo el ahorro: ya figuran en el historial. El patrimonio excluye saldo diario y efectivo.
 
-## Modelo financiero
+Los pendientes de gastos e ingresos afectan solo a la previsión diaria. Realizarlos los incorpora una vez al saldo actual. Un nuevo saldo indicado incluye todo lo ya realizado y mantiene los pendientes.
 
-- Importes enteros en céntimos. Cálculos centralizados en `src/finance.ts`.
-- El saldo inicial de una cuenta es una fotografía antes de los movimientos de su fecha. Un movimiento realizado actualiza una sola vez sus cuentas; uno pendiente solo actualiza la previsión. La proyección incluye pendientes anteriores al mes elegido, para no ocultar compromisos atrasados.
-- Patrimonio = cuentas diarias + efectivo + ahorros + capital invertido − deuda externa. No representa cotización de inversiones. La deuda interna no se resta: es un compromiso de reposición, no una obligación externa.
-- Las devoluciones internas transfieren dinero entre cuentas y amortizan la deuda por el mismo importe. Para una retirada nueva, registra su gasto o transferencia y crea el compromiso de reposición; crear la ficha de deuda no modifica por sí solo ningún saldo.
-- Reservar una cuota no reduce deuda ni saldo bancario. Al marcarla realizada se descuenta una vez el importe de la cuenta. Se admiten pagos parciales, edición y eliminación; los saldos se reconstruyen a partir del registro.
-- Ahorro futuro a diciembre usa las aportaciones registradas. La segunda estimación añade la deuda interna completa pendiente, descontando las reposiciones ya incluidas en el plan: presupone que se repone toda antes de diciembre y lo indica explícitamente.
-- El plan mensual es realizado + pendiente, no una fotografía inmutable del presupuesto original. Cada repetición es independiente. Editar una mensualidad conserva las demás.
-- Bancos configurables en cada cuenta; no se conectan a ninguna entidad. Los objetivos miden el saldo de su cuenta de ahorro, no un fondo adicional.
+Efectivo y posibles gastos son datos independientes: ninguno modifica el saldo diario, el ahorro, la inversión ni el patrimonio. Se guardan en SQLite y las copias de seguridad junto al perfil. Los perfiles anteriores sin estos campos siguen siendo válidos.
 
-## Datos de demostración
+El plan genera previsiones de ahorro e inversión desde su inicio hasta el horizonte configurado. Las cuotas de reposición se limitan al compromiso pendiente, descuentan lo ya repuesto cada mes y desaparecen cuando la deuda se salda. Registrar la aportación base no elimina una reposición todavía pendiente de ese mes. Las previsiones no forman parte de los totales actuales.
 
-La demostración utiliza importes y entidades ficticios para mostrar cuentas, ahorro, inversión, deuda y planificación. No representa las finanzas de ninguna persona. Puedes restaurarla o empezar de cero desde Configuración.
+## Comprobaciones
 
-Las reservas siguen formando parte de la deuda hasta que se pagan. La planificación es ilustrativa y puede mostrar déficit hasta que registres ingresos. Los meses anteriores a los saldos iniciales no se reconstruyen automáticamente.
+`npm.cmd test` ejecuta pruebas del modelo. `npm.cmd run build` compila. `node browser-profile-test.mjs` verifica la interfaz con API y SQLite temporales; requiere Chromium de Playwright y el front iniciado.
 
-## Persistencia y copias
-
-Datos en SQLite local mediante Zentro.Api. `localStorage`, clave `zentro.v1`, conserva una copia; `zentro.v1.pending` protege los cambios pendientes si falla la API. Exporta JSON periódicamente desde Configuración; importarlo sustituye los datos tras confirmación y validación. CSV exporta movimientos, no una copia completa. No se guardan datos financieros en servidores remotos ni repositorios remotos.
-
-Al empezar de cero, utiliza saldos iniciales que ya incluyan todos los intereses anteriores y registra solamente los nuevos abonos.
-
-El estilo solicita fuentes de Google Fonts, con fuentes locales de respaldo. La aplicación funciona sin integración con servicios financieros. Arquitectura: `finance.ts` modelo y cálculos, `App.tsx` vistas y formularios, `storage.ts` cliente de la API, `style.css` presentación. El documento versionado v1 se guarda en una tabla SQLite del backend.
+El perfil nuevo es vacío. Los datos ficticios de pruebas no están en la aplicación. Exportar e importar copias desde el engranaje conserva el perfil completo.

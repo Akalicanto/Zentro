@@ -40,22 +40,32 @@ Zentro/
   global.json         SDK .NET 10
 ```
 
-## Datos
+## Datos y páginas
 
-La base de datos se crea automáticamente en `Zentro.Api/Data/zentro.db`. Guarda el documento financiero completo v1 en una tabla SQLite; el modelo y los cálculos existentes se conservan en `finance.ts`. Es una primera estructura para desarrollo local, de un único usuario. Las futuras entidades y operaciones de negocio se pueden extraer del documento a tablas y endpoints propios.
+El sidebar tiene Mi espacio, Día a día, Ahorros e Inversión. Mi espacio separa disponibilidad diaria, ahorro por trabajo, intereses e inversión. Patrimonio = ahorro por trabajo + intereses + capital invertido; excluye el día a día y el efectivo. La inversión refleja aportaciones, sin rentabilidad variable.
 
-El front usa `/api/state` mediante el proxy de Vite. En la primera ejecución, si SQLite está vacía, migra la copia `zentro.v1` del navegador utilizado o carga la demostración original. Los cambios se escriben en orden en la API y los pendientes se conservan en el navegador si falla la conexión. Una vez inicializada, SQLite es la fuente de datos para los navegadores de este equipo. Evita editar simultáneamente en varias pestañas: esta primera versión guarda el documento completo y prevalece la última escritura.
+Día a día permite indicar el saldo actual y añadir, editar, eliminar o realizar gastos e ingresos mensuales. Los pendientes modifican la previsión. Al realizarlos, pasan al saldo actual sin duplicarse. Indicar un nuevo saldo incluye los movimientos realizados anteriores y mantiene pendientes los futuros.
 
-Exporta copias JSON desde Configuración. No se suben datos financieros a GitHub. La base de datos, dependencias y archivos compilados quedan excluidos de Git. Para cambiar la ubicación de SQLite, configura `Zentro__DatabasePath` con una ruta absoluta.
+Efectivo se actualiza de forma independiente y no participa en los cálculos financieros. Posibles gastos es una lista editable sin mes ni cuenta: conserva conceptos e importes estimados sin descontarlos del saldo ni del patrimonio. La lista se persiste en `possible_expenses` y el efectivo en `profile_settings`. Las tablas tienen edición general y el mes diario empieza en el mes actual.
 
-Swagger está habilitado en Development. Ambos servicios escuchan solo en la dirección local. Esta configuración está preparada para desarrollar en este ordenador; todavía no incluye autenticación ni despliegue público.
+Ahorros separa el historial de trabajo, los intereses generados y la deuda interna. Una retirada nueva reduce el ahorro y aumenta la deuda. Reponerlo aumenta el ahorro y reduce la deuda. Los pagos históricos ya incluidos en el ahorro no se suman otra vez. La previsión añade la aportación base y las reposiciones pendientes, limitadas a la deuda existente. Inversión tiene su propia tabla y gráfica. Vacío, cero y valores negativos se conservan por separado.
 
-La prueba de API usa una base temporal independiente y comprueba validación, Swagger y persistencia tras reiniciar. Para las comprobaciones de navegador, con los servicios arrancados:
+El engranaje del encabezado permite configurar el plan mensual y exportar o importar copias JSON. Una base nueva empieza vacía y no carga ejemplos.
+
+SQLite se crea en `Zentro.Api/Data/zentro.db`. El perfil v2 guarda colecciones independientes en `savings_months`, `investment_months`, `interest_entries`, `daily_expenses`, `daily_incomes`, `internal_debt_items`, `internal_debt_payments`, `internal_debt_schedule` y `commitments`. `profile_settings` contiene saldos iniciales y preferencias. Lectura y escritura del perfil son transacciones; los importes se guardan en céntimos. No hay entidades de cuentas en el modelo actual.
+
+La API expone `/api/state` (GET y PUT) y `/api/health`, documentadas en Swagger. El navegador conserva pendientes en `zentro.v3.pending` si falla la API. Evita editar simultáneamente en varias pestañas: se guarda el perfil completo y prevalece la última escritura. Para cambiar la ruta de SQLite configura `Zentro__DatabasePath`.
+
+Las bases de datos, copias y archivos privados están excluidos de Git. Los datos financieros no se incorporan al código ni a los ejemplos de pruebas. El proyecto está preparado para uso local, sin conexiones bancarias ni despliegue público.
+
+## Verificación
+
+`npm.cmd test` verifica el modelo y la API con SQLite temporal, incluyendo persistencia y las tablas independientes. Con el front arrancado y el backend compilado:
 
 ```powershell
 cd Zentro.Front
 npx.cmd playwright install chromium
-node browser-test.mjs
+node browser-profile-test.mjs
 ```
 
-Las reglas financieras y la interpretación de los datos de demostración están documentadas en [Zentro.Front/README.md](Zentro.Front/README.md).
+La prueba de navegador utiliza su propia API y base temporal: comprueba las cuatro páginas, gastos/ingresos, retiradas/reposiciones, intereses, inversión, recarga y móvil sin modificar datos del usuario. Sus fixtures están en `Zentro.Front/tests/profile.ts` y no se cargan en la aplicación.
