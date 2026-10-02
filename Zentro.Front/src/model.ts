@@ -40,6 +40,7 @@ export type DebtPayment = {
 export type Profile = {
   version: 2;
   cash?: number;
+  mortgageOffer?: number;
   possibleExpenses?: { id: string; concept: string; amount: number }[];
   daily: {
     opening: number;
@@ -72,6 +73,7 @@ export function blankProfile(): Profile {
   return {
     version: 2,
     cash: 0,
+    mortgageOffer: 0,
     possibleExpenses: [],
     daily: { opening: 0, asOf: today(), expenses: [], incomes: [] },
     savings: [],
@@ -476,6 +478,7 @@ export function validateProfile(raw: unknown): Profile {
     throw Error("Perfil no válido.");
   if (
     (p.cash !== undefined && !nonnegative(p.cash)) ||
+    (p.mortgageOffer !== undefined && !nonnegative(p.mortgageOffer)) ||
     (p.possibleExpenses !== undefined &&
       (!Array.isArray(p.possibleExpenses) ||
         !unique(p.possibleExpenses) ||

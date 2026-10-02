@@ -17,11 +17,12 @@ import {
   today,
   currentMonth,
 } from "./model";
-test("Efectivo y posibles gastos se validan sin alterar saldos ni patrimonio", () => {
+test("Efectivo, oferta hipotecaria y posibles gastos no alteran saldos ni patrimonio", () => {
   const p = testProfile();
   const next = {
     ...p,
     cash: 4500,
+    mortgageOffer: 9000000,
     possibleExpenses: [
       { id: "possible", concept: "Gasto previsto de prueba", amount: 9000 },
     ],
@@ -30,6 +31,7 @@ test("Efectivo y posibles gastos se validan sin alterar saldos ni patrimonio", (
   assert.deepEqual(cashTotals(next), cashTotals(p));
   assert.deepEqual(wealthTotals(next), wealthTotals(p));
   assert.throws(() => validateProfile({ ...next, cash: -1 }));
+  assert.throws(() => validateProfile({ ...next, mortgageOffer: -1 }));
   assert.throws(() =>
     validateProfile({
       ...next,

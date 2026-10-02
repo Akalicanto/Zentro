@@ -53,10 +53,11 @@ try {
   assert.ok(specification.paths["/api/state"].put);
   const state = testProfile();
   state.cash = 1700;
+  state.mortgageOffer = 9000000;
   state.possibleExpenses = [{ id: "possible-test", concept: "Posible gasto de prueba", amount: 8000 }];
   assert.equal((await put(state)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
-  for (const invalid of [[], { version: 2 }, { ...state, cash: -1 }, { ...state, possibleExpenses: [{ id: "invalid", concept: "", amount: 100 }] }, { ...state, savings: [{ month: "bad" }] }, { ...state, daily: { ...state.daily, opening: 0.5 } }]) {
+  for (const invalid of [[], { version: 2 }, { ...state, cash: -1 }, { ...state, mortgageOffer: -1 }, { ...state, possibleExpenses: [{ id: "invalid", concept: "", amount: 100 }] }, { ...state, savings: [{ month: "bad" }] }, { ...state, daily: { ...state.daily, opening: 0.5 } }]) {
     assert.equal((await put(invalid)).status, 400);
     assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
   }
@@ -89,6 +90,7 @@ try {
   assert.equal(metadata.savings,undefined);
   assert.equal(metadata.accounts,undefined);
   assert.equal(metadata.cash, 1700);
+  assert.equal(metadata.mortgageOffer, 9000000);
   assert.equal(metadata.possibleExpenses, undefined);
   assert.equal(sql.prepare("SELECT COUNT(*) AS count FROM possible_expenses").get().count, 1);
   sql.close();

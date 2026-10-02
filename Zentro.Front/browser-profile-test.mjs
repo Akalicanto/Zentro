@@ -90,6 +90,25 @@ try {
       .locator(".metric")
       .filter({ has: page.getByText(label, { exact: true }) });
   assert.ok((await metric("Patrimonio neto").innerText()).includes("714,00"));
+  const beforeMortgage = await state();
+  await page
+    .getByRole("button", { name: "Actualizar oferta", exact: true })
+    .click();
+  await page.getByLabel("Hipoteca ofrecida (€)", { exact: true }).fill("90000");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  await page.waitForFunction(
+    () => localStorage.getItem("zentro.v3.pending") === null,
+  );
+  assert.deepEqual(await state(), {
+    ...beforeMortgage,
+    mortgageOffer: 9000000,
+  });
+  await page.reload();
+  await page.getByRole("heading", { name: "Mi espacio", level: 1 }).waitFor();
+  assert.ok(
+    (await metric("Hipoteca ofrecida").innerText()).includes("90.000,00"),
+  );
+  assert.ok((await metric("Patrimonio neto").innerText()).includes("714,00"));
   await page
     .locator("nav")
     .getByRole("button", { name: "Día a día", exact: true })

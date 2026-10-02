@@ -42,7 +42,7 @@ Zentro/
 
 ## Datos y páginas
 
-El sidebar tiene Mi espacio, Día a día, Ahorros e Inversión. Mi espacio separa disponibilidad diaria, ahorro por trabajo, intereses e inversión. Patrimonio = ahorro por trabajo + intereses + capital invertido; excluye el día a día y el efectivo. La inversión refleja aportaciones, sin rentabilidad variable.
+El sidebar tiene Mi espacio, Día a día, Ahorros e Inversión. Mi espacio reúne patrimonio, disponibilidad diaria, efectivo, ahorro por trabajo, intereses, inversión y una oferta hipotecaria editable. Patrimonio = ahorro por trabajo + intereses + capital invertido; excluye el día a día, el efectivo y la oferta hipotecaria. La inversión refleja aportaciones, sin rentabilidad variable. Sus gráficos comparan aportaciones reales, objetivos mensuales registrados y previsiones; el objetivo puede cambiar cada mes.
 
 Día a día permite indicar el saldo actual y añadir, editar, eliminar o realizar gastos e ingresos mensuales. Los pendientes modifican la previsión. Al realizarlos, pasan al saldo actual sin duplicarse. Indicar un nuevo saldo incluye los movimientos realizados anteriores y mantiene pendientes los futuros.
 
@@ -50,7 +50,7 @@ Efectivo se actualiza de forma independiente y no participa en los cálculos fin
 
 Ahorros separa el historial de trabajo, los intereses generados y la deuda interna. Una retirada nueva reduce el ahorro y aumenta la deuda. Reponerlo aumenta el ahorro y reduce la deuda. Los pagos históricos ya incluidos en el ahorro no se suman otra vez. La previsión añade la aportación base y las reposiciones pendientes, limitadas a la deuda existente. Inversión tiene su propia tabla y gráfica. Vacío, cero y valores negativos se conservan por separado.
 
-El engranaje del encabezado permite configurar el plan mensual y exportar o importar copias JSON. Una base nueva empieza vacía y no carga ejemplos.
+El engranaje del encabezado permite configurar el plan mensual y exportar o importar copias JSON. Una base nueva empieza vacía y no carga ejemplos. Los botones de información aparecen en la esquina inferior derecha de los bloques y muestran sus explicaciones al pulsarlos. La oferta hipotecaria se guarda en `profile_settings` y no modifica saldos, deuda ni patrimonio.
 
 SQLite se crea en `Zentro.Api/Data/zentro.db`. El perfil v2 guarda colecciones independientes en `savings_months`, `investment_months`, `interest_entries`, `daily_expenses`, `daily_incomes`, `internal_debt_items`, `internal_debt_payments`, `internal_debt_schedule` y `commitments`. `profile_settings` contiene saldos iniciales y preferencias. Lectura y escritura del perfil son transacciones; los importes se guardan en céntimos. No hay entidades de cuentas en el modelo actual.
 

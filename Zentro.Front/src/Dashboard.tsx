@@ -63,6 +63,7 @@ type Modal = {
     | "cash"
     | "balance"
     | "cashBalance"
+    | "mortgageBalance"
     | "possibleExpense"
     | "month"
     | "interestBalance"
@@ -393,6 +394,8 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
           ...next.daily[kind].filter((r) => r.id !== row.id),
           row,
         ];
+      } else if (modal.type === "mortgageBalance") {
+        next.mortgageOffer = money("amount");
       } else if (modal.type === "cashBalance") {
         next.cash = money("amount");
       } else if (modal.type === "possibleExpense") {
@@ -488,17 +491,26 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
     note: string,
     accent = false,
     action?: { label: string; onClick: () => void },
+    tone = "",
+    help?: string,
   ) => (
-    <div className={`metric ${accent ? "accent" : ""}`}>
+    <div
+      className={`metric ${accent ? "accent" : ""} ${tone ? `tone-${tone}` : ""}`}
+    >
       <span>{label}</span>
       <h2>{euro(amount)}</h2>
       <small>{note}</small>
       {action && (
         <button className="metric-action" onClick={action.onClick}>
-          <Pencil size={13} />
+          {action.label.startsWith("Ver") ? (
+            <ArrowUpRight size={14} />
+          ) : (
+            <Pencil size={13} />
+          )}
           {action.label}
         </button>
       )}
+      {help && <PanelInfo title={label}>{help}</PanelInfo>}
     </div>
   );
   function cashTable(kind: "expenses" | "incomes") {
@@ -1160,6 +1172,7 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
     cash: modal?.kind === "expenses" ? "Gasto" : "Ingreso",
     balance: "Saldo actual de ING",
     cashBalance: "Actualizar efectivo",
+    mortgageBalance: "Actualizar hipoteca ofrecida",
     possibleExpense: "Posible gasto",
     month: "Registro mensual",
     interestBalance: "Actualizar intereses",
@@ -1265,14 +1278,12 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
           </div>
         </header>
         <div className="content" key={page}>
-          <div
-            className={`page-heading ${page !== "Mi espacio" ? "savings-page-bar" : ""}`}
-          >
+          <div className="page-heading savings-page-bar">
             <div>
-              {page === "Mi espacio" && (
-                <span className="eyebrow">TU TRANQUILIDAD EMPIEZA AQUÍ</span>
-              )}
               <h1>
+                {page === "Mi espacio" && (
+                  <LayoutDashboard size={27} aria-hidden="true" />
+                )}
                 {page === "Ahorros" && <Sprout size={27} aria-hidden="true" />}
                 {page === "Día a día" && (
                   <Wallet size={27} aria-hidden="true" />
@@ -1282,13 +1293,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                 )}
                 {page}
               </h1>
-              {page === "Mi espacio" && (
-                <p>
-                  {page === "Mi espacio"
-                    ? "Tu ahorro, tus intereses y tu inversión, cada uno en su lugar."
-                    : "El capital que aportas a tus fondos, sin rentabilidad variable."}
-                </p>
-              )}
             </div>
           </div>
           {error && (
@@ -1298,35 +1302,81 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
           )}
           {page === "Mi espacio" && (
             <>
-              <div className="cards summary-cards">
+              <div className="cards home-summary">
+                {metric(
+                  "Patrimonio neto",
+                  wealth.net,
+                  "Ahorro + intereses + inversión",
+                  false,
+                  undefined,
+                  "lilac",
+                  "El patrimonio excluye el dinero del día a día y el efectivo. La deuda interna ya reduce el ahorro y no se resta una segunda vez. La hipoteca ofrecida es una referencia, no una deuda contratada.",
+                )}
                 {metric(
                   "Disponibilidad · ING",
                   daily.current,
                   "Saldo actual del día a día",
+                  false,
+                  {
+                    label: "Ver día a día",
+                    onClick: () => navigate("Día a día"),
+                  },
+                  "sage",
+                )}
+                {metric(
+                  "Efectivo",
+                  data.cash ?? 0,
+                  "Dinero en mano",
+                  false,
+                  {
+                    label: "Actualizar efectivo",
+                    onClick: () => open({ type: "cashBalance" }),
+                  },
+                  "peach",
                 )}
                 {metric(
                   "Ahorro por trabajo",
                   wealth.work,
                   "Aportaciones netas y reposiciones",
+                  false,
+                  { label: "Ver ahorros", onClick: () => navigate("Ahorros") },
+                  "blue",
                 )}
                 {metric(
                   "Generado por intereses",
                   wealth.interest,
                   "Separado del ahorro por trabajo",
+                  false,
+                  {
+                    label: "Actualizar intereses",
+                    onClick: () => open({ type: "interestBalance" }),
+                  },
+                  "rose",
                 )}
                 {metric(
                   "Invertido en fondos",
                   wealth.invested,
                   "Capital aportado, sin rentabilidad variable",
+                  false,
+                  {
+                    label: "Ver inversión",
+                    onClick: () => navigate("Inversión"),
+                  },
+                  "lilac",
                 )}
                 {metric(
-                  "Patrimonio neto",
-                  wealth.net,
-                  "Ahorro + intereses + inversión",
-                  true,
+                  "Hipoteca ofrecida",
+                  data.mortgageOffer ?? 0,
+                  "Referencia disponible",
+                  false,
+                  {
+                    label: "Actualizar oferta",
+                    onClick: () => open({ type: "mortgageBalance" }),
+                  },
+                  "butter",
                 )}
               </div>
-              <div className="cards two">
+              <div className="cards two home-detail-grid">
                 <section className="panel">
                   <div className="section-title">
                     <h3>Día a día · ING</h3>
@@ -1395,7 +1445,13 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     kind="savings"
                     year={currentMonth().slice(0, 4)}
                     view="Acumulado"
+                    showGoal
                   />
+                  <PanelInfo title="Ahorro por trabajo">
+                    Evolución del ahorro por trabajo y su objetivo ideal. Los
+                    intereses se muestran por separado y las previsiones siguen
+                    la deuda interna pendiente.
+                  </PanelInfo>
                 </section>
                 <section className="panel">
                   <h3>Inversión en fondos</h3>
@@ -1404,14 +1460,15 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     kind="investment"
                     year={currentMonth().slice(0, 4)}
                     view="Acumulado"
+                    showGoal
                   />
+                  <PanelInfo title="Inversión en fondos">
+                    La línea real refleja capital aportado, sin ganancias
+                    variables. El objetivo ideal acumula los objetivos mensuales
+                    y la previsión aplica el plan a los meses pendientes.
+                  </PanelInfo>
                 </section>
               </div>
-              <PanelInfo title="Patrimonio">
-                El patrimonio excluye el dinero del día a día y el efectivo. La
-                deuda interna es un compromiso de reposición y no se resta de
-                nuevo al ahorro.
-              </PanelInfo>
             </>
           )}
           {page === "Día a día" && (
@@ -1426,6 +1483,7 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     label: "Actualizar saldo",
                     onClick: () => open({ type: "balance" }),
                   },
+                  "sage",
                 )}
                 {metric(
                   "Efectivo",
@@ -1436,21 +1494,31 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     label: "Actualizar efectivo",
                     onClick: () => open({ type: "cashBalance" }),
                   },
+                  "peach",
                 )}
                 {metric(
                   "Gastos previstos",
                   daily.expenses,
                   "Pendientes de realizar",
+                  false,
+                  undefined,
+                  "rose",
                 )}
                 {metric(
                   "Ingresos previstos",
                   daily.incomes,
                   "Pendientes de recibir",
+                  false,
+                  undefined,
+                  "sage",
                 )}
                 {metric(
                   "Saldo después de pendientes",
                   daily.forecast,
                   "Previsión calculada sobre la marcha",
+                  false,
+                  undefined,
+                  "blue",
                 )}
               </div>
               <div className="daily-current-month">
@@ -1696,6 +1764,12 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     )}
                   </>
                 )}
+                {modal.type === "mortgageBalance" &&
+                  field(
+                    "Hipoteca ofrecida (€)",
+                    "amount",
+                    (data.mortgageOffer ?? 0) / 100,
+                  )}
                 {modal.type === "interestBalance" &&
                   field(
                     "Intereses acumulados (€)",

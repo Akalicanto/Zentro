@@ -25,6 +25,7 @@ public static class ProfileValidator
             if (profile.ValueKind != JsonValueKind.Object || profile.GetProperty("version").GetInt32() != 2) return false;
             var daily = profile.GetProperty("daily");
             if (profile.TryGetProperty("cash", out _) && !Money(profile, "cash", true)) return false;
+            if (profile.TryGetProperty("mortgageOffer", out _) && !Money(profile, "mortgageOffer", true)) return false;
             if (profile.TryGetProperty("possibleExpenses", out _))
             {
                 var possible = Rows(profile, "possibleExpenses");
