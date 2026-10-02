@@ -71,6 +71,7 @@ try {
     "Día a día",
     "Ahorros",
     "Inversión",
+    "Deudas",
   ]);
   assert.equal(await page.getByText("Cuentas", { exact: true }).count(), 0);
   assert.equal(
@@ -109,6 +110,63 @@ try {
     (await metric("Hipoteca ofrecida").innerText()).includes("90.000,00"),
   );
   assert.ok((await metric("Patrimonio neto").innerText()).includes("714,00"));
+  const beforeDental = await state();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: "Deudas", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Indicar deuda", exact: true })
+    .click();
+  await page.getByLabel("Deuda total (€)", { exact: true }).fill("250");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  for (const row of [
+    { month: "10", amount: "100", status: "Pagado" },
+    { month: "11", amount: "50", status: "Apartado" },
+    { month: "12", amount: "100", status: "Pendiente" },
+  ]) {
+    await page.getByRole("button", { name: "Añadir mes", exact: true }).click();
+    await page
+      .getByLabel("Mes de la cuota", { exact: true })
+      .selectOption(row.month);
+    await page
+      .getByLabel("Año de la cuota", { exact: true })
+      .selectOption("2026");
+    await page
+      .getByLabel("Importe de la cuota (€)", { exact: true })
+      .fill(row.amount);
+    await page
+      .getByRole("dialog")
+      .getByText(row.status, { exact: true })
+      .click();
+    await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  }
+  assert.ok((await metric("Ya pagado").innerText()).includes("100,00"));
+  assert.ok((await metric("Falta por pagar").innerText()).includes("150,00"));
+  assert.ok((await metric("Falta por pagar").innerText()).includes("50,00"));
+  await page
+    .getByRole("button", { name: "Editar cuotas", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Editar cuota 2026-11", exact: true })
+    .click();
+  await page.getByRole("dialog").getByText("Pagado", { exact: true }).click();
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  assert.ok((await metric("Ya pagado").innerText()).includes("150,00"));
+  assert.ok((await metric("Falta por pagar").innerText()).includes("100,00"));
+  await page.waitForFunction(
+    () => localStorage.getItem("zentro.v3.pending") === null,
+  );
+  const afterDental = await state();
+  assert.deepEqual({ ...afterDental, debts: beforeDental.debts }, beforeDental);
+  await page.reload();
+  await page.getByRole("heading", { name: "Deudas", level: 1 }).waitFor();
+  assert.ok((await metric("Ya pagado").innerText()).includes("150,00"));
+  await page
+    .getByLabel("Información de Calendario de pagos", { exact: true })
+    .click();
+  assert.ok(await page.getByRole("note").isVisible());
+  await page.keyboard.press("Escape");
   await page
     .locator("nav")
     .getByRole("button", { name: "Día a día", exact: true })
@@ -303,8 +361,37 @@ try {
   );
   assert.deepEqual(errors, []);
   assert.deepEqual(await state(), saved);
+  await page.getByRole("button", { name: "Abrir menú", exact: true }).click();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: "Deudas", exact: true })
+    .click();
+  await page.waitForFunction(
+    () => document.documentElement.scrollWidth <= innerWidth,
+  );
+  await page
+    .getByLabel("Información de Calendario de pagos", { exact: true })
+    .click();
+  const dentalHelp = await page.getByRole("note").boundingBox();
+  assert.ok(dentalHelp.x >= 0 && dentalHelp.x + dentalHelp.width <= 390);
+  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Editar cuotas", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Editar cuota 2026-11", exact: true })
+    .click();
+  assert.ok(await page.getByRole("dialog").isVisible());
+  assert.ok(
+    await page
+      .getByRole("dialog")
+      .getByRole("radio", { name: "Pagado", exact: true })
+      .isChecked(),
+  );
+  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  assert.deepEqual(await state(), saved);
   console.log(
-    "OK: cuatro páginas, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, SQLite, recarga y móvil. Base del usuario intacta.",
+    "OK: cinco páginas, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
   );
 } finally {
   await browser?.close();

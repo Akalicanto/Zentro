@@ -12,7 +12,8 @@ public sealed class ProfileRepository
         ("daily_expenses", "daily", "expenses"), ("daily_incomes", "daily", "incomes"),
         ("interest_entries", "interest", "entries"), ("internal_debt_items", "internalDebt", "items"),
         ("internal_debt_payments", "internalDebt", "payments"), ("internal_debt_schedule", "internalDebt", "schedule"),
-        ("commitments", "", "commitments"), ("possible_expenses", "", "possibleExpenses")
+        ("commitments", "", "commitments"), ("possible_expenses", "", "possibleExpenses"),
+        ("external_debts", "", "debts")
     ];
     public ProfileRepository(IConfiguration configuration, IHostEnvironment environment)
     {

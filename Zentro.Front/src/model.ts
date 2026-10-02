@@ -37,10 +37,22 @@ export type DebtPayment = {
   historical: boolean;
   allocations: { item: string; amount: number }[];
 };
+export type DebtInstallment = {
+  month: string;
+  amount: number;
+  status: "paid" | "reserved" | "pending";
+};
+export type ExternalDebt = {
+  id: string;
+  name: string;
+  total: number;
+  installments: DebtInstallment[];
+};
 export type Profile = {
   version: 2;
   cash?: number;
   mortgageOffer?: number;
+  debts?: ExternalDebt[];
   possibleExpenses?: { id: string; concept: string; amount: number }[];
   daily: {
     opening: number;
@@ -74,6 +86,7 @@ export function blankProfile(): Profile {
     version: 2,
     cash: 0,
     mortgageOffer: 0,
+    debts: [],
     possibleExpenses: [],
     daily: { opening: 0, asOf: today(), expenses: [], incomes: [] },
     savings: [],
@@ -124,6 +137,23 @@ export function debtTotals(p: Profile) {
   const original = sum(p.internalDebt.items.map((r) => r.amount));
   const paid = sum(p.internalDebt.payments.map((r) => r.amount));
   return { original, paid, pending: original - paid };
+}
+export function externalDebtTotals(debt: ExternalDebt) {
+  const paid = sum(
+    debt.installments.filter((r) => r.status === "paid").map((r) => r.amount),
+  );
+  const reserved = sum(
+    debt.installments
+      .filter((r) => r.status === "reserved")
+      .map((r) => r.amount),
+  );
+  return {
+    total: debt.total,
+    paid,
+    reserved,
+    remaining: debt.total - paid,
+    pending: debt.total - paid - reserved,
+  };
 }
 export function debtItemPaid(p: Profile, id: string) {
   return sum(
@@ -499,6 +529,30 @@ export function validateProfile(raw: unknown): Profile {
     (p.plan.savingsTarget !== null && !nonnegative(p.plan.savingsTarget))
   )
     throw Error("Revisa saldos y plan mensual.");
+  if (p.debts !== undefined) {
+    if (!Array.isArray(p.debts) || !unique(p.debts))
+      throw Error("Deuda no válida o duplicada.");
+    for (const debt of p.debts) {
+      if (
+        !debt.name?.trim() ||
+        !nonnegative(debt.total) ||
+        !Array.isArray(debt.installments) ||
+        new Set(debt.installments.map((r) => r.month)).size !==
+          debt.installments.length ||
+        debt.installments.some(
+          (r) =>
+            !month(r.month) ||
+            !nonnegative(r.amount) ||
+            r.amount === 0 ||
+            !["paid", "reserved", "pending"].includes(r.status),
+        ) ||
+        sum(debt.installments.map((r) => r.amount)) > debt.total
+      )
+        throw Error(
+          "Revisa la deuda y sus cuotas: no pueden superar el total ni repetir un mes.",
+        );
+    }
+  }
   for (const rows of [p.savings, p.investment]) {
     if (
       new Set(rows.map((r) => r.month)).size !== rows.length ||

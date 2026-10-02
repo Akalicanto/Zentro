@@ -26,6 +26,19 @@ public static class ProfileValidator
             var daily = profile.GetProperty("daily");
             if (profile.TryGetProperty("cash", out _) && !Money(profile, "cash", true)) return false;
             if (profile.TryGetProperty("mortgageOffer", out _) && !Money(profile, "mortgageOffer", true)) return false;
+            if (profile.TryGetProperty("debts", out _))
+            {
+                var externalDebts = Rows(profile, "debts");
+                if (!Unique(externalDebts, "id")) return false;
+                foreach (var external in externalDebts)
+                {
+                    if (string.IsNullOrWhiteSpace(Text(external, "name")) || !Money(external, "total", true)) return false;
+                    var installments = Rows(external, "installments");
+                    if (!Unique(installments, "month") || installments.Any(r => !Month(r, "month") || !Money(r, "amount", true)
+                        || Number(r, "amount") == 0 || !new[] { "paid", "reserved", "pending" }.Contains(Text(r, "status")))
+                        || installments.Sum(r => (decimal)Number(r, "amount")) > Number(external, "total")) return false;
+                }
+            }
             if (profile.TryGetProperty("possibleExpenses", out _))
             {
                 var possible = Rows(profile, "possibleExpenses");

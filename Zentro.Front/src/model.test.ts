@@ -16,7 +16,71 @@ import {
   cents,
   today,
   currentMonth,
+  externalDebtTotals,
 } from "./model";
+test("Deuda externa distingue lo abonado de lo apartado sin modificar otros saldos", () => {
+  const p = testProfile();
+  const debt = {
+    id: "external-test",
+    name: "Dentista",
+    total: 25000,
+    installments: [
+      { month: "2026-01", amount: 10000, status: "paid" as const },
+      { month: "2026-02", amount: 5000, status: "reserved" as const },
+      { month: "2026-03", amount: 10000, status: "pending" as const },
+    ],
+  };
+  const next = { ...p, debts: [debt] };
+  validateProfile(next);
+  assert.deepEqual(externalDebtTotals(debt), {
+    total: 25000,
+    paid: 10000,
+    reserved: 5000,
+    remaining: 15000,
+    pending: 10000,
+  });
+  assert.deepEqual(wealthTotals(next), wealthTotals(p));
+  assert.deepEqual(cashTotals(next), cashTotals(p));
+  assert.deepEqual(debtTotals(next), debtTotals(p));
+  const paid = structuredClone(next);
+  paid.debts[0].installments[1].status = "paid";
+  validateProfile(paid);
+  assert.equal(externalDebtTotals(paid.debts[0]).remaining, 10000);
+  assert.equal(externalDebtTotals(paid.debts[0]).reserved, 0);
+  assert.throws(() =>
+    validateProfile({ ...next, debts: [{ ...debt, total: 20000 }] }),
+  );
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      debts: [
+        { ...debt, installments: [...debt.installments, debt.installments[0]] },
+      ],
+    }),
+  );
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      debts: [
+        {
+          ...debt,
+          installments: [{ month: "2026-01", amount: -1, status: "pending" }],
+        },
+      ],
+    }),
+  );
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      debts: [
+        {
+          ...debt,
+          installments: [{ month: "2026-13", amount: 1, status: "pending" }],
+        },
+      ],
+    }),
+  );
+});
 test("Efectivo, oferta hipotecaria y posibles gastos no alteran saldos ni patrimonio", () => {
   const p = testProfile();
   const next = {

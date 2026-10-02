@@ -19,7 +19,7 @@ import {
   ArrowDownLeft,
   PanelLeftClose,
   PanelLeftOpen,
-  Info,
+  CreditCard,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -56,7 +56,15 @@ import {
   type CashRow,
 } from "./model";
 import { saveData } from "./profileStorage";
-const pages = ["Mi espacio", "Día a día", "Ahorros", "Inversión"] as const;
+import PanelInfo from "./PanelInfo";
+import DebtsPage from "./DebtsPage";
+const pages = [
+  "Mi espacio",
+  "Día a día",
+  "Ahorros",
+  "Inversión",
+  "Deudas",
+] as const;
 type Page = (typeof pages)[number];
 type Modal = {
   type:
@@ -76,38 +84,6 @@ type Modal = {
   kind?: "expenses" | "incomes" | "savings" | "investment";
   item?: any;
 } | null;
-function PanelInfo({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="panel-help">
-      <details
-        className="panel-info"
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.currentTarget.open = false;
-            event.currentTarget.querySelector("summary")?.focus();
-          }
-        }}
-      >
-        <summary
-          aria-label={`Información de ${title}`}
-          title={`Información de ${title}`}
-        >
-          <Info size={19} aria-hidden="true" />
-        </summary>
-        <div className="panel-info-content" role="note">
-          <strong>{title}</strong>
-          <p>{children}</p>
-        </div>
-      </details>
-    </div>
-  );
-}
 const Chart = memo(function Chart({
   profile,
   kind,
@@ -1214,7 +1190,13 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
         </a>
         <nav aria-label="Navegación principal">
           {pages.map((label, index) => {
-            const Icon = [LayoutDashboard, Wallet, Sprout, TrendingUp][index];
+            const Icon = [
+              LayoutDashboard,
+              Wallet,
+              Sprout,
+              TrendingUp,
+              CreditCard,
+            ][index];
             return (
               <button
                 key={label}
@@ -1290,6 +1272,9 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                 )}
                 {page === "Inversión" && (
                   <TrendingUp size={27} aria-hidden="true" />
+                )}
+                {page === "Deudas" && (
+                  <CreditCard size={27} aria-hidden="true" />
                 )}
                 {page}
               </h1>
@@ -1690,6 +1675,7 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
             </>
           )}
           {page === "Inversión" && historyPage("investment")}
+          {page === "Deudas" && <DebtsPage profile={data} onSave={save} />}
         </div>
       </main>
       {modal && (

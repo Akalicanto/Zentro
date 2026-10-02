@@ -54,6 +54,11 @@ try {
   const state = testProfile();
   state.cash = 1700;
   state.mortgageOffer = 9000000;
+  state.debts = [{ id: "external-test", name: "Dentista", total: 25000, installments: [
+    { month: "2026-01", amount: 10000, status: "paid" },
+    { month: "2026-02", amount: 5000, status: "reserved" },
+    { month: "2026-03", amount: 10000, status: "pending" }
+  ] }];
   state.possibleExpenses = [{ id: "possible-test", concept: "Posible gasto de prueba", amount: 8000 }];
   assert.equal((await put(state)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
@@ -74,6 +79,15 @@ try {
   await stop();
   await start();
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
+  for(const external of [
+    {...state.debts[0],total:20000},
+    {...state.debts[0],installments:[...state.debts[0].installments,state.debts[0].installments[0]]},
+    {...state.debts[0],installments:[{month:"2026-13",amount:100,status:"paid"}]},
+    {...state.debts[0],installments:[{month:"2026-01",amount:100,status:"unknown"}]}
+  ]) {
+    assert.equal((await put({...state,debts:[external]})).status,400);
+    assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
+  }
   const invalidGlobal = structuredClone(state);
   invalidGlobal.savings.push({ ...invalidGlobal.savings[0] });
   assert.equal((await put(invalidGlobal)).status, 400);
@@ -92,6 +106,8 @@ try {
   assert.equal(metadata.cash, 1700);
   assert.equal(metadata.mortgageOffer, 9000000);
   assert.equal(metadata.possibleExpenses, undefined);
+  assert.equal(metadata.debts, undefined);
+  assert.equal(sql.prepare("SELECT COUNT(*) AS count FROM external_debts").get().count,1);
   assert.equal(sql.prepare("SELECT COUNT(*) AS count FROM possible_expenses").get().count, 1);
   sql.close();
   console.log("API OK: Swagger, validación, escritura/lectura y persistencia tras reiniciar. Base de pruebas independiente.");

@@ -42,7 +42,9 @@ Zentro/
 
 ## Datos y páginas
 
-El sidebar tiene Mi espacio, Día a día, Ahorros e Inversión. Mi espacio reúne patrimonio, disponibilidad diaria, efectivo, ahorro por trabajo, intereses, inversión y una oferta hipotecaria editable. Patrimonio = ahorro por trabajo + intereses + capital invertido; excluye el día a día, el efectivo y la oferta hipotecaria. La inversión refleja aportaciones, sin rentabilidad variable. Sus gráficos comparan aportaciones reales, objetivos mensuales registrados y previsiones; el objetivo puede cambiar cada mes.
+El sidebar tiene Mi espacio, Día a día, Ahorros, Inversión y Deudas. Mi espacio reúne patrimonio, disponibilidad diaria, efectivo, ahorro por trabajo, intereses, inversión y una oferta hipotecaria editable. Patrimonio = ahorro por trabajo + intereses + capital invertido; excluye el día a día, el efectivo y la oferta hipotecaria. La inversión refleja aportaciones, sin rentabilidad variable. Sus gráficos comparan aportaciones reales, objetivos mensuales registrados y previsiones; el objetivo puede cambiar cada mes.
+
+Deudas muestra el tratamiento del dentista y un calendario editable. Cada cuota está pagada, apartada (dinero preparado aún no abonado) o pendiente. Falta por pagar = deuda total − cuotas realmente pagadas; incluye el dinero apartado. El calendario agrupa los meses por año y permite añadir, editar, cambiar el estado y eliminar cuotas. Se guarda en `external_debts` y su seguimiento no modifica el saldo diario, el ahorro, la inversión ni la deuda interna. Los meses sin planificar siguen contando en el importe restante.
 
 Día a día permite indicar el saldo actual y añadir, editar, eliminar o realizar gastos e ingresos mensuales. Los pendientes modifican la previsión. Al realizarlos, pasan al saldo actual sin duplicarse. Indicar un nuevo saldo incluye los movimientos realizados anteriores y mantiene pendientes los futuros.
 
@@ -68,4 +70,4 @@ npx.cmd playwright install chromium
 node browser-profile-test.mjs
 ```
 
-La prueba de navegador utiliza su propia API y base temporal: comprueba las cuatro páginas, gastos/ingresos, retiradas/reposiciones, intereses, inversión, recarga y móvil sin modificar datos del usuario. Sus fixtures están en `Zentro.Front/tests/profile.ts` y no se cargan en la aplicación.
+La prueba de navegador utiliza su propia API y base temporal: comprueba las cinco páginas, gastos/ingresos, retiradas/reposiciones, intereses, inversión, cuotas del dentista, recarga y móvil sin modificar datos del usuario. Sus fixtures están en `Zentro.Front/tests/profile.ts` y no se cargan en la aplicación.
