@@ -1534,6 +1534,67 @@ button:disabled {
   font-size: 14px;
   line-height: 1.7;
 }
+.panel-help {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.panel-info {
+  position: relative;
+}
+.panel-info summary {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+.panel-info summary::-webkit-details-marker {
+  display: none;
+}
+.panel-info summary:hover,
+.panel-info[open] summary {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-color: var(--line);
+}
+.panel-info summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.panel-info-content {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  z-index: 25;
+  width: min(380px, calc(100vw - 72px));
+  padding: 20px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 12px 36px #241a3620;
+}
+.panel-info-content strong {
+  font-size: 16px;
+}
+.panel-info-content p {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.dark .panel-info-content {
+  box-shadow: 0 12px 36px #0005;
+}
 .history-edit-toggle {
   border-color: transparent;
   background: transparent;

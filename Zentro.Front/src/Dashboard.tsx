@@ -19,6 +19,7 @@ import {
   ArrowDownLeft,
   PanelLeftClose,
   PanelLeftOpen,
+  Info,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -74,6 +75,38 @@ type Modal = {
   kind?: "expenses" | "incomes" | "savings" | "investment";
   item?: any;
 } | null;
+function PanelInfo({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="panel-help">
+      <details
+        className="panel-info"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.currentTarget.open = false;
+            event.currentTarget.querySelector("summary")?.focus();
+          }
+        }}
+      >
+        <summary
+          aria-label={`Información de ${title}`}
+          title={`Información de ${title}`}
+        >
+          <Info size={19} aria-hidden="true" />
+        </summary>
+        <div className="panel-info-content" role="note">
+          <strong>{title}</strong>
+          <p>{children}</p>
+        </div>
+      </details>
+    </div>
+  );
+}
 const Chart = memo(function Chart({
   profile,
   kind,
@@ -593,6 +626,12 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
             este mes.
           </p>
         )}
+        <PanelInfo title={expense ? "Gastos" : "Ingresos"}>
+          Las tablas muestran el mes actual. Los movimientos previstos modifican
+          el saldo después de pendientes. Al realizarlos, pasan al saldo actual
+          una sola vez. Los movimientos ya incluidos en un saldo actualizado no
+          se vuelven a sumar ni descontar.
+        </PanelInfo>
       </section>
     );
   }
@@ -651,11 +690,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   ? "Evolución del ahorro por trabajo"
                   : "Evolución de la inversión"}
               </h3>
-              <p>
-                {saving
-                  ? "Aportaciones netas y reposiciones; los intereses se muestran por separado"
-                  : "Capital aportado; no incluye rentabilidad variable"}
-              </p>
             </div>
           </div>
           <div className="section-title account-history-toolbar">
@@ -697,20 +731,14 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
               </select>
             </label>
           </div>
-          <Chart
-            profile={data}
-            kind={kind}
-            year={year}
-            view={view}
-            showGoal={saving}
-          />
-          {saving && (
-            <p className="chart-comparison-note">
-              El objetivo ideal sigue la aportación base de cada mes. El ahorro
-              real incluye retiradas y reposiciones; los intereses se muestran
-              por separado.
-            </p>
-          )}
+          <Chart profile={data} kind={kind} year={year} view={view} showGoal />
+          <PanelInfo
+            title={saving ? "Gráfica de ahorro" : "Gráfica de inversión"}
+          >
+            {saving
+              ? "El objetivo ideal sigue la aportación base de cada mes. El ahorro real incluye retiradas y reposiciones; los intereses se muestran por separado."
+              : "El objetivo ideal sigue los objetivos mensuales de inversión. Registrado refleja las aportaciones reales, sin rentabilidad de los fondos. Previsto aplica el plan a los meses pendientes. Los acumulados conservan las aportaciones de los años anteriores."}
+          </PanelInfo>
         </section>
         <section
           className={`panel history-panel${editingHistory ? " is-editing" : ""}`}
@@ -718,7 +746,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
           <div className="section-title">
             <div>
               <h3>Historial mensual</h3>
-              <p>Aportaciones registradas y previsiones, mes a mes</p>
             </div>
             <div className="history-actions">
               <button
@@ -851,11 +878,14 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
               </tbody>
             </table>
           </div>
-          <small className="history-footnote">
+          <PanelInfo
+            title={saving ? "Historial de ahorro" : "Historial de inversión"}
+          >
             Vacío significa sin registrar. Los ceros y negativos se conservan.
-            Las previsiones se recalculan con la deuda pendiente y nunca cuentan
-            como dinero ahorrado.
-          </small>
+            {saving
+              ? " Las previsiones se recalculan con la deuda pendiente y nunca cuentan como dinero ahorrado."
+              : " Las previsiones siguen el plan mensual y nunca cuentan como capital ya invertido. No se incluye rentabilidad variable."}
+          </PanelInfo>
         </section>
       </>
     );
@@ -913,7 +943,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
             <div>
               <span className="table-eyebrow">TU AHORRO, DE VUELTA</span>
               <h3>Por reponer</h3>
-              <p>Gestiona tus retiradas y sigue lo que llevas repuesto.</p>
             </div>
             <div className="history-actions">
               <span className="table-count">
@@ -1024,13 +1053,18 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
           {!data.internalDebt.items.length && (
             <p className="empty">No hay deuda interna.</p>
           )}
+          <PanelInfo title="Por reponer">
+            Añadir deuda reduce el ahorro por trabajo del mes; devolver deuda lo
+            aumenta. Retirado es el importe original, Repuesto es lo devuelto y
+            Pendiente es lo que falta recuperar. Las reposiciones históricas ya
+            incluidas en el ahorro no se suman otra vez.
+          </PanelInfo>
         </section>
         <section className="panel distribution-panel">
           <div className="section-title table-heading">
             <div>
               <span className="table-eyebrow">PASO A PASO</span>
               <h3>Distribución de las reposiciones</h3>
-              <p>Ajusta cuánto reponer cada mes a tu ritmo.</p>
             </div>
             <div className="history-actions">
               <span className="table-count">
@@ -1112,6 +1146,12 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
           {!plan.length && (
             <p className="empty">No hay reposiciones futuras pendientes.</p>
           )}
+          <PanelInfo title="Distribución de las reposiciones">
+            Total previsto es el ahorro base más la reposición pendiente de ese
+            mes. Las cuotas se limitan a la deuda restante y descuentan lo ya
+            devuelto. Editar permite ajustar cada mes, incluido indicar cero
+            para saltarlo; las previsiones no cuentan como ahorro realizado.
+          </PanelInfo>
         </section>
       </>
     );
@@ -1367,11 +1407,11 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   />
                 </section>
               </div>
-              <p className="notice">
+              <PanelInfo title="Patrimonio">
                 El patrimonio excluye el dinero del día a día y el efectivo. La
                 deuda interna es un compromiso de reposición y no se resta de
                 nuevo al ahorro.
-              </p>
+              </PanelInfo>
             </>
           )}
           {page === "Día a día" && (
@@ -1415,7 +1455,11 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
               </div>
               <div className="daily-current-month">
                 <span className="month-marker">{dailyMonth.slice(5)}</span>
-                <h3>{monthName(dailyMonth).replace(/^./, letter => letter.toUpperCase())}</h3>
+                <h3>
+                  {monthName(dailyMonth).replace(/^./, (letter) =>
+                    letter.toUpperCase(),
+                  )}
+                </h3>
               </div>
               <div className="cards two">
                 {cashTable("expenses")}
@@ -1525,6 +1569,11 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     Añade gastos que quieras tener en mente.
                   </p>
                 )}
+                <PanelInfo title="Posibles gastos">
+                  Lista independiente de gastos que quieres tener en mente. No
+                  tiene mes ni cuenta y no modifica el saldo actual, el saldo
+                  previsto, el efectivo ni el patrimonio.
+                </PanelInfo>
               </section>
             </>
           )}
