@@ -231,7 +231,7 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
   });
   const [editingPossible, setEditingPossible] = useState(false);
   const [monthSelection, setMonthSelection] = useState(currentMonth());
-  const [dailyMonth, setDailyMonth] = useState(currentMonth());
+  const dailyMonth = currentMonth();
   const [mobile, setMobile] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(
@@ -278,7 +278,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
   ].sort((a, b) => b.localeCompare(a));
   function navigate(next: Page) {
     setCurrentPage(next);
-    if (next === "Día a día") setDailyMonth(currentMonth());
     setYear(currentMonth().slice(0, 4));
     setMobile(false);
     history.replaceState(null, "", `#pagina=${encodeURIComponent(next)}`);
@@ -617,7 +616,13 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
     const future = closingMonth?.projected ?? closingMonth?.accumulated ?? 0;
     return (
       <>
-        <div className={saving ? "cards two savings-secondary" : "cards three"}>
+        <div
+          className={
+            saving
+              ? "cards two savings-secondary"
+              : "cards three savings-primary investment-primary"
+          }
+        >
           {!saving &&
             metric(
               "Capital aportado",
@@ -1221,10 +1226,10 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
         </header>
         <div className="content" key={page}>
           <div
-            className={`page-heading ${page === "Ahorros" || page === "Día a día" ? "savings-page-bar" : ""}`}
+            className={`page-heading ${page !== "Mi espacio" ? "savings-page-bar" : ""}`}
           >
             <div>
-              {page !== "Ahorros" && page !== "Día a día" && (
+              {page === "Mi espacio" && (
                 <span className="eyebrow">TU TRANQUILIDAD EMPIEZA AQUÍ</span>
               )}
               <h1>
@@ -1232,9 +1237,12 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                 {page === "Día a día" && (
                   <Wallet size={27} aria-hidden="true" />
                 )}
+                {page === "Inversión" && (
+                  <TrendingUp size={27} aria-hidden="true" />
+                )}
                 {page}
               </h1>
-              {page !== "Ahorros" && page !== "Día a día" && (
+              {page === "Mi espacio" && (
                 <p>
                   {page === "Mi espacio"
                     ? "Tu ahorro, tus intereses y tu inversión, cada uno en su lugar."
@@ -1380,6 +1388,11 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   },
                 )}
                 {metric(
+                  "Saldo después de pendientes",
+                  daily.forecast,
+                  "Previsión calculada sobre la marcha",
+                )}
+                {metric(
                   "Gastos previstos",
                   daily.expenses,
                   "Pendientes de realizar",
@@ -1388,11 +1401,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   "Ingresos previstos",
                   daily.incomes,
                   "Pendientes de recibir",
-                )}
-                {metric(
-                  "Saldo después de pendientes",
-                  daily.forecast,
-                  "Previsión calculada sobre la marcha",
                 )}
                 {metric(
                   "Efectivo",
@@ -1405,16 +1413,9 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   },
                 )}
               </div>
-              <div className="section-title">
-                <label>
-                  Mes de las tablas
-                  <input
-                    aria-label="Mes del día a día"
-                    type="month"
-                    value={dailyMonth}
-                    onChange={(e) => setDailyMonth(e.target.value)}
-                  />
-                </label>
+              <div className="daily-current-month">
+                <span className="month-marker">{dailyMonth.slice(5)}</span>
+                <h3>{monthName(dailyMonth).replace(/^./, letter => letter.toUpperCase())}</h3>
               </div>
               <div className="cards two">
                 {cashTable("expenses")}
@@ -1609,12 +1610,17 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                         ? modal.item.amount / 100
                         : "",
                     )}
-                    {field(
-                      "Mes",
-                      "month",
-                      modal.item?.month || dailyMonth,
-                      "month",
-                    )}
+                    <label>
+                      Mes
+                      <span className="cash-form-month">
+                        {monthName(modal.item?.month || dailyMonth)}
+                      </span>
+                      <input
+                        type="hidden"
+                        name="month"
+                        value={modal.item?.month || dailyMonth}
+                      />
+                    </label>
                     <label>
                       Estado
                       <select

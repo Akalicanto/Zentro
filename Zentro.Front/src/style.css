@@ -1620,7 +1620,32 @@ button:disabled {
   margin-bottom: 24px;
 }
 .daily-primary {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.daily-primary .metric {
+  grid-column: span 2;
+}
+.daily-primary .metric:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+.daily-current-month {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 18px;
+}
+.daily-current-month h3 {
+  margin: 0;
+}
+.cash-form-month {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--soft);
+  text-transform: capitalize;
+}
+.investment-primary .metric {
+  padding-bottom: 24px;
 }
 .daily-primary .metric h2 {
   font-weight: 800;
@@ -1654,12 +1679,24 @@ button:disabled {
 }
 @media (max-width: 1250px) {
   .daily-primary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+@media (min-width: 651px) and (max-width: 1100px) {
+  .daily-primary .metric {
+    grid-column: span 3;
+  }
+  .daily-primary .metric:last-child {
+    grid-column: span 6;
   }
 }
 @media (max-width: 650px) {
   .daily-primary {
     grid-template-columns: 1fr;
+  }
+  .daily-primary .metric,
+  .daily-primary .metric:nth-child(-n + 2) {
+    grid-column: auto;
   }
 }
 .debt-action {
