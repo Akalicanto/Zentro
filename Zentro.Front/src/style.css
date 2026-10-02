@@ -110,7 +110,11 @@ button svg {
   --accent-soft: #eee3fa;
   --accent-text: #62428e;
   --highlight: #423354;
-  --navigation-gradient-stops: #fff8ed 0%, #eee3fa 50%, #fff8ed 100%;
+  --navigation-gradient-stops: #eee3fa 0%, #fff8ed 50%, #eee3fa 100%;
+  --sidebar-tab-bg: #eee3fa;
+  --sidebar-tab-hover: #e7d7f6;
+  --sidebar-tab-top: 104px;
+  --sidebar-tab-height: 76px;
   --chart-primary: #8060b4;
   --chart-secondary: #a198aa;
   min-height: 100vh;
@@ -132,7 +136,9 @@ button svg {
   --accent-soft: #3b2d50;
   --accent-text: #dbc6f5;
   --highlight: #463553;
-  --navigation-gradient-stops: #302c28 0%, #352b43 50%, #302c28 100%;
+  --navigation-gradient-stops: #352b43 0%, #302c28 50%, #352b43 100%;
+  --sidebar-tab-bg: #352b43;
+  --sidebar-tab-hover: #443454;
   --chart-primary: #c2a5ee;
   --chart-secondary: #a198aa;
   background:
@@ -143,7 +149,7 @@ button svg {
   inset: 0 auto 0 0;
   width: 240px;
   background: linear-gradient(180deg, var(--navigation-gradient-stops));
-  border-right: 1px solid var(--line);
+  border-right: 0;
   display: flex;
   flex-direction: column;
   padding: 36px 22px;
@@ -153,6 +159,22 @@ button svg {
     width 360ms var(--motion-ease),
     padding 360ms var(--motion-ease);
   overflow: visible;
+}
+.app aside::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--line) 0 var(--sidebar-tab-top),
+    transparent var(--sidebar-tab-top)
+      calc(var(--sidebar-tab-top) + var(--sidebar-tab-height)),
+    var(--line) calc(var(--sidebar-tab-top) + var(--sidebar-tab-height)) 100%
+  );
 }
 .app aside nav {
   margin-top: 42px;
@@ -216,31 +238,42 @@ button svg {
   opacity: 1;
   transform: scale(1);
 }
-.sidebar-edge-toggle {
+.app .sidebar-edge-toggle {
   position: absolute;
-  top: 104px;
-  right: -15px;
-  width: 30px;
-  height: 52px;
+  top: var(--sidebar-tab-top);
+  left: calc(100% - 1px);
+  width: 38px;
+  height: var(--sidebar-tab-height);
   padding: 0;
   border: 1px solid var(--line);
   border-left: 0;
-  border-radius: 0 14px 14px 0;
-  background: linear-gradient(180deg, var(--navigation-gradient-stops));
+  border-radius: 0 15px 15px 0;
+  background: var(--sidebar-tab-bg);
   color: var(--accent-text);
-  box-shadow: 5px 2px 10px #4233540c;
+  box-shadow: 4px 3px 10px #4233540b;
   z-index: 2;
+  transition:
+    width 220ms var(--motion-ease),
+    background-color 220ms ease,
+    box-shadow 220ms ease;
 }
-.sidebar-edge-toggle:hover {
-  background: var(--accent-soft);
+.app .sidebar-edge-toggle:hover {
+  width: 42px;
+  background: var(--sidebar-tab-hover);
   border-color: var(--line);
-  box-shadow: 5px 2px 14px #70529e20;
+  box-shadow: 5px 3px 14px #70529e16;
+}
+.app .sidebar-edge-toggle:active {
+  transform: none;
 }
 .sidebar-edge-toggle svg {
   transition: transform 360ms var(--motion-ease);
 }
 .sidebar-collapsed .sidebar-edge-toggle svg {
   transform: rotate(180deg);
+}
+.dark .brand-mark img {
+  filter: brightness(1.35);
 }
 .brand-dot {
   color: var(--accent);
@@ -412,9 +445,6 @@ header {
 .dark .panel,
 .dark .metric {
   box-shadow: 0 8px 25px #00000012;
-}
-.dark .savings-primary .metric {
-  background: linear-gradient(135deg, #163d3d, #152f36);
 }
 @media (min-width: 651px) {
   .app.sidebar-collapsed aside {
@@ -1390,71 +1420,33 @@ button:disabled {
 .savings-page-bar h1 svg {
   color: var(--accent);
 }
-.savings-primary .metric,
-.savings-primary .metric.accent,
-.daily-primary .metric,
-.daily-primary .metric.accent {
-  background: linear-gradient(135deg, #eadcf8, #f3ebfc);
-  border-color: #d8cbea;
-  border-top: 4px solid #9b7cc1;
-  color: #38254e;
+.savings-primary .metric {
+  min-width: 0;
+  min-height: 210px;
+  border-radius: 18px;
+  padding: 24px 24px 60px;
 }
 .savings-primary .metric > span,
-.savings-primary .metric.accent > span,
-.daily-primary .metric > span,
-.daily-primary .metric.accent > span {
-  color: #674d82;
+.savings-secondary .metric > span {
   font-weight: 650;
 }
-.savings-primary .metric small,
-.savings-primary .metric.accent small,
-.daily-primary .metric small,
-.daily-primary .metric.accent small {
-  color: #756584;
-}
 .savings-primary .metric h2 {
-  font-size: 36px;
+  font-size: clamp(26px, 2.4vw, 38px);
   font-weight: 800;
+  white-space: normal;
 }
 .savings-secondary .metric,
 .savings-secondary .metric.accent {
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--line);
-  padding: 17px 20px;
-}
-.savings-secondary .metric > span,
-.savings-secondary .metric.accent > span {
-  color: var(--muted);
-}
-.savings-secondary .metric small,
-.savings-secondary .metric.accent small {
-  color: var(--muted);
+  min-width: 0;
+  min-height: 160px;
+  border-radius: 16px;
+  padding: 22px 24px;
 }
 .savings-secondary .metric h2 {
-  font-size: 26px;
+  font-size: 28px;
+  font-weight: 750;
+  white-space: normal;
   margin: 10px 0 7px;
-}
-.dark .savings-primary .metric,
-.dark .savings-primary .metric.accent,
-.dark .daily-primary .metric,
-.dark .daily-primary .metric.accent {
-  background: linear-gradient(135deg, #352b41, #2b2533);
-  border-color: #50405f;
-  border-top-color: #ad8ed1;
-  color: #f3ebfa;
-}
-.dark .savings-primary .metric > span,
-.dark .savings-primary .metric.accent > span,
-.dark .daily-primary .metric > span,
-.dark .daily-primary .metric.accent > span {
-  color: #d5bfe8;
-}
-.dark .savings-primary .metric small,
-.dark .savings-primary .metric.accent small,
-.dark .daily-primary .metric small,
-.dark .daily-primary .metric.accent small {
-  color: #bca9cb;
 }
 .app {
   --chart-goal: #b57429;
@@ -2139,12 +2131,10 @@ button:disabled {
 .app {
   --current-month-bg: #e6eefb;
   --current-month-accent: #6b8cba;
-  --current-month-text: #365378;
 }
 .app.dark {
   --current-month-bg: #29394e;
   --current-month-accent: #92b4e4;
-  --current-month-text: #d1e3ff;
 }
 .app table tbody tr.current-month-row > td {
   background: var(--current-month-bg);
@@ -2152,19 +2142,18 @@ button:disabled {
 .app table tbody tr.current-month-row > td:first-child {
   box-shadow: inset 4px 0 var(--current-month-accent);
 }
-.current-month-badge {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid
-    color-mix(in srgb, var(--current-month-accent) 40%, transparent);
-  background: color-mix(in srgb, var(--current-month-bg) 65%, var(--panel));
-  color: var(--current-month-text);
-  font-size: 12px;
-  font-weight: 650;
-  padding: 4px 7px;
-  border-radius: 6px;
-  white-space: nowrap;
-  text-transform: none;
+@media (min-width: 651px) and (max-width: 1200px) {
+  .content {
+    padding-left: 48px;
+  }
+}
+@media (min-width: 651px) and (max-width: 1050px) {
+  .savings-primary.three {
+    grid-template-columns: 1fr;
+  }
+  .savings-primary .metric {
+    min-height: 185px;
+  }
 }
 @media (max-width: 1000px) {
   .allocation-charts,
@@ -2175,6 +2164,9 @@ button:disabled {
 @media (max-width: 650px) {
   .sidebar-edge-toggle {
     display: none;
+  }
+  .app aside::after {
+    background: var(--line);
   }
   .overview-allocation-items {
     grid-template-columns: 1fr;

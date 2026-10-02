@@ -546,13 +546,7 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className={
-                    row.month === dailyMonth ? "current-month-row" : undefined
-                  }
-                  aria-current={row.month === dailyMonth ? "date" : undefined}
-                >
+                <tr key={row.id}>
                   <td>
                     {editing ? (
                       <button
@@ -663,12 +657,17 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
               "Capital aportado",
               wealth.invested,
               "Historial registrado, sin previsiones",
-              true,
+              false,
+              undefined,
+              "lilac",
             )}
           {metric(
             "Aportación mensual",
             saving ? data.plan.saving : data.plan.investment,
             "Aportación base del plan",
+            false,
+            undefined,
+            "peach",
           )}
           {metric(
             "Acumulado previsto",
@@ -676,6 +675,9 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
             closingMonth
               ? `Hasta ${monthName(closingMonth.month)}`
               : "Sin importes registrados en este período",
+            false,
+            undefined,
+            "blue",
           )}
         </div>
         <section className="panel">
@@ -831,11 +833,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     >
                       <td>
                         <span className="history-month-cell">
-                          {row.month === dailyMonth && (
-                            <span className="current-month-badge">
-                              Este mes
-                            </span>
-                          )}
                           <span
                             className={`history-status-dot${row.real === null ? " forecast" : ""}`}
                             title={
@@ -910,12 +907,17 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
             "Deuda interna pendiente",
             debt.pending,
             "Ahorro retirado que falta por reponer",
-            true,
+            false,
+            undefined,
+            "rose",
           )}
           {metric(
             "Reposición mensual",
             data.plan.repayment,
             "Además de la aportación base, hasta saldar la deuda",
+            false,
+            undefined,
+            "sage",
           )}
         </div>
         <div className="debt-actions">
@@ -991,17 +993,7 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                 {data.internalDebt.items.map((item) => {
                   const paid = debtItemPaid(data, item.id);
                   return (
-                    <tr
-                      key={item.id}
-                      className={
-                        item.date.startsWith(dailyMonth)
-                          ? "current-month-row"
-                          : undefined
-                      }
-                      aria-current={
-                        item.date.startsWith(dailyMonth) ? "date" : undefined
-                      }
-                    >
+                    <tr key={item.id}>
                       <td>
                         {editingDebt ? (
                           <button
@@ -1128,9 +1120,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   >
                     <td>
                       <span className="distribution-month">
-                        {row.month === dailyMonth && (
-                          <span className="current-month-badge">Este mes</span>
-                        )}
                         <span className="month-marker">
                           {row.month.slice(5)}
                         </span>
@@ -1713,7 +1702,9 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   "Ahorro por trabajo",
                   wealth.work,
                   "Historial de aportaciones netas",
-                  true,
+                  false,
+                  undefined,
+                  "blue",
                 )}
                 {metric(
                   "Generado por intereses",
@@ -1724,8 +1715,16 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     label: "Actualizar intereses",
                     onClick: () => open({ type: "interestBalance" }),
                   },
+                  "rose",
                 )}
-                {metric("Ahorro total", wealth.savings, "Trabajo + intereses")}
+                {metric(
+                  "Ahorro total",
+                  wealth.savings,
+                  "Trabajo + intereses",
+                  false,
+                  undefined,
+                  "lilac",
+                )}
               </div>
               <div
                 className="account-detail-tabs"

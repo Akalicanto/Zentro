@@ -249,9 +249,6 @@ export default function DebtsPage({
                   >
                     <td>
                       <span className="history-month-cell">
-                        {row.month === currentMonth() && (
-                          <span className="current-month-badge">Este mes</span>
-                        )}
                         {editing ? (
                           <button
                             className="history-month-edit"
