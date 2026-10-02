@@ -62,7 +62,7 @@ import {
   validateEntry,
 } from "./finance";
 
-const KEY = "zentro.v1";
+import { saveData } from "./storage";
 const nav = [
   ["Resumen", LayoutDashboard],
   ["Cuentas", Landmark],
@@ -85,25 +85,12 @@ type Modal = {
   item?: any;
   kind?: string;
 } | null;
-function read() {
-  try {
-    const s = localStorage.getItem(KEY);
-    return { data: s ? validateData(JSON.parse(s)) : demo(), error: "" };
-  } catch {
-    return {
-      data: empty(),
-      error:
-        "No se ha podido leer el almacenamiento. No se sobrescribirá hasta que hagas un cambio. Puedes importar una copia válida.",
-    };
-  }
-}
-const initial = read();
-export default function App() {
-  const [d, setD] = useState<Data>(initial.data),
+export default function App({ initialData }: { initialData: Data }) {
+  const [d, setD] = useState<Data>(initialData),
     [page, setPage] = useState("Resumen"),
     [month, setMonth] = useState("2026-10"),
     [modal, setModal] = useState<Modal>(null),
-    [error, setError] = useState(initial.error),
+    [error, setError] = useState(""),
     [toast, setToast] = useState(""),
     [dark, setDark] = useState(false),
     [mobile, setMobile] = useState(false),
@@ -115,7 +102,7 @@ export default function App() {
   function save(next: Data) {
     try {
       validateData(next);
-      localStorage.setItem(KEY, JSON.stringify(next));
+      saveData(next, setError);
       setD(next);
       setError("");
       return true;
@@ -718,9 +705,8 @@ export default function App() {
         {!investment && (
           <div className="notice">
             <CircleHelp size={18} />
-            El saldo inicial de demostración de 21.450,83 € incluye 450,83 € de
-            intereses históricos. No se vuelven a sumar. El año de esos
-            intereses no se deduce de la captura.
+            El saldo inicial incluye los intereses abonados antes de su fecha.
+            Registra únicamente los nuevos abonos para no contarlos dos veces.
           </div>
         )}
         <section className="panel">
@@ -779,11 +765,8 @@ export default function App() {
               </div>
               <h2>{euro(interests + (d.demo ? 45083 : 0))}</h2>
               <p className="muted">
-                Histórico registrado
-                {d.demo
-                  ? " + 450,83 € incluidos en el saldo inicial de demostración"
-                  : ""}
-                .
+                Histórico registrado. Los intereses anteriores al saldo inicial
+                ya forman parte de ese saldo.
               </p>
               <div className="spread">
                 <span>Este mes</span>
@@ -1414,10 +1397,10 @@ export default function App() {
               <section className="panel">
                 <h3>Tus datos, bajo tu control</h3>
                 <p>
-                  Esta versión guarda la información en localStorage de este
-                  navegador y dirección. No hay base de datos ni sincronización.
-                  Exporta copias periódicas; borrar los datos del navegador
-                  elimina esta información.
+                  Tus datos se guardan en la base de datos local de Zentro.
+                  Este navegador conserva también una copia de los cambios
+                  pendientes. Exporta copias JSON periódicamente para tener un
+                  respaldo independiente.
                 </p>
                 <div className="button-row">
                   <button onClick={() => exportFile()}>
@@ -1509,11 +1492,10 @@ export default function App() {
               <section className="panel">
                 <h3>Datos de demostración</h3>
                 <p>
-                  Las capturas sirven como referencia. Los 21.450,83 € de ahorro
-                  incluyen 450,83 € de intereses. Reservar 210,80 € para el
-                  préstamo no reduce la deuda. Los 500 € mostrados como pagados
-                  en la hoja de reposiciones siguen pendientes de conciliación y
-                  no se han aplicado.
+                  La demostración utiliza cuentas, importes y conceptos
+                  ficticios. Reservar dinero para un préstamo no reduce la deuda
+                  hasta registrar el pago. Puedes restaurar estos ejemplos o
+                  empezar de cero.
                 </p>
                 <div className="button-row">
                   <button

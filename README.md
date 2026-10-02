@@ -1,36 +1,61 @@
 # Zentro
 
-Aplicación personal de finanzas en español, React + TypeScript + Vite. Sin backend, base de datos ni conexiones bancarias.
+Repositorio con **Zentro.Front** (React, TypeScript y Vite) y **Zentro.Api** (.NET 10 y SQLite).
 
-## Arranque
+## Arrancar desde VS Code
 
-Haz doble clic en `Iniciar-Zentro.cmd` y abre http://127.0.0.1:5187 en Chrome. También puedes ejecutar `npm run dev` desde esta carpeta. Detén únicamente este servidor con Ctrl+C; el navegador permanece abierto. El puerto es fijo y estricto: si está ocupado, el arranque falla sin detener otros servicios.
+Abre esta carpeta raíz. En **Ejecutar y depurar** selecciona **Zentro: Front + API + Swagger** y pulsa **▶** o **F5**. Arranca ambos servicios con recarga automática y abre el front y Swagger en el navegador cuando están listos.
 
-Dependencias ya instaladas localmente. Para reinstalarlas: `npm ci --cache .npm-cache`. Verificación: `npm test`, `npm run build` y, con el servidor iniciado, `node browser-test.mjs` (requiere Chrome instalado). Las capturas de comprobación se guardan en `checks/`.
+- Front: http://127.0.0.1:5187
+- Swagger: http://127.0.0.1:5080/swagger
+- API: http://127.0.0.1:5080/api/health
 
-## Modelo financiero
+**Ctrl+C** en la terminal o **Stop / Shift+F5** detiene los dos servicios. Los puertos son fijos; si están ocupados, el arranque falla sin detener otros programas. También puedes hacer doble clic en `Iniciar-Zentro.cmd` o ejecutar `npm.cmd run dev` desde la raíz.
 
-- Importes enteros en céntimos. Cálculos centralizados en `src/finance.ts`.
-- El saldo inicial de una cuenta es una fotografía antes de los movimientos de su fecha. Un movimiento realizado actualiza una sola vez sus cuentas; uno pendiente solo actualiza la previsión. La proyección incluye pendientes anteriores al mes elegido, para no ocultar compromisos atrasados.
-- Patrimonio = cuentas diarias + efectivo + ahorros + capital invertido − deuda externa. No representa cotización de inversiones. La deuda interna no se resta: es un compromiso de reposición, no una obligación externa.
-- Las devoluciones internas transfieren dinero entre cuentas y amortizan la deuda por el mismo importe. Para una retirada nueva, registra su gasto o transferencia y crea el compromiso de reposición; crear la ficha de deuda no modifica por sí solo ningún saldo.
-- Reservar una cuota no reduce deuda ni saldo bancario. Al marcarla realizada se descuenta una vez el importe de la cuenta. Se admiten pagos parciales, edición y eliminación; los saldos se reconstruyen a partir del registro.
-- Ahorro futuro a diciembre usa las aportaciones registradas. La segunda estimación añade la deuda interna completa pendiente, descontando las reposiciones ya incluidas en el plan: presupone que se repone toda antes de diciembre y lo indica explícitamente.
-- El plan mensual es realizado + pendiente, no una fotografía inmutable del presupuesto original. Cada repetición es independiente. Editar una mensualidad conserva las demás.
-- Bancos configurables en cada cuenta; no se conectan a ninguna entidad. Los objetivos miden el saldo de su cuenta de ahorro, no un fondo adicional.
+El perfil **Zentro.Api: depurar C#** permite poner puntos de interrupción en el backend. Úsalo con el arranque conjunto detenido y ejecuta el front por separado con `npm.cmd run dev:front`.
 
-## Interpretación de las capturas
+## Instalación y comprobaciones
 
-La demostración tiene una fecha de corte de 1 de octubre de 2026. Cuenta diaria 554,20 €, ahorros 21.450,83 €, aportaciones de inversión 5.750 € y efectivo 410 €. El ahorro ya incluye 450,83 € de intereses, según tu aclaración. Esos intereses históricos no se asignan a un año al desconocer sus fechas. Los meses anteriores al saldo inicial no se han reconstruido a partir de imágenes.
+Requisitos: Git, Node.js 24 LTS, SDK .NET 10 y VS Code. En este ordenador ya están instalados junto con las extensiones C# y C# Dev Kit.
 
-Los gastos cotidianos de la captura más la cuota de deuda suman 421,40 €, dejando 132,80 € antes de nuevas aportaciones. La deuda externa original de 3.162 €, menos 1.264,80 € efectivamente pagados, deja 1.897,20 € pendientes. Los 210,80 € reservados siguen siendo deuda. La captura agrupa algunas cifras de otra forma: se prioriza la distinción solicitada entre reservado y pagado.
+```powershell
+npm.cmd run setup   # instala el front y restaura NuGet
+npm.cmd run build   # compila front y API
+npm.cmd test        # modelo financiero y API con SQLite temporal
+```
 
-Los orígenes de deuda interna suman 1.000 €. El pago de 500 € de la captura no se aplica automáticamente porque no está conciliado con esos conceptos. Los datos están identificados como demostración y pueden restaurarse o borrarse en Configuración. La planificación de aportaciones es ilustrativa y puede mostrar déficit hasta que registres ingresos.
+Si una terminal abierta antes de la instalación no encuentra las herramientas, abre una nueva.
 
-## Persistencia y copias
+## Estructura
 
-Datos en `localStorage`, clave `zentro.v1`, independientes por navegador y dirección. No es almacenamiento definitivo. Exporta JSON periódicamente desde Configuración; importarlo sustituye los datos tras confirmación y validación. CSV exporta movimientos, no una copia completa. No se guardan datos financieros en servidores ni repositorios remotos.
+```text
+Zentro/
+  Zentro.Front/        interfaz, modelo financiero y cliente de persistencia
+  Zentro.Api/          API .NET 10
+    Data/             repositorio SQLite y validación del documento
+    Properties/       perfil de desarrollo en el puerto 5080
+  .vscode/            arranque, tareas y extensiones recomendadas
+  scripts/            arranque conjunto y prueba de integración de la API
+  Zentro.slnx          solución .NET
+  global.json         SDK .NET 10
+```
 
-La demostración incluye metadatos de intereses históricos únicamente como referencia; al empezar de cero, utiliza saldos iniciales que ya incluyan todos los intereses anteriores y registra solamente los nuevos abonos.
+## Datos
 
-El estilo solicita fuentes de Google Fonts, con fuentes locales de respaldo. La aplicación y sus datos funcionan sin integración con servicios financieros. Arquitectura sencilla: `finance.ts` modelo y cálculos, `App.tsx` vistas y formularios, `style.css` presentación. El esquema versionado permite sustituir localStorage por una base de datos local en una fase posterior.
+La base de datos se crea automáticamente en `Zentro.Api/Data/zentro.db`. Guarda el documento financiero completo v1 en una tabla SQLite; el modelo y los cálculos existentes se conservan en `finance.ts`. Es una primera estructura para desarrollo local, de un único usuario. Las futuras entidades y operaciones de negocio se pueden extraer del documento a tablas y endpoints propios.
+
+El front usa `/api/state` mediante el proxy de Vite. En la primera ejecución, si SQLite está vacía, migra la copia `zentro.v1` del navegador utilizado o carga la demostración original. Los cambios se escriben en orden en la API y los pendientes se conservan en el navegador si falla la conexión. Una vez inicializada, SQLite es la fuente de datos para los navegadores de este equipo. Evita editar simultáneamente en varias pestañas: esta primera versión guarda el documento completo y prevalece la última escritura.
+
+Exporta copias JSON desde Configuración. No se suben datos financieros a GitHub. La base de datos, dependencias y archivos compilados quedan excluidos de Git. Para cambiar la ubicación de SQLite, configura `Zentro__DatabasePath` con una ruta absoluta.
+
+Swagger está habilitado en Development. Ambos servicios escuchan solo en la dirección local. Esta configuración está preparada para desarrollar en este ordenador; todavía no incluye autenticación ni despliegue público.
+
+La prueba de API usa una base temporal independiente y comprueba validación, Swagger y persistencia tras reiniciar. Para las comprobaciones de navegador, con los servicios arrancados:
+
+```powershell
+cd Zentro.Front
+npx.cmd playwright install chromium
+node browser-test.mjs
+```
+
+Las reglas financieras y la interpretación de los datos de demostración están documentadas en [Zentro.Front/README.md](Zentro.Front/README.md).

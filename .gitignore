@@ -10,7 +10,14 @@ checks/
 *.pem
 *.key
 .server.pid
-.vscode/
+bin/
+obj/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 backups/
 zentro-*.json
 zentro-*.csv

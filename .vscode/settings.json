@@ -1,0 +1,6 @@
+{
+  "dotnet.defaultSolution": "Zentro.slnx",
+  "terminal.integrated.env.windows": { "PATH": "${env:ProgramFiles}\\nodejs;${env:ProgramFiles}\\dotnet;${env:ProgramFiles}\\Git\\cmd;${env:PATH}" },
+  "files.exclude": { "**/bin": true, "**/obj": true },
+  "search.exclude": { "**/node_modules": true, "**/dist": true, "**/bin": true, "**/obj": true }
+}

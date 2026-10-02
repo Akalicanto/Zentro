@@ -13,14 +13,14 @@ import {
   type Entry,
 } from "./finance";
 test("Céntimos y formato decimal español", () => {
-  assert.equal(cents("105,40"), 10540);
+  assert.equal(cents("123,45"), 12345);
   assert.equal(cents("0.29"), 29);
   assert.throws(() => cents("1.001"));
 });
 test("Saldo inicial incluye intereses sin duplicarlos", () => {
   const d = demo();
-  assert.equal(totals(d).savings, 2145083);
-  assert.equal(totals(d).invested, 575000);
+  assert.equal(totals(d).savings, 800000);
+  assert.equal(totals(d).invested, 250000);
   assert.equal(
     projected(
       {
@@ -29,17 +29,17 @@ test("Saldo inicial incluye intereses sin duplicarlos", () => {
           (e) => !["saving", "investment"].includes(e.kind),
         ),
       },
-      "ing",
+      "daily",
       "2026-10",
     ),
-    13280,
+    123500,
   );
 });
 test("Reservar no amortiza deuda", () => {
   const d = demo();
-  assert.equal(debtState(d, "loan").paid, 126480);
-  assert.equal(debtState(d, "loan").pending, 189720);
-  assert.equal(debtState(d, "loan").reserved, 21080);
+  assert.equal(debtState(d, "loan").paid, 120000);
+  assert.equal(debtState(d, "loan").pending, 180000);
+  assert.equal(debtState(d, "loan").reserved, 20000);
 });
 test("Devolución interna conserva patrimonio y reduce deuda exactamente", () => {
   const d = demo(),
@@ -52,8 +52,8 @@ test("Devolución interna conserva patrimonio y reduce deuda exactamente", () =>
     date: "2026-10-05",
     status: "done",
     category: "Otros",
-    from: "ing",
-    to: "tr",
+    from: "daily",
+    to: "savings",
     debt: "trip",
     reserved: 0,
   });
@@ -65,22 +65,22 @@ test("Devolución interna conserva patrimonio y reduce deuda exactamente", () =>
 });
 test("Realizar un movimiento previsto no duplica la previsión", () => {
   const d = demo(),
-    p = projected(d, "ing", "2026-10");
+    p = projected(d, "daily", "2026-10");
   d.entries[0].status = "done";
-  assert.equal(projected(d, "ing", "2026-10"), p);
-  assert.equal(balance(d, "ing"), 45420);
+  assert.equal(projected(d, "daily", "2026-10"), p);
+  assert.equal(balance(d, "daily"), 144000);
 });
 test("Editar y eliminar pagos recalcula sin tocar meses anteriores", () => {
   const d = demo(),
     e = d.entries.find((e) => e.kind === "debt")!;
   e.status = "done";
   e.amount = 5000;
-  assert.equal(debtState(d, "loan").pending, 184720);
-  assert.equal(balance(d, "ing", "2026-10-01"), 55420);
+  assert.equal(debtState(d, "loan").pending, 175000);
+  assert.equal(balance(d, "daily", "2026-10-01"), 150000);
   e.amount = 6000;
-  assert.equal(debtState(d, "loan").pending, 183720);
+  assert.equal(debtState(d, "loan").pending, 174000);
   d.entries = d.entries.filter((x) => x.id !== e.id);
-  assert.equal(debtState(d, "loan").pending, 189720);
+  assert.equal(debtState(d, "loan").pending, 180000);
 });
 test("Intereses incrementan ahorro y patrimonio una sola vez", () => {
   const d = demo(),
@@ -94,7 +94,7 @@ test("Intereses incrementan ahorro y patrimonio una sola vez", () => {
     status: "done",
     category: "Otros",
     from: "",
-    to: "tr",
+    to: "savings",
     debt: "",
     reserved: 0,
   });

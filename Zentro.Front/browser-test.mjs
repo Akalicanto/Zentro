@@ -1,7 +1,18 @@
 import { chromium } from "@playwright/test";
 import fs from "node:fs";
+import { demo } from "./src/finance.ts";
+const api = "http://127.0.0.1:5080/api/state";
+const saved = await fetch(api);
+if (!saved.ok) throw Error("La API debe estar arrancada para probar el navegador.");
+const original = saved.status === 204 ? demo() : await saved.json();
+async function restore(data) {
+  const response = await fetch(api, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+  if (!response.ok) throw Error("No se pudieron guardar los datos de la prueba.");
+}
 fs.mkdirSync("checks", { recursive: true });
-const browser = await chromium.launch({ channel: "chrome", headless: true });
+const browser = await chromium.launch({ headless: true });
+try {
+await restore(demo());
 const page = await browser.newPage({
   viewport: { width: 1512, height: 1100 },
   locale: "es-ES",
@@ -43,13 +54,13 @@ await page
   .locator("nav")
   .getByRole("button", { name: "Ahorros", exact: true })
   .click();
-await page.getByRole("heading", { name: "21.500,83 €", exact: true }).waitFor();
+await page.getByRole("heading", { name: "8.050,00 €", exact: true }).waitFor();
 await page
   .locator("nav")
   .getByRole("button", { name: "Deuda interna", exact: true })
   .click();
 await page
-  .getByRole("heading", { name: "480,00 € pendiente", exact: true })
+  .getByRole("heading", { name: "550,00 € pendiente", exact: true })
   .waitFor();
 await page
   .getByRole("button", { name: "Editar Prueba devolución", exact: true })
@@ -57,14 +68,14 @@ await page
 await page.getByLabel("Importe (€)", { exact: true }).fill("60");
 await page.getByRole("button", { name: "Guardar cambios" }).click();
 await page
-  .getByRole("heading", { name: "470,00 € pendiente", exact: true })
+  .getByRole("heading", { name: "540,00 € pendiente", exact: true })
   .waitFor();
 page.on("dialog", (dialog) => dialog.accept());
 await page
   .getByRole("button", { name: "Eliminar Prueba devolución", exact: true })
   .click();
 await page
-  .getByRole("heading", { name: "530,00 € pendiente", exact: true })
+  .getByRole("heading", { name: "600,00 € pendiente", exact: true })
   .waitFor();
 await page.getByRole("button", { name: "Generar calendario" }).nth(1).click();
 await page.getByText("Fin previsto: marzo de 2027").waitFor();
@@ -91,4 +102,7 @@ if (errors.length) throw Error(errors.join("\n"));
 console.log(
   "OK: 9 pantallas, alta/edición/borrado de devolución, saldos coherentes, persistencia, calendario y móvil. Sin errores JavaScript.",
 );
-await browser.close();
+} finally {
+  await browser.close();
+  await restore(original);
+}

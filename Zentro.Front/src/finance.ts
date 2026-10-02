@@ -323,27 +323,27 @@ export function demo(): Data {
   d.demo = true;
   d.accounts = [
     {
-      id: "ing",
-      bank: "ING",
+      id: "daily",
+      bank: "Banco de ejemplo",
       name: "Cuenta diaria",
       kind: "daily",
-      opening: 55420,
+      opening: 150000,
       date: "2026-10-01",
     },
     {
-      id: "tr",
-      bank: "Trade Republic",
+      id: "savings",
+      bank: "Banco de ejemplo",
       name: "Mi colchón",
       kind: "savings",
-      opening: 2145083,
+      opening: 800000,
       date: "2026-10-01",
     },
     {
-      id: "mi",
-      bank: "MyInvestor",
+      id: "investment",
+      bank: "Entidad de ejemplo",
       name: "Inversión a largo plazo",
       kind: "investment",
-      opening: 575000,
+      opening: 250000,
       date: "2026-10-01",
     },
     {
@@ -351,7 +351,7 @@ export function demo(): Data {
       bank: "Efectivo",
       name: "Cartera",
       kind: "cash",
-      opening: 41000,
+      opening: 10000,
       date: "2026-10-01",
     },
   ];
@@ -360,18 +360,18 @@ export function demo(): Data {
       id: "loan",
       name: "Préstamo personal",
       kind: "external",
-      original: 316200,
-      initialPaid: 126480,
+      original: 300000,
+      initialPaid: 120000,
       date: "2025-11-01",
       description:
         "12 cuotas anteriores al inicio, ya pagadas. Las reservas no amortizan deuda.",
-      monthly: 10540,
+      monthly: 10000,
     },
     {
       id: "wheels",
-      name: "Ruedas",
+      name: "Compra de ejemplo",
       kind: "internal",
-      original: 7000,
+      original: 10000,
       initialPaid: 0,
       date: "2026-09-01",
       description: "Importe ilustrativo pendiente de conciliación.",
@@ -379,9 +379,9 @@ export function demo(): Data {
     },
     {
       id: "trip",
-      name: "Viaje a Holanda",
+      name: "Viaje de ejemplo",
       kind: "internal",
-      original: 53000,
+      original: 60000,
       initialPaid: 0,
       date: "2026-09-01",
       description: "Retirada anterior al saldo inicial.",
@@ -389,9 +389,9 @@ export function demo(): Data {
     },
     {
       id: "gym",
-      name: "Gimnasio",
+      name: "Actividad de ejemplo",
       kind: "internal",
-      original: 40000,
+      original: 30000,
       initialPaid: 0,
       date: "2026-09-01",
       description: "Retirada anterior al saldo inicial.",
@@ -407,18 +407,18 @@ export function demo(): Data {
       kind: "expense",
       status: "planned",
       category: "Otros",
-      from: "ing",
+      from: "daily",
       to: "",
       debt: "",
       reserved: 0,
       ...v,
     });
-  entry({ concept: "Gasolina", amount: 10000, category: "Transporte" });
-  entry({ concept: "Peluquería", amount: 1600 });
-  entry({ concept: "Cena", amount: 20000, category: "Ocio" });
+  entry({ concept: "Transporte de ejemplo", amount: 6000, category: "Transporte" });
+  entry({ concept: "Servicio de ejemplo", amount: 2500 });
+  entry({ concept: "Ocio de ejemplo", amount: 8000, category: "Ocio" });
   entry({
     concept: "Cuota del préstamo",
-    amount: 10540,
+    amount: 10000,
     kind: "debt",
     debt: "loan",
     date: "2026-10-28",
@@ -427,27 +427,27 @@ export function demo(): Data {
     const m = addMonth("2026-10", i);
     entry({
       concept: "Cuota del préstamo",
-      amount: 10540,
+      amount: 10000,
       kind: "debt",
       debt: "loan",
       date: m + "-28",
-      reserved: i <= 2 ? 10540 : 0,
+      reserved: i <= 2 ? 10000 : 0,
     });
   }
   for (let i = 0; i < 15; i++) {
     const m = addMonth("2026-10", i);
     entry({
       concept: "Aportación a mis ahorros",
-      amount: i < 5 ? 120000 : 100000,
+      amount: i < 5 ? 20000 : 15000,
       kind: "saving",
-      to: "tr",
+      to: "savings",
       date: m + "-25",
     });
     entry({
       concept: "Inversión mensual",
-      amount: 75000,
+      amount: 10000,
       kind: "investment",
-      to: "mi",
+      to: "investment",
       date: m + "-25",
     });
   }
@@ -455,8 +455,8 @@ export function demo(): Data {
     {
       id: uid(),
       name: "Un futuro con tranquilidad",
-      target: 3700000,
-      account: "tr",
+      target: 1500000,
+      account: "savings",
       date: "2027-12-31",
     },
   ];
