@@ -110,6 +110,7 @@ button svg {
   --accent-soft: #eee3fa;
   --accent-text: #62428e;
   --highlight: #423354;
+  --navigation-gradient-stops: #fff8ed 0%, #eee3fa 50%, #fff8ed 100%;
   --chart-primary: #8060b4;
   --chart-secondary: #a198aa;
   min-height: 100vh;
@@ -131,6 +132,7 @@ button svg {
   --accent-soft: #3b2d50;
   --accent-text: #dbc6f5;
   --highlight: #463553;
+  --navigation-gradient-stops: #302c28 0%, #352b43 50%, #302c28 100%;
   --chart-primary: #c2a5ee;
   --chart-secondary: #a198aa;
   background:
@@ -140,7 +142,7 @@ button svg {
   position: fixed;
   inset: 0 auto 0 0;
   width: 240px;
-  background: linear-gradient(165deg, #eee7f6, #fff8ec 65%, #eaf2eb);
+  background: linear-gradient(180deg, var(--navigation-gradient-stops));
   border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
@@ -280,7 +282,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 0 42px;
-  background: linear-gradient(100deg, #fff9ee, #f4edfa 65%, #eef4f0);
+  background: linear-gradient(90deg, var(--navigation-gradient-stops));
   position: sticky;
   top: 0;
   z-index: 15;
@@ -317,11 +319,9 @@ header {
   border-color: var(--line);
 }
 .dark aside {
-  background: linear-gradient(165deg, #292232, #242125 70%, #202b27);
   box-shadow: none;
 }
 .dark header {
-  background: #201c25eb;
   backdrop-filter: none;
   box-shadow: 0 1px 0 #ffffff03;
 }
