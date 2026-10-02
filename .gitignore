@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.npm-cache/
+checks/
+*.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.server.pid
+.vscode/
+backups/
+zentro-*.json
+zentro-*.csv
+.tools/
