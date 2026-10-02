@@ -1388,9 +1388,14 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   },
                 )}
                 {metric(
-                  "Saldo después de pendientes",
-                  daily.forecast,
-                  "Previsión calculada sobre la marcha",
+                  "Efectivo",
+                  data.cash ?? 0,
+                  "Importe independiente",
+                  false,
+                  {
+                    label: "Actualizar efectivo",
+                    onClick: () => open({ type: "cashBalance" }),
+                  },
                 )}
                 {metric(
                   "Gastos previstos",
@@ -1403,14 +1408,9 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   "Pendientes de recibir",
                 )}
                 {metric(
-                  "Efectivo",
-                  data.cash ?? 0,
-                  "Importe independiente",
-                  false,
-                  {
-                    label: "Actualizar efectivo",
-                    onClick: () => open({ type: "cashBalance" }),
-                  },
+                  "Saldo después de pendientes",
+                  daily.forecast,
+                  "Previsión calculada sobre la marcha",
                 )}
               </div>
               <div className="daily-current-month">
