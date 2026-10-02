@@ -17,7 +17,104 @@ import {
   today,
   currentMonth,
   externalDebtTotals,
+  savingsDistribution,
+  placementReturn,
+  placementMaturity,
+  type SavingsPlacement,
 } from "./model";
+test("La distribución asigna el resto sin duplicar ahorro y estima intereses netos", () => {
+  const p = testProfile();
+  const deposit: SavingsPlacement = {
+    id: "deposit-test",
+    name: "Depósito de prueba",
+    kind: "deposit",
+    amount: 40000,
+    annualRateBps: 400,
+    rateType: "tin",
+    withholdingBps: 1900,
+    start: "2026-01-31",
+    months: 12,
+  };
+  const account: SavingsPlacement = {
+    id: "account-test",
+    name: "Cuenta de prueba",
+    kind: "remunerated",
+    amount: null,
+    annualRateBps: 200,
+    rateType: "tin",
+    dayCount: "actual360",
+    withholdingBps: 1900,
+    start: null,
+    months: null,
+  };
+  const next = { ...p, savingsPlacements: [deposit, account] };
+  validateProfile(next);
+  const distribution = savingsDistribution(next);
+  assert.equal(distribution.assigned, 51400);
+  assert.equal(distribution.unassigned, 0);
+  assert.equal(distribution.rows[1].balance, 11400);
+  assert.deepEqual(placementReturn(deposit, 40000, 12), {
+    gross: 1600,
+    withheld: 304,
+    net: 1296,
+  });
+  assert.equal(placementReturn(account, 11400, 1, "2026-10").net, 16);
+  assert.equal(placementReturn(account, 11400, 1, "2028-02").net, 15);
+  assert.equal(placementMaturity(deposit), "2027-01-31");
+  assert.equal(placementMaturity({ ...deposit, months: 1 }), "2026-02-28");
+  assert.equal(
+    placementMaturity({ ...deposit, start: "2028-01-31", months: 1 }),
+    "2028-02-29",
+  );
+  assert.equal(
+    placementReturn(
+      { ...deposit, rateType: "tae", annualRateBps: 1000 },
+      100000,
+      1,
+    ).gross,
+    797,
+  );
+  assert.deepEqual(wealthTotals(next), wealthTotals(p));
+  assert.deepEqual(cashTotals(next), cashTotals(p));
+  const increased = structuredClone(next);
+  increased.savings[0].actual! += 1000;
+  assert.equal(savingsDistribution(increased).rows[1].balance, 12400);
+  const depleted = structuredClone(next);
+  depleted.savings[0].actual = 10000;
+  validateProfile(depleted);
+  assert.equal(savingsDistribution(depleted).excess, 28600);
+  assert.equal(savingsDistribution(depleted).rows[1].balance, 0);
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      savingsPlacements: [{ ...deposit, annualRateBps: -1 }],
+    }),
+  );
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      savingsPlacements: [{ ...deposit, start: "2026-02-30" }],
+    }),
+  );
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      savingsPlacements: [{ ...deposit, amount: null }],
+    }),
+  );
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      savingsPlacements: [account, { ...account, id: "another-account" }],
+    }),
+  );
+  assert.throws(() =>
+    validateProfile({
+      ...next,
+      savingsPlacements: [{ ...account, rateType: "tae" }],
+    }),
+  );
+});
 test("Deuda externa distingue lo abonado de lo apartado sin modificar otros saldos", () => {
   const p = testProfile();
   const debt = {

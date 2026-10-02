@@ -110,6 +110,115 @@ try {
     (await metric("Hipoteca ofrecida").innerText()).includes("90.000,00"),
   );
   assert.ok((await metric("Patrimonio neto").innerText()).includes("714,00"));
+  assert.equal(await page.title(), "Zentro");
+  await page
+    .locator("nav")
+    .getByRole("button", { name: "Ahorros", exact: true })
+    .click();
+  assert.equal(
+    await page.locator(".monthly-history .current-month-row").count(),
+    1,
+  );
+  await page
+    .getByRole("tab", { name: "Distribución de ahorros", exact: true })
+    .click();
+  const beforeAllocation = await state();
+  await page
+    .getByRole("button", { name: "Añadir destino", exact: true })
+    .click();
+  await page
+    .getByLabel("Nombre del destino", { exact: true })
+    .fill("Depósito de prueba");
+  await page.getByLabel("Capital (€)", { exact: true }).fill("400");
+  await page.getByLabel("Interés anual (%)", { exact: true }).fill("4");
+  await page.getByLabel("Fecha de inicio", { exact: true }).fill("2026-01-31");
+  await page.getByLabel("Duración (meses)", { exact: true }).fill("12");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Añadir destino", exact: true })
+    .click();
+  await page
+    .getByLabel("Nombre del destino", { exact: true })
+    .fill("Cuenta de prueba");
+  await page.getByLabel("Tipo", { exact: true }).selectOption("remunerated");
+  await page
+    .getByLabel("Asignar aquí el resto del ahorro automáticamente", {
+      exact: true,
+    })
+    .check();
+  await page.getByLabel("Interés anual (%)", { exact: true }).fill("2");
+  await page
+    .getByLabel("Cálculo mensual", { exact: true })
+    .selectOption("actual360");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  assert.equal(await page.locator(".placement-card").count(), 2);
+  assert.ok(
+    (await page.locator(".placement-card").last().innerText()).includes(
+      "114,00",
+    ),
+  );
+  assert.ok(
+    (await metric("Depósitos · neto al vencimiento").innerText()).includes(
+      "12,96",
+    ),
+  );
+  await page
+    .getByRole("button", { name: "Editar distribución", exact: true })
+    .click();
+  await page.evaluate(() => {
+    window.allocationChartMutations = 0;
+    window.allocationObserver = new MutationObserver((changes) => {
+      window.allocationChartMutations += changes.length;
+    });
+    window.allocationObserver.observe(
+      document.querySelector(".allocation-charts"),
+      {
+        subtree: true,
+        childList: true,
+        attributes: true,
+      },
+    );
+  });
+  await page
+    .getByRole("button", {
+      name: "Editar destino Depósito de prueba",
+      exact: true,
+    })
+    .click();
+  assert.equal(await page.evaluate(() => window.allocationChartMutations), 0);
+  await page.evaluate(() => window.allocationObserver.disconnect());
+  await page.getByLabel("Interés anual (%)", { exact: true }).fill("5");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  assert.ok(
+    (await metric("Depósitos · neto al vencimiento").innerText()).includes(
+      "16,20",
+    ),
+  );
+  await page.waitForFunction(
+    () => localStorage.getItem("zentro.v3.pending") === null,
+  );
+  const afterAllocation = await state();
+  assert.deepEqual(
+    afterAllocation.savingsPlacements.map((r) => r.name),
+    ["Depósito de prueba", "Cuenta de prueba"],
+  );
+  assert.deepEqual(
+    {
+      ...afterAllocation,
+      savingsPlacements: beforeAllocation.savingsPlacements,
+    },
+    beforeAllocation,
+  );
+  await page.reload();
+  await page.getByRole("heading", { name: "Ahorros", level: 1 }).waitFor();
+  await page
+    .getByRole("tab", { name: "Distribución de ahorros", exact: true })
+    .click();
+  assert.ok(
+    (await metric("Depósitos · neto al vencimiento").innerText()).includes(
+      "16,20",
+    ),
+  );
   const beforeDental = await state();
   await page
     .locator("nav")
@@ -390,8 +499,40 @@ try {
   );
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   assert.deepEqual(await state(), saved);
+  await page.getByRole("button", { name: "Abrir menú", exact: true }).click();
+  await page
+    .locator("nav")
+    .getByRole("button", { name: "Ahorros", exact: true })
+    .click();
+  await page
+    .getByRole("tab", { name: "Distribución de ahorros", exact: true })
+    .click();
+  await page.waitForFunction(
+    () => document.documentElement.scrollWidth <= innerWidth,
+  );
+  await page
+    .getByLabel("Información de Distribución del ahorro", { exact: true })
+    .click();
+  const allocationHelp = await page.getByRole("note").boundingBox();
+  assert.ok(
+    allocationHelp.x >= 0 && allocationHelp.x + allocationHelp.width <= 390,
+  );
+  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Editar distribución", exact: true })
+    .click();
+  await page
+    .getByRole("button", {
+      name: "Editar destino Cuenta de prueba",
+      exact: true,
+    })
+    .click();
+  assert.ok(await page.getByRole("dialog").isVisible());
+  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  assert.deepEqual(await state(), saved);
+  assert.deepEqual(errors, []);
   console.log(
-    "OK: cinco páginas, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
+    "OK: cinco páginas, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, distribución editable sin redibujar gráficos al abrir modal, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
   );
 } finally {
   await browser?.close();

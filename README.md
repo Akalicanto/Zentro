@@ -52,9 +52,13 @@ Efectivo se actualiza de forma independiente y no participa en los cálculos fin
 
 Ahorros separa el historial de trabajo, los intereses generados y la deuda interna. Una retirada nueva reduce el ahorro y aumenta la deuda. Reponerlo aumenta el ahorro y reduce la deuda. Los pagos históricos ya incluidos en el ahorro no se suman otra vez. La previsión añade la aportación base y las reposiciones pendientes, limitadas a la deuda existente. Inversión tiene su propia tabla y gráfica. Vacío, cero y valores negativos se conservan por separado.
 
+Distribución de ahorros permite añadir y editar depósitos y cuentas remuneradas: capital, TIN/TAE, plazo, fecha inicial y retención estimada. Un destino puede tomar automáticamente el capital restante. Los gráficos muestran ubicación e intereses netos estimados; estos intereses futuros no se añaden al patrimonio. Mi espacio también recoge la distribución. La cuenta admite un mes equivalente o días reales/360, el método publicado por [Trade Republic](https://support.traderepublic.com/es-es/1533-What-do-I-need-to-know-about-interest). La retención inicial editable es del 19 % conforme al [artículo 90 del Reglamento del IRPF](https://www.boe.es/buscar/act.php?id=BOE-A-2007-6820#a90); representa una estimación, no la liquidación final. Una nueva base no contiene destinos ni importes de ejemplo.
+
+Los historiales, movimientos diarios y calendarios destacan el mes actual. El sidebar se contrae desde una pestaña integrada y cambia del logo completo al símbolo. La identidad y sus versiones para favicon están en [`public/brand`](Zentro.Front/public/brand/README.md).
+
 El engranaje del encabezado permite configurar el plan mensual y exportar o importar copias JSON. Una base nueva empieza vacía y no carga ejemplos. Los botones de información aparecen en la esquina inferior derecha de los bloques y muestran sus explicaciones al pulsarlos. La oferta hipotecaria se guarda en `profile_settings` y no modifica saldos, deuda ni patrimonio.
 
-SQLite se crea en `Zentro.Api/Data/zentro.db`. El perfil v2 guarda colecciones independientes en `savings_months`, `investment_months`, `interest_entries`, `daily_expenses`, `daily_incomes`, `internal_debt_items`, `internal_debt_payments`, `internal_debt_schedule` y `commitments`. `profile_settings` contiene saldos iniciales y preferencias. Lectura y escritura del perfil son transacciones; los importes se guardan en céntimos. No hay entidades de cuentas en el modelo actual.
+SQLite se crea en `Zentro.Api/Data/zentro.db`. El perfil v2 guarda colecciones independientes en `savings_months`, `investment_months`, `savings_placements`, `interest_entries`, `daily_expenses`, `daily_incomes`, `internal_debt_items`, `internal_debt_payments`, `internal_debt_schedule` y `commitments`. `profile_settings` contiene saldos iniciales y preferencias. Lectura y escritura del perfil son transacciones; los importes se guardan en céntimos. No hay entidades de cuentas en el modelo actual.
 
 La API expone `/api/state` (GET y PUT) y `/api/health`, documentadas en Swagger. El navegador conserva pendientes en `zentro.v3.pending` si falla la API. Evita editar simultáneamente en varias pestañas: se guarda el perfil completo y prevalece la última escritura. Para cambiar la ruta de SQLite configura `Zentro__DatabasePath`.
 
@@ -70,4 +74,4 @@ npx.cmd playwright install chromium
 node browser-profile-test.mjs
 ```
 
-La prueba de navegador utiliza su propia API y base temporal: comprueba las cinco páginas, gastos/ingresos, retiradas/reposiciones, intereses, inversión, cuotas del dentista, recarga y móvil sin modificar datos del usuario. Sus fixtures están en `Zentro.Front/tests/profile.ts` y no se cargan en la aplicación.
+La prueba de navegador utiliza su propia API y base temporal: comprueba las cinco páginas, gastos/ingresos, retiradas/reposiciones, intereses, inversión, distribución editable, cuotas del dentista, recarga y móvil sin modificar datos del usuario. También verifica que abrir el modal de distribución no redibuje los gráficos. Sus fixtures están en `Zentro.Front/tests/profile.ts` y no se cargan en la aplicación.

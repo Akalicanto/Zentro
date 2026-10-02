@@ -54,6 +54,10 @@ try {
   const state = testProfile();
   state.cash = 1700;
   state.mortgageOffer = 9000000;
+  state.savingsPlacements = [
+    {id:"deposit-test",name:"Depósito de prueba",kind:"deposit",amount:40000,annualRateBps:400,rateType:"tin",withholdingBps:1900,start:"2026-01-31",months:12},
+    {id:"account-test",name:"Cuenta de prueba",kind:"remunerated",amount:null,annualRateBps:200,rateType:"tin",dayCount:"actual360",withholdingBps:1900,start:null,months:null}
+  ];
   state.debts = [{ id: "external-test", name: "Dentista", total: 25000, installments: [
     { month: "2026-01", amount: 10000, status: "paid" },
     { month: "2026-02", amount: 5000, status: "reserved" },
@@ -89,6 +93,16 @@ try {
     assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
   }
   const invalidGlobal = structuredClone(state);
+  for(const placements of [
+    [{...state.savingsPlacements[0],start:"2026-02-30"}],
+    [{...state.savingsPlacements[0],annualRateBps:-1}],
+    [{...state.savingsPlacements[0],amount:null}],
+    [state.savingsPlacements[1],{...state.savingsPlacements[1],id:"another-account"}],
+    [{...state.savingsPlacements[1],rateType:"tae"}]
+  ]) {
+    assert.equal((await put({...state,savingsPlacements:placements})).status,400);
+    assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
+  }
   invalidGlobal.savings.push({ ...invalidGlobal.savings[0] });
   assert.equal((await put(invalidGlobal)).status, 400);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
@@ -107,6 +121,8 @@ try {
   assert.equal(metadata.mortgageOffer, 9000000);
   assert.equal(metadata.possibleExpenses, undefined);
   assert.equal(metadata.debts, undefined);
+  assert.equal(metadata.savingsPlacements, undefined);
+  assert.equal(sql.prepare("SELECT COUNT(*) AS count FROM savings_placements").get().count,2);
   assert.equal(sql.prepare("SELECT COUNT(*) AS count FROM external_debts").get().count,1);
   assert.equal(sql.prepare("SELECT COUNT(*) AS count FROM possible_expenses").get().count, 1);
   sql.close();

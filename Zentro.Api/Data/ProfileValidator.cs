@@ -26,6 +26,22 @@ public static class ProfileValidator
             var daily = profile.GetProperty("daily");
             if (profile.TryGetProperty("cash", out _) && !Money(profile, "cash", true)) return false;
             if (profile.TryGetProperty("mortgageOffer", out _) && !Money(profile, "mortgageOffer", true)) return false;
+            if (profile.TryGetProperty("savingsPlacements", out _))
+            {
+                var placements = Rows(profile, "savingsPlacements");
+                if (!Unique(placements, "id") || placements.Count(r => r.GetProperty("amount").ValueKind == JsonValueKind.Null) > 1) return false;
+                foreach (var placement in placements)
+                {
+                    var kind = Text(placement, "kind");
+                    if (string.IsNullOrWhiteSpace(Text(placement, "name")) || !new[] { "deposit", "remunerated" }.Contains(kind)
+                        || !Money(placement, "amount", true, kind == "remunerated") || !Money(placement, "annualRateBps", true) || Number(placement, "annualRateBps") > 10000
+                        || !Money(placement, "withholdingBps", true) || Number(placement, "withholdingBps") > 10000 || !new[] { "tin", "tae" }.Contains(Text(placement, "rateType"))) return false;
+                    if (placement.TryGetProperty("dayCount", out _) && (!new[] { "monthly", "actual360" }.Contains(Text(placement, "dayCount"))
+                        || Text(placement, "dayCount") == "actual360" && (kind != "remunerated" || Text(placement, "rateType") != "tin"))) return false;
+                    if (kind == "deposit" ? !Date(placement, "start") || !Money(placement, "months", true) || Number(placement, "months") == 0 || Number(placement, "months") > 600
+                        : placement.GetProperty("start").ValueKind != JsonValueKind.Null || placement.GetProperty("months").ValueKind != JsonValueKind.Null) return false;
+                }
+            }
             if (profile.TryGetProperty("debts", out _))
             {
                 var externalDebts = Rows(profile, "debts");

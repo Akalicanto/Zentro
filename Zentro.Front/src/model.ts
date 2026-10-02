@@ -48,11 +48,24 @@ export type ExternalDebt = {
   total: number;
   installments: DebtInstallment[];
 };
+export type SavingsPlacement = {
+  id: string;
+  name: string;
+  kind: "deposit" | "remunerated";
+  amount: number | null;
+  annualRateBps: number;
+  rateType: "tin" | "tae";
+  dayCount?: "monthly" | "actual360";
+  withholdingBps: number;
+  start: string | null;
+  months: number | null;
+};
 export type Profile = {
   version: 2;
   cash?: number;
   mortgageOffer?: number;
   debts?: ExternalDebt[];
+  savingsPlacements?: SavingsPlacement[];
   possibleExpenses?: { id: string; concept: string; amount: number }[];
   daily: {
     opening: number;
@@ -87,6 +100,7 @@ export function blankProfile(): Profile {
     cash: 0,
     mortgageOffer: 0,
     debts: [],
+    savingsPlacements: [],
     possibleExpenses: [],
     daily: { opening: 0, asOf: today(), expenses: [], incomes: [] },
     savings: [],
@@ -175,6 +189,78 @@ export function wealthTotals(p: Profile) {
     savings: work + interest,
     invested,
     net: work + interest + invested,
+  };
+}
+export function placementReturn(
+  placement: SavingsPlacement,
+  amount: number,
+  months: number,
+  fromMonth = currentMonth(),
+) {
+  const rate = placement.annualRateBps / 10000;
+  const days =
+    placement.dayCount === "actual360"
+      ? sum(
+          Array.from({ length: months }, (_, i) => {
+            const [year, month] = addMonth(fromMonth, i).split("-").map(Number);
+            return new Date(Date.UTC(year, month, 0)).getUTCDate();
+          }),
+        )
+      : 0;
+  const gross = Math.round(
+    amount *
+      (placement.dayCount === "actual360"
+        ? (rate * days) / 360
+        : placement.rateType === "tae"
+          ? Math.pow(1 + rate, months / 12) - 1
+          : (rate * months) / 12),
+  );
+  const withheld = Math.round((gross * placement.withholdingBps) / 10000);
+  return { gross, withheld, net: gross - withheld };
+}
+export function placementMaturity(placement: SavingsPlacement) {
+  if (!placement.start || !placement.months) return null;
+  const [year, month, day] = placement.start.split("-").map(Number);
+  const last = new Date(Date.UTC(year, month - 1 + placement.months + 1, 0));
+  return new Date(
+    Date.UTC(
+      last.getUTCFullYear(),
+      last.getUTCMonth(),
+      Math.min(day, last.getUTCDate()),
+    ),
+  )
+    .toISOString()
+    .slice(0, 10);
+}
+export function savingsDistribution(p: Profile) {
+  const total = wealthTotals(p).savings;
+  const fixed = sum((p.savingsPlacements ?? []).map((r) => r.amount ?? 0));
+  const rows = (p.savingsPlacements ?? []).map((row) => {
+    const amount = row.amount ?? Math.max(0, total - fixed);
+    return {
+      ...row,
+      balance: amount,
+      maturity: placementMaturity(row),
+      yield: placementReturn(
+        row,
+        amount,
+        row.kind === "deposit" ? row.months! : 1,
+      ),
+    };
+  });
+  const assigned = sum(rows.map((r) => r.balance));
+  return {
+    total,
+    rows,
+    assigned,
+    unassigned: Math.max(0, total - assigned),
+    excess: Math.max(0, assigned - total),
+    depositNet: sum(
+      rows.filter((r) => r.kind === "deposit").map((r) => r.yield.net),
+    ),
+    monthlyNet: sum(
+      rows.filter((r) => r.kind === "remunerated").map((r) => r.yield.net),
+    ),
   };
 }
 export function monthSeries(p: Profile, kind: "savings" | "investment") {
@@ -529,6 +615,38 @@ export function validateProfile(raw: unknown): Profile {
     (p.plan.savingsTarget !== null && !nonnegative(p.plan.savingsTarget))
   )
     throw Error("Revisa saldos y plan mensual.");
+  if (p.savingsPlacements !== undefined) {
+    if (
+      !Array.isArray(p.savingsPlacements) ||
+      !unique(p.savingsPlacements) ||
+      p.savingsPlacements.filter((r) => r.amount === null).length > 1 ||
+      p.savingsPlacements.some(
+        (r) =>
+          !r.name?.trim() ||
+          !["deposit", "remunerated"].includes(r.kind) ||
+          (r.amount !== null && !nonnegative(r.amount)) ||
+          !nonnegative(r.annualRateBps) ||
+          r.annualRateBps > 10000 ||
+          !nonnegative(r.withholdingBps) ||
+          r.withholdingBps > 10000 ||
+          !["tin", "tae"].includes(r.rateType) ||
+          (r.dayCount !== undefined &&
+            !["monthly", "actual360"].includes(r.dayCount)) ||
+          (r.dayCount === "actual360" &&
+            (r.kind !== "remunerated" || r.rateType !== "tin")) ||
+          (r.kind === "deposit"
+            ? r.amount === null ||
+              !date(r.start) ||
+              !nonnegative(r.months) ||
+              r.months === 0 ||
+              r.months! > 600
+            : r.start !== null || r.months !== null),
+      )
+    )
+      throw Error(
+        "Revisa los destinos del ahorro, sus tipos y plazos. Solo una cuenta puede recibir el resto automáticamente.",
+      );
+  }
   if (p.debts !== undefined) {
     if (!Array.isArray(p.debts) || !unique(p.debts))
       throw Error("Deuda no válida o duplicada.");

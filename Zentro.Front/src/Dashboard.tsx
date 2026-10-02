@@ -17,8 +17,7 @@ import {
   ArrowUpDown,
   ArrowUpRight,
   ArrowDownLeft,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronLeft,
   CreditCard,
 } from "lucide-react";
 import {
@@ -52,12 +51,14 @@ import {
   uid,
   today,
   currentMonth,
+  savingsDistribution,
   type Profile,
   type CashRow,
 } from "./model";
 import { saveData } from "./profileStorage";
 import PanelInfo from "./PanelInfo";
 import DebtsPage from "./DebtsPage";
+import SavingsDistribution from "./SavingsDistribution";
 const pages = [
   "Mi espacio",
   "Día a día",
@@ -260,6 +261,7 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
     }),
     [data],
   );
+  const allocation = useMemo(() => savingsDistribution(data), [data]);
   const selectedMonthly =
     modal?.type === "month"
       ? data[modal.kind as "savings" | "investment"].find(
@@ -544,7 +546,13 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id}>
+                <tr
+                  key={row.id}
+                  className={
+                    row.month === dailyMonth ? "current-month-row" : undefined
+                  }
+                  aria-current={row.month === dailyMonth ? "date" : undefined}
+                >
                   <td>
                     {editing ? (
                       <button
@@ -812,13 +820,22 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                     )}
                     <tr
                       className={
-                        row.real === null
+                        (row.real === null
                           ? "history-forecast-row"
-                          : "history-recorded-row"
+                          : "history-recorded-row") +
+                        (row.month === dailyMonth ? " current-month-row" : "")
+                      }
+                      aria-current={
+                        row.month === dailyMonth ? "date" : undefined
                       }
                     >
                       <td>
                         <span className="history-month-cell">
+                          {row.month === dailyMonth && (
+                            <span className="current-month-badge">
+                              Este mes
+                            </span>
+                          )}
                           <span
                             className={`history-status-dot${row.real === null ? " forecast" : ""}`}
                             title={
@@ -974,7 +991,17 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                 {data.internalDebt.items.map((item) => {
                   const paid = debtItemPaid(data, item.id);
                   return (
-                    <tr key={item.id}>
+                    <tr
+                      key={item.id}
+                      className={
+                        item.date.startsWith(dailyMonth)
+                          ? "current-month-row"
+                          : undefined
+                      }
+                      aria-current={
+                        item.date.startsWith(dailyMonth) ? "date" : undefined
+                      }
+                    >
                       <td>
                         {editingDebt ? (
                           <button
@@ -1092,9 +1119,18 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
               </thead>
               <tbody>
                 {plan.map((row) => (
-                  <tr key={row.month}>
+                  <tr
+                    key={row.month}
+                    className={
+                      row.month === dailyMonth ? "current-month-row" : undefined
+                    }
+                    aria-current={row.month === dailyMonth ? "date" : undefined}
+                  >
                     <td>
                       <span className="distribution-month">
+                        {row.month === dailyMonth && (
+                          <span className="current-month-badge">Este mes</span>
+                        )}
                         <span className="month-marker">
                           {row.month.slice(5)}
                         </span>
@@ -1182,13 +1218,32 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
       className={`app ${dark ? "dark" : ""} ${collapsed ? "sidebar-collapsed" : ""}`}
     >
       <aside className={mobile ? "open" : ""}>
-        <a className="brand" onClick={() => navigate("Mi espacio")}>
-          <span className="brand-mark">z</span>
+        <a
+          className="brand"
+          href="#pagina=Mi%20espacio"
+          aria-label="Zentro · Mi espacio"
+          onClick={(event) => {
+            event.preventDefault();
+            navigate("Mi espacio");
+          }}
+        >
+          <span className="brand-mark">
+            <img src="/brand/symbol-mini.png" alt="" />
+          </span>
           <span className="brand-name">
-            zentro<span className="brand-dot">.</span>
+            <img src="/brand/logo-ui.png" alt="Zentro" />
           </span>
         </a>
-        <nav aria-label="Navegación principal">
+        <button
+          className="sidebar-edge-toggle"
+          aria-label={collapsed ? "Expandir navegación" : "Contraer navegación"}
+          aria-expanded={!collapsed}
+          aria-controls="zentro-navigation"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <nav id="zentro-navigation" aria-label="Navegación principal">
           {pages.map((label, index) => {
             const Icon = [
               LayoutDashboard,
@@ -1222,20 +1277,6 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
               onClick={() => setMobile(!mobile)}
             >
               <Menu />
-            </button>
-            <button
-              className="icon sidebar-toggle"
-              aria-label={
-                collapsed ? "Expandir navegación" : "Contraer navegación"
-              }
-              aria-expanded={!collapsed}
-              onClick={() => setCollapsed(!collapsed)}
-            >
-              {collapsed ? (
-                <PanelLeftOpen size={20} />
-              ) : (
-                <PanelLeftClose size={20} />
-              )}
             </button>
           </div>
           <div className="header-right">
@@ -1361,6 +1402,41 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                   "butter",
                 )}
               </div>
+              {!!allocation.rows.length && (
+                <section className="panel overview-allocation">
+                  <div className="section-title">
+                    <h3>Tu ahorro, distribuido</h3>
+                    <button
+                      className="history-edit-toggle"
+                      onClick={() => {
+                        navigate("Ahorros");
+                        setSavingsTab("Distribución de ahorros");
+                      }}
+                    >
+                      Ver distribución <ArrowUpRight size={16} />
+                    </button>
+                  </div>
+                  <div className="overview-allocation-items">
+                    {allocation.rows.map((row) => (
+                      <div key={row.id}>
+                        <span>{row.name}</span>
+                        <strong>{euro(row.balance)}</strong>
+                        <small>
+                          {row.kind === "deposit"
+                            ? `${euro(row.yield.net)} netos al vencimiento`
+                            : `${euro(row.yield.net)} netos estimados este mes`}
+                        </small>
+                      </div>
+                    ))}
+                  </div>
+                  <PanelInfo title="Tu ahorro, distribuido">
+                    Los destinos distribuyen tu ahorro actual. El rendimiento
+                    neto es una estimación después de la retención indicada y se
+                    mantiene separado de tu patrimonio hasta que registres los
+                    intereses cobrados.
+                  </PanelInfo>
+                </section>
+              )}
               <div className="cards two home-detail-grid">
                 <section className="panel">
                   <div className="section-title">
@@ -1656,21 +1732,26 @@ export default function Dashboard({ initialData }: { initialData: Profile }) {
                 role="tablist"
                 aria-label="Apartados de ahorro"
               >
-                {["Historial", "Deuda interna"].map((label) => (
-                  <button
-                    role="tab"
-                    aria-selected={savingsTab === label}
-                    className={savingsTab === label ? "active" : ""}
-                    key={label}
-                    onClick={() => setSavingsTab(label)}
-                  >
-                    {label}
-                  </button>
-                ))}
+                {["Historial", "Distribución de ahorros", "Deuda interna"].map(
+                  (label) => (
+                    <button
+                      role="tab"
+                      aria-selected={savingsTab === label}
+                      className={savingsTab === label ? "active" : ""}
+                      key={label}
+                      onClick={() => setSavingsTab(label)}
+                    >
+                      {label}
+                    </button>
+                  ),
+                )}
               </div>
               <div className="savings-tab-content" key={savingsTab}>
                 {savingsTab === "Historial" && historyPage("savings")}
                 {savingsTab === "Deuda interna" && debtPage()}
+                {savingsTab === "Distribución de ahorros" && (
+                  <SavingsDistribution profile={data} onSave={save} />
+                )}
               </div>
             </>
           )}
