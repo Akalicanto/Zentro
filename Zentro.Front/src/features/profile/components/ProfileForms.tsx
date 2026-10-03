@@ -11,16 +11,14 @@ import {
 } from "../../../domain/index.ts";
 import { type Modal } from "../types.ts";
 import { useState, useMemo } from "react";
-import { X, Trash2, Download } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 
 type Props = {
   data: Profile;
-  modal: NonNullable<Modal>;
+  modal: Exclude<NonNullable<Modal>, { type: "settings" | "placement" }>;
   formError: string;
   close: () => void;
   submit: (event: React.FormEvent<HTMLFormElement>, month: string) => void;
-  exportBackup: () => void;
-  importBackup: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
 };
 export default function ProfileForms({
   data,
@@ -28,8 +26,6 @@ export default function ProfileForms({
   formError,
   close,
   submit,
-  exportBackup,
-  importBackup,
 }: Props) {
   const dailyMonth = currentMonth();
   const [monthSelection, setMonthSelection] = useState(
@@ -85,7 +81,7 @@ export default function ProfileForms({
     deleteDebt: "Borrar deuda interna",
     repay: "Devolver deuda interna",
     schedule: "Distribución mensual",
-    settings: "Plan y copias de seguridad",
+    plan: "Editar plan mensual",
   };
   const field = (
     label: string,
@@ -98,6 +94,13 @@ export default function ProfileForms({
       {label}
       <input
         required={required}
+        autoFocus={
+          modal.type === "balance" ||
+          modal.type === "cashBalance" ||
+          modal.type === "mortgageBalance" ||
+          modal.type === "interestBalance" ||
+          (modal.type === "plan" && name === "saving")
+        }
         name={name}
         type={type}
         defaultValue={value}
@@ -354,7 +357,7 @@ export default function ProfileForms({
                 </p>
               </>
             )}
-            {modal.type === "settings" && (
+            {modal.type === "plan" && (
               <>
                 {field("Ahorro mensual (€)", "saving", data.plan.saving / 100)}
                 {field(
@@ -406,34 +409,6 @@ export default function ProfileForms({
             </button>
           </div>
         </form>
-        {modal.type === "settings" && (
-          <>
-            <hr />
-            <div className="button-row">
-              <button onClick={exportBackup}>
-                <Download size={16} />
-                Exportar copia
-              </button>
-              <label className="button">
-                Importar copia
-                <input
-                  hidden
-                  type="file"
-                  accept=".json,application/json"
-                  onChange={importBackup}
-                />
-              </label>
-            </div>
-            {data.commitments.map((row) => (
-              <p key={row.id}>
-                {row.name}:{" "}
-                {row.amount === null
-                  ? "pendiente de definir"
-                  : euro(row.amount)}
-              </p>
-            ))}
-          </>
-        )}
       </section>
     </div>
   );

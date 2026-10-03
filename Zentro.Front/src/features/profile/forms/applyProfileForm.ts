@@ -98,7 +98,7 @@ export function applyProfileForm(
       ...next.internalDebt.schedule.filter((r) => r.month !== text("month")),
       { month: text("month"), amount: money("amount") },
     ];
-  else if (modal.type === "settings") {
+  else if (modal.type === "plan") {
     next.plan = {
       start: text("start"),
       horizon: text("horizon"),

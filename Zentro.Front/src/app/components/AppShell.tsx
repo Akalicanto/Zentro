@@ -120,7 +120,8 @@ export default function AppShell({
             </button>
             <button
               className="icon"
-              aria-label="Plan y copias de seguridad"
+              aria-label="Configuración"
+              title="Configuración"
               onClick={() => open({ type: "settings" })}
             >
               <Settings size={20} />

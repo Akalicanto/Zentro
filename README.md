@@ -76,7 +76,7 @@ La primera vez que ejecutes las pruebas de navegador, instala Chromium con `npx.
 
 **Deudas** mantiene calendarios de cuotas pagadas, apartadas o pendientes. Lo apartado todavía forma parte del importe por pagar. Estas deudas no modifican automáticamente el resto de las áreas.
 
-El engranaje permite configurar el plan e importar o exportar copias JSON. Los botones de información explican los cálculos. Los historiales y calendarios destacan con color la fila del mes actual.
+El engranaje abre **Configuración**: permite actualizar saldo actual de ING, efectivo, intereses acumulados y oferta hipotecaria; ajustar el plan mensual; y editar capital, interés, retención y plazo de los destinos del ahorro. Guardar o cancelar una edición devuelve al panel. Las copias JSON están en una sección desplegable. Los historiales mensuales se editan desde sus páginas y los totales calculados no se modifican directamente. Los botones de información explican los cálculos. Los historiales y calendarios destacan con color la fila del mes actual.
 
 ## Persistencia y Git
 

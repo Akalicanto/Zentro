@@ -5,12 +5,18 @@ import { applyProfileForm } from "../forms/applyProfileForm.ts";
 
 export function useProfileEditor(data: Profile, save: SaveProfile) {
   const [modal, setModal] = useState<Modal>(null),
-    [formError, setFormError] = useState("");
+    [formError, setFormError] = useState(""),
+    [returnToSettings, setReturnToSettings] = useState(false);
   function open(next: NonNullable<Modal>) {
     setFormError("");
+    setReturnToSettings(modal?.type === "settings");
     setModal(next);
   }
-  const close = () => setModal(null);
+  const close = () => {
+    setFormError("");
+    setModal(returnToSettings ? { type: "settings" } : null);
+    setReturnToSettings(false);
+  };
   function submit(
     event: React.FormEvent<HTMLFormElement>,
     monthSelection: string,
@@ -48,6 +54,7 @@ export function useProfileEditor(data: Profile, save: SaveProfile) {
   async function importBackup(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setFormError("");
     try {
       const next = validateProfile(JSON.parse(await file.text()));
       if (confirm("¿Sustituir tus datos por esta copia?")) save(next);

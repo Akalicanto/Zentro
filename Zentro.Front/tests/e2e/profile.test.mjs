@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { testProfile } from "../fixtures/profile.ts";
+import { verifySettings } from "./settingsChecks.mjs";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const folder = fs.mkdtempSync(
   path.join(os.tmpdir(), "zentro-profile-browser-"),
@@ -453,6 +454,7 @@ try {
   assert.equal(saved.accounts, undefined);
   assert.equal(saved.internalDebt.payments.length, 2);
   assert.equal(saved.daily.opening, 10000);
+  await verifySettings({ page, state, api, root, original: saved });
   await page.reload();
   await page.getByRole("heading", { name: "Inversión", level: 1 }).waitFor();
   assert.ok((await metric("Capital aportado").innerText()).includes("290,00"));

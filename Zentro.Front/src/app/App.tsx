@@ -5,6 +5,8 @@ import { useHistoryView } from "../features/history/hooks/useHistoryView.ts";
 import { useState } from "react";
 import { type Page, pages } from "./navigation.ts";
 import AppShell from "./components/AppShell.tsx";
+import SettingsPanel from "../features/profile/components/SettingsPanel.tsx";
+import PlacementForm from "../features/savings/components/PlacementForm.tsx";
 import ProfileForms from "../features/profile/components/ProfileForms.tsx";
 import OverviewPage from "../features/profile/components/OverviewPage.tsx";
 import DailyPage from "../features/daily/components/DailyPage.tsx";
@@ -35,7 +37,18 @@ export default function App({ initialData }: { initialData: Profile }) {
       open={open}
       overlay={
         editor.modal ? (
-          <ProfileForms data={data} {...editor} modal={editor.modal} />
+          editor.modal.type === "settings" ? (
+            <SettingsPanel data={data} {...editor} />
+          ) : editor.modal.type === "placement" ? (
+            <PlacementForm
+              profile={data}
+              onSave={save}
+              initialPlacement={editor.modal.item}
+              onClose={editor.close}
+            />
+          ) : (
+            <ProfileForms data={data} {...editor} modal={editor.modal} />
+          )
         ) : null
       }
     >

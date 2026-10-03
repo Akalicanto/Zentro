@@ -32,6 +32,7 @@ app/ → features/ → domain/
 - `app/` reúne las páginas, navegación y estructura visual. `App.tsx` conecta los hooks de perfil y edición con las páginas.
 - `features/` agrupa cada área: perfil, día a día, ahorros, inversión, deuda interna y deudas externas. Sus componentes, formularios y hooks permanecen junto a la funcionalidad correspondiente.
 - `features/history/` comparte filtros, gráficos e historial mensual entre ahorro e inversión.
+- `features/profile/components/SettingsPanel.tsx` reúne los valores manuales. Reutiliza los formularios de saldo, plan y destino; el editor recuerda cuándo debe volver a configuración al cerrar. No modifica totales calculados ni crea registros mensuales.
 - `features/profile/hooks/` controla el estado y los formularios; `forms/applyProfileForm.ts` transforma sus entradas sin depender de la interfaz.
 - `features/profile/services/profileStorage.ts` ordena las escrituras y conserva la última pendiente en el navegador si falla la API. Una recarga intenta guardarla antes de cargar la base.
 - `domain/` define tipos, cálculos, validación y operaciones financieras. No importa React, no hace llamadas HTTP y no lee almacenamiento.

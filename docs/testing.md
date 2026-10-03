@@ -21,6 +21,8 @@ npm.cmd run format:check
 
 `tests/integration/migration.test.mjs`, ejecutado por la suite de API, comprueba ambos formatos antiguos, respaldo de datos en WAL, claves foráneas, columnas sin JSON, valores nulos/cero/negativos, reinicio sin repetir la migración y cancelación segura ante datos inválidos. La integración también fuerza un error SQL para comprobar que toda la escritura se revierte.
 
+`Zentro.Front/tests/e2e/settingsChecks.mjs` se ejecuta dentro de la suite de navegador. Comprueba los cuatro saldos manuales, edición del plan y del tipo de interés, retorno a configuración, cancelación sin cambios, exportación/importación, persistencia, tema oscuro y ausencia de desbordamiento en móvil.
+
 Los fixtures están en `Zentro.Front/tests/fixtures/`. Son sintéticos y no se importan desde `src/`.
 
 La integración de API y la suite de navegador `profile.test.mjs` crean bases SQLite temporales y arrancan sus propias APIs en puertos libres. Las llamadas del navegador se redirigen a esas APIs. La suite `internalDebt.test.mjs` utiliza un perfil ficticio en memoria mediante interceptación HTTP para comprobar la edición y validación de la interfaz. Ninguna escribe en `Zentro.Api/Data/zentro.db`. Al terminar, detienen sus procesos y eliminan los datos temporales.
