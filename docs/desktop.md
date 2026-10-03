@@ -14,7 +14,7 @@ El ejecutor utiliza [`--no-remote` y `--profile`](https://firefox-source-docs.mo
 
 ## Ver la base
 
-`Zentro.Api/Data/zentro.db` es la base SQLite privada: contiene tablas como `savings_months`, `investment_months`, `daily_expenses`, `daily_incomes` y `external_debts`. Los importes se guardan en céntimos. `profile_settings` conserva ajustes y saldos iniciales; `payload` contiene el registro JSON completo de cada fila.
+`Zentro.Api/Data/zentro.db` es la base SQLite privada. Tiene tablas y columnas en español, como `ahorros_mensuales`, `inversiones_mensuales`, `movimientos_diarios`, `deudas` y `cuotas_deudas`. Cada dato ocupa su columna, sin JSON. Las vistas presentan los saldos en euros. Consulta la [guía de base de datos](database.md) para ver el esquema y sus relaciones.
 
 SQLite gestiona los auxiliares `zentro.db-wal` y `zentro.db-shm`. Git ignora estos archivos y la base.
 

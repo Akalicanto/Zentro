@@ -1,8 +1,10 @@
+using Zentro.Api.Models;
+
 namespace Zentro.Api.Infrastructure.Persistence;
 
 public interface IProfileRepository
 {
-    string? Read();
-    void Write(string document);
+    FinancialProfile? Read();
+    void Write(FinancialProfile profile);
     bool IsHealthy();
 }

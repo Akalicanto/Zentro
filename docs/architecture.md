@@ -14,13 +14,13 @@ HTTP → Controller → ProfileService → ProfileValidator
 - `Models/` define el contrato v2 con tipos explícitos. Los importes son enteros en céntimos y los tipos de interés son puntos básicos.
 - `Services/` coordina validación y persistencia a través de interfaces. Un documento inválido nunca llega al repositorio.
 - `Validation/Rules/` separa las reglas de movimientos diarios, aportaciones, intereses, destinos, deudas y plan. `ProfileValidator` comprueba después la coherencia entre colecciones y los saldos agregados.
-- `Infrastructure/Persistence/` concentra conexión, esquema y consultas. `ProfileCollections` es la lista cerrada de tablas; los valores SQL se parametrizan.
+- `Infrastructure/Persistence/` concentra conexión, esquema y consultas. `Schema/` contiene las migraciones SQL, `Stores/` los mapeos explícitos entre modelos y columnas españolas. Los valores SQL se parametrizan.
 - `OpenApi/` describe el contrato del documento en Swagger, sin cargar datos privados.
 - `Data/` contiene únicamente la base privada, excluida de Git.
 
 Cada operación abre y libera su conexión. Leer el perfil usa una transacción para obtener una instantánea coherente. Guardarlo sustituye las colecciones y sus ajustes dentro de una única transacción. El acceso es síncrono: SQLite realiza estas operaciones localmente y no necesita una capa de tareas artificiales.
 
-El repositorio conserva el JSON original de cada registro y los campos adicionales del documento. Los modelos tipados sirven para validar y documentar el contrato, sin alterar copias existentes al serializarlas de nuevo. `JsonRequired` diferencia un campo ausente de un importe `null`; este último representa un mes sin registrar. Los campos opcionales de versiones anteriores pueden omitirse. La lectura de la antigua tabla `app_state` se mantiene para abrir bases anteriores.
+El repositorio lee y escribe modelos tipados sobre 17 tablas relacionales, con claves foráneas y restricciones. No guarda documentos JSON. `JsonRequired` diferencia un campo ausente de un importe `null`; este último representa un mes sin registrar. Los campos opcionales de versiones anteriores pueden omitirse; los campos desconocidos se rechazan para evitar pérdidas silenciosas. `LegacyProfileReader` se utiliza exclusivamente durante la migración inicial y las tablas antiguas desaparecen al completarla. La [guía de base de datos](database.md) describe las tablas, vistas, relaciones y copias privadas.
 
 ## Frontend
 
@@ -54,7 +54,7 @@ Los gráficos se memoizan para evitar redibujarlos al abrir formularios. Las cla
 
 1. Definir el contrato en `domain/types.ts` y `Models/`, manteniendo compatibilidad con perfiles anteriores cuando corresponda.
 2. Implementar los cálculos en `domain/` y las reglas del servidor en `Validation/Rules/`.
-3. Añadir su colección a `ProfileCollections` si requiere persistencia independiente.
+3. Crear una nueva migración SQL versionada y un mapeo en `Infrastructure/Persistence/Stores/` si requiere persistencia; incluirlo en el repositorio y comprobar la migración desde la versión anterior.
 4. Crear los componentes y hooks en su carpeta de `features/`; conectarlos desde `app/`.
 5. Verificar la regla financiera con datos ficticios y, si cambia un flujo, añadir una comprobación de navegador. Nunca convertir datos personales en fixtures.
 

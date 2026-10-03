@@ -5,13 +5,18 @@ namespace Zentro.Api.Infrastructure.Persistence;
 public sealed class SqliteConnectionFactory
 {
     private readonly string connectionString;
+    public string DatabasePath { get; }
+    public string BackupDirectory { get; }
+
     public SqliteConnectionFactory(IConfiguration configuration, IHostEnvironment environment)
     {
-        var configuredPath = configuration["Zentro:DatabasePath"] ?? "Data/zentro.db";
-        var databasePath = Path.GetFullPath(configuredPath, environment.ContentRootPath);
-        Directory.CreateDirectory(Path.GetDirectoryName(databasePath)!);
-        connectionString = new SqliteConnectionStringBuilder { DataSource = databasePath }.ToString();
+        DatabasePath = Path.GetFullPath(configuration["Zentro:DatabasePath"] ?? "Data/zentro.db", environment.ContentRootPath);
+        BackupDirectory = Path.GetFullPath(configuration["Zentro:BackupDirectory"] ??
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Zentro", "backups"), environment.ContentRootPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
+        connectionString = new SqliteConnectionStringBuilder { DataSource = DatabasePath, ForeignKeys = true }.ToString();
     }
+
     public SqliteConnection Open()
     {
         var connection = new SqliteConnection(connectionString);

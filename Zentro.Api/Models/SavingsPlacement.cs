@@ -23,6 +23,7 @@ public sealed record SavingsPlacement
     [JsonRequired]
     public string RateType { get; init; } = null!;
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? DayCount { get; init; }
 
     [JsonRequired]

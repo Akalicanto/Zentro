@@ -1,11 +1,28 @@
-using Microsoft.Data.Sqlite;
-using System.Text.Json.Nodes;
+using Zentro.Api.Models;
+using Zentro.Api.Infrastructure.Persistence.Stores;
 
 namespace Zentro.Api.Infrastructure.Persistence;
 
-/// <summary>Stores a snapshot as settings and ordered collections, inside one transaction.</summary>
+/// <summary>Persiste el perfil en tablas relacionales. Una transacción evita estados parciales.</summary>
 public sealed class ProfileRepository(SqliteConnectionFactory connections) : IProfileRepository
 {
+    public FinancialProfile? Read()
+    {
+        using var connection = connections.Open();
+        using var transaction = connection.BeginTransaction(deferred: true);
+        var profile = ReadSnapshot(new SqliteSession(connection, transaction));
+        transaction.Commit();
+        return profile;
+    }
+
+    public void Write(FinancialProfile profile)
+    {
+        using var connection = connections.Open();
+        using var transaction = connection.BeginTransaction();
+        WriteSnapshot(new SqliteSession(connection, transaction), profile);
+        transaction.Commit();
+    }
+
     public bool IsHealthy()
     {
         using var connection = connections.Open();
@@ -14,105 +31,68 @@ public sealed class ProfileRepository(SqliteConnectionFactory connections) : IPr
         return Convert.ToInt32(command.ExecuteScalar()) == 1;
     }
 
-    public string? Read()
+    internal static FinancialProfile? ReadSnapshot(SqliteSession session)
     {
-        using var connection = connections.Open();
-        using var transaction = connection.BeginTransaction();
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = "SELECT document FROM profile_settings WHERE id=1";
-        var settings = command.ExecuteScalar() as string;
-
+        var settings = ProfileSettingsStore.Read(session);
         if (settings is null)
         {
-            command.CommandText = "SELECT document FROM app_state WHERE id=1";
-            var legacyDocument = command.ExecuteScalar() as string;
-            transaction.Commit();
-            return legacyDocument;
+            return null;
         }
-
-        var profile = JsonNode.Parse(settings)!.AsObject();
-        foreach (var collection in ProfileCollections.All)
+        var payments = RepaymentStore.Read(session).Select(payment => payment with
         {
-            command.CommandText = $"SELECT payload FROM {collection.Table} ORDER BY row_order";
-            using var reader = command.ExecuteReader();
-            var rows = new JsonArray();
-            while (reader.Read())
+            Allocations = AllocationStore.Read(session, payment.Id)
+        }).ToList();
+        var debts = ExternalDebtStore.Read(session).Select(debt => debt with
+        {
+            Installments = InstallmentStore.Read(session, debt.Id)
+        }).ToList();
+        return settings with
+        {
+            Daily = settings.Daily with
             {
-                rows.Add(JsonNode.Parse(reader.GetString(0)));
-            }
-
-            CollectionParent(profile, collection)[collection.Property] = rows;
-        }
-
-        transaction.Commit();
-        return profile.ToJsonString();
+                Expenses = DailyMovementStore.Read(session, "gasto"),
+                Incomes = DailyMovementStore.Read(session, "ingreso")
+            },
+            Interest = settings.Interest with { Entries = InterestEntryStore.Read(session) },
+            Savings = SavingsMonthStore.Read(session),
+            Investment = InvestmentMonthStore.Read(session),
+            InternalDebt = new InternalDebt
+            {
+                Items = WithdrawalStore.Read(session),
+                Payments = payments,
+                Schedule = RepaymentScheduleStore.Read(session)
+            },
+            Debts = debts,
+            SavingsPlacements = SavingsPlacementStore.Read(session),
+            PossibleExpenses = PossibleExpenseStore.Read(session),
+            Commitments = CommitmentStore.Read(session)
+        };
     }
 
-    public void Write(string document)
+    internal static void WriteSnapshot(SqliteSession session, FinancialProfile profile)
     {
-        var profile = JsonNode.Parse(document)!.AsObject();
-        using var connection = connections.Open();
-        using var transaction = connection.BeginTransaction();
-
-        foreach (var collection in ProfileCollections.All)
+        // El contrato actual envía el perfil completo. La sustitución y todas sus relaciones son atómicas.
+        session.Execute("DELETE FROM perfil WHERE id=1");
+        ProfileSettingsStore.Write(session, profile);
+        DailyMovementStore.Write(session, profile.Daily.Expenses, "gasto");
+        DailyMovementStore.Write(session, profile.Daily.Incomes, "ingreso");
+        SavingsMonthStore.Write(session, profile.Savings);
+        InvestmentMonthStore.Write(session, profile.Investment);
+        WithdrawalStore.Write(session, profile.InternalDebt.Items);
+        RepaymentStore.Write(session, profile.InternalDebt.Payments);
+        foreach (var payment in profile.InternalDebt.Payments)
         {
-            var parent = CollectionParent(profile, collection);
-            var rows = parent[collection.Property]?.AsArray() ?? new JsonArray();
-            ReplaceCollection(connection, transaction, collection, rows);
-            parent.Remove(collection.Property);
+            AllocationStore.Write(session, payment.Allocations, payment.Id);
         }
-
-        SaveSettings(connection, transaction, profile);
-        transaction.Commit();
-    }
-
-    private static JsonObject CollectionParent(JsonObject profile, ProfileCollection collection) =>
-        collection.Parent == "" ? profile : profile[collection.Parent]!.AsObject();
-
-    private static void ReplaceCollection(SqliteConnection connection, SqliteTransaction transaction, ProfileCollection collection, JsonArray rows)
-    {
-        using var clear = connection.CreateCommand();
-        clear.Transaction = transaction;
-        clear.CommandText = $"DELETE FROM {collection.Table}";
-        clear.ExecuteNonQuery();
-
-        var order = 0;
-        foreach (var node in rows)
+        RepaymentScheduleStore.Write(session, profile.InternalDebt.Schedule);
+        InterestEntryStore.Write(session, profile.Interest.Entries);
+        ExternalDebtStore.Write(session, profile.Debts ?? []);
+        foreach (var debt in profile.Debts ?? [])
         {
-            var row = node!.AsObject();
-            using var insert = connection.CreateCommand();
-            insert.Transaction = transaction;
-            insert.CommandText = $"""
-                INSERT INTO {collection.Table}(record_key,row_order,month,amount,payload)
-                VALUES($key,$order,$month,$amount,$payload)
-                """;
-            // Only validated contract fields populate index columns; extra JSON stays in payload.
-            var key = row[collection.Key]!.GetValue<string>();
-            var period = collection.Period is null ? null : row[collection.Period]?.GetValue<string>();
-            var month = collection.Period == "date" ? period?[..7] : period;
-            var amount = collection.Amount is null ? null : row[collection.Amount]?.GetValue<long>();
-            insert.Parameters.AddWithValue("$key", key);
-            insert.Parameters.AddWithValue("$order", order++);
-            insert.Parameters.AddWithValue("$month", (object?)month ?? DBNull.Value);
-            insert.Parameters.AddWithValue("$amount", (object?)amount ?? DBNull.Value);
-            insert.Parameters.AddWithValue("$payload", row.ToJsonString());
-            insert.ExecuteNonQuery();
+            InstallmentStore.Write(session, debt.Installments, debt.Id);
         }
-    }
-
-    private static void SaveSettings(SqliteConnection connection, SqliteTransaction transaction, JsonObject settings)
-    {
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText = """
-            INSERT INTO profile_settings(id,document) VALUES(1,$settings)
-            ON CONFLICT(id) DO UPDATE SET document=excluded.document;
-            INSERT INTO app_state(id,document,updated_at) VALUES(1,'{"version":2}',$updated)
-            ON CONFLICT(id) DO UPDATE SET document=excluded.document,updated_at=excluded.updated_at;
-            """;
-        command.Parameters.AddWithValue("$settings", settings.ToJsonString());
-        command.Parameters.AddWithValue("$updated", DateTimeOffset.UtcNow.ToString("O"));
-        command.ExecuteNonQuery();
+        SavingsPlacementStore.Write(session, profile.SavingsPlacements ?? []);
+        PossibleExpenseStore.Write(session, profile.PossibleExpenses ?? []);
+        CommitmentStore.Write(session, profile.Commitments);
     }
 }

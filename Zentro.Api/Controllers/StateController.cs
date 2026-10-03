@@ -16,7 +16,7 @@ public sealed class StateController(IProfileService profiles) : ControllerBase
     public IActionResult Read()
     {
         var document = profiles.Read();
-        return document is null ? NoContent() : Content(document, "application/json");
+        return document is null ? NoContent() : Ok(document);
     }
     /// <summary>Valida el perfil y guarda todas sus colecciones en una transacción.</summary>
     [HttpPut(Name = "SaveState")]

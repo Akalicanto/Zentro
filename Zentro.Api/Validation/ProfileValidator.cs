@@ -15,7 +15,8 @@ public sealed class ProfileValidator : IProfileValidator
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         NumberHandling = JsonNumberHandling.Strict,
-        PropertyNameCaseInsensitive = false
+        PropertyNameCaseInsensitive = false,
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
     };
 
     public ProfileValidationResult Validate(JsonElement document)
@@ -90,6 +91,6 @@ public sealed class ProfileValidator : IProfileValidator
         Check(balances.All(value => value >= 0 && value <= MaximumSafeInteger),
             "totals", "Los saldos deben ser no negativos y representables de forma segura.");
 
-        return new(errors);
+        return new(errors, errors.Count == 0 ? profile : null);
     }
 }

@@ -31,6 +31,7 @@ checks/
 .server.pid
 
 # Datos financieros privados y copias (incluidos auxiliares de SQLite)
+Zentro.Api/Data/
 *.db
 *.db-*
 *.sqlite

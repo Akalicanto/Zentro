@@ -1,6 +1,6 @@
 # Zentro.Api
 
-API ASP.NET Core con .NET 10, controladores, servicios y repositorio SQLite. La [arquitectura](../docs/architecture.md) explica las responsabilidades y el contrato financiero.
+API ASP.NET Core con .NET 10, controladores, servicios y repositorio SQLite. La [base de datos](../docs/database.md) documenta tablas, columnas, relaciones, vistas y migración automática. La [arquitectura](../docs/architecture.md) explica las responsabilidades y el contrato financiero.
 
 | Carpeta                      | Responsabilidad                             |
 | ---------------------------- | ------------------------------------------- |
@@ -23,6 +23,6 @@ Desde la raíz: `npm.cmd run dev` arranca también el front. Para arrancar solo 
 
 Importes: céntimos enteros. Tipos de interés: puntos básicos (100 = 1 %). Un importe mensual `null` representa un mes sin registrar. Los campos requeridos ausentes, importes decimales o inconsistencias entre deuda e historial se rechazan antes de escribir.
 
-La base predeterminada es `Data/zentro.db`, relativa al directorio del proyecto. Se puede cambiar con `Zentro__DatabasePath`. No contiene credenciales ni necesita un servidor de base de datos adicional. Los cambios de colecciones y ajustes se guardan en una única transacción.
+La base predeterminada es `Data/zentro.db`, relativa al directorio del proyecto. Se puede cambiar con `Zentro__DatabasePath`. No contiene credenciales ni necesita un servidor de base de datos adicional. Los modelos se guardan en 17 tablas relacionales con columnas españolas, tipos estrictos y claves foráneas, sin documentos JSON. `Infrastructure/Persistence/Stores/` contiene los mapeos explícitos y `Schema/` el SQL versionado. Los cambios se guardan en una única transacción. Las bases anteriores se migran conservando una copia en `%LOCALAPPDATA%\Zentro\backups`, fuera del repositorio.
 
 Para comprobar el backend: `npm.cmd test` desde la raíz compila la API y ejecuta la integración con una base temporal. No utiliza los datos personales.

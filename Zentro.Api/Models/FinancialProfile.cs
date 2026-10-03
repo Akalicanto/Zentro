@@ -8,8 +8,10 @@ public sealed record FinancialProfile
     [JsonRequired]
     public int Version { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? Cash { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? MortgageOffer { get; init; }
 
     public List<ExternalDebt>? Debts { get; init; }

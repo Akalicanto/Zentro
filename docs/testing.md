@@ -19,6 +19,8 @@ npm.cmd run format:check
 | `Zentro.Front/tests/e2e/profile.test.mjs`          | Las cinco páginas, formularios, movimientos, gráficos, distribución, cuotas, recarga y móvil. Comprueba también que abrir un modal no redibuja los gráficos. |
 | `Zentro.Front/tests/e2e/internalDebt.test.mjs`     | Edición, eliminación, redistribución y persistencia de deuda interna, incluida la presentación móvil.                                                        |
 
+`tests/integration/migration.test.mjs`, ejecutado por la suite de API, comprueba ambos formatos antiguos, respaldo de datos en WAL, claves foráneas, columnas sin JSON, valores nulos/cero/negativos, reinicio sin repetir la migración y cancelación segura ante datos inválidos. La integración también fuerza un error SQL para comprobar que toda la escritura se revierte.
+
 Los fixtures están en `Zentro.Front/tests/fixtures/`. Son sintéticos y no se importan desde `src/`.
 
 La integración de API y la suite de navegador `profile.test.mjs` crean bases SQLite temporales y arrancan sus propias APIs en puertos libres. Las llamadas del navegador se redirigen a esas APIs. La suite `internalDebt.test.mjs` utiliza un perfil ficticio en memoria mediante interceptación HTTP para comprobar la edición y validación de la interfaz. Ninguna escribe en `Zentro.Api/Data/zentro.db`. Al terminar, detienen sus procesos y eliminan los datos temporales.

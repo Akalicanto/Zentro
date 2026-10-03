@@ -80,7 +80,7 @@ El engranaje permite configurar el plan e importar o exportar copias JSON. Los b
 
 ## Persistencia y Git
 
-SQLite se crea en `Zentro.Api/Data/zentro.db`; `Zentro__DatabasePath` permite elegir otra ruta. La API guarda colecciones independientes y ajustes dentro de una transacción, con importes enteros en céntimos. El navegador conserva la última escritura pendiente si la API falla y la reintenta al recargar.
+SQLite se crea en `Zentro.Api/Data/zentro.db`; `Zentro__DatabasePath` permite elegir otra ruta. La API guarda 17 tablas relacionales con columnas en español, claves foráneas e importes enteros en céntimos, dentro de una transacción. No almacena documentos JSON en columnas. La [guía de base de datos](docs/database.md) explica tablas, vistas en euros y migración con respaldo privado. El navegador conserva la última escritura pendiente si la API falla y la reintenta al recargar.
 
 La API expone `GET /api/state`, `PUT /api/state` y `GET /api/health`. El perfil se guarda completo; evita editar simultáneamente en varias pestañas porque prevalece la última escritura. Front, API y Swagger funcionan en localhost; subir el código a GitHub no los publica como servicio.
 

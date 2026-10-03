@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -12,6 +12,8 @@ import {
   repayDebt,
   today,
 } from "../../Zentro.Front/src/domain/index.ts";
+
+import { runMigrationChecks } from "./migration.test.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const folder = mkdtempSync(path.join(os.tmpdir(), "zentro-api-test-"));
@@ -28,8 +30,10 @@ const dotnet =
       )
     : "dotnet";
 let child;
+let sql;
 let output = "";
-async function start() {
+async function start(databasePath = path.join(folder, "test.db")) {
+  output = "";
   child = spawn(
     dotnet,
     [path.join(root, "Zentro.Api/bin/Debug/net10.0/Zentro.Api.dll")],
@@ -40,7 +44,8 @@ async function start() {
         ...process.env,
         ASPNETCORE_ENVIRONMENT: "Development",
         ASPNETCORE_URLS: base,
-        Zentro__DatabasePath: path.join(folder, "test.db"),
+        Zentro__DatabasePath: databasePath,
+        Zentro__BackupDirectory: path.join(folder, "respaldos"),
       },
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -139,11 +144,20 @@ try {
   state.possibleExpenses = [
     { id: "possible-test", concept: "Posible gasto de prueba", amount: 8000 },
   ];
-  // Unknown metadata is preserved without being interpreted as an index column.
-  state.debts[0].date = "texto adicional";
-  state.debts[0].amount = "sin uso financiero";
-  state.customMetadata = { label: "compatible" };
   assert.equal((await put(state)).status, 204);
+  assert.equal(
+    (await put({ ...state, customMetadata: { label: "no admitido" } })).status,
+    400,
+  );
+  assert.equal(
+    (
+      await put({
+        ...state,
+        debts: [{ ...state.debts[0], date: "campo desconocido" }],
+      })
+    ).status,
+    400,
+  );
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
   // Malformed nested fields must return 400 and leave the persisted profile intact.
   const malformed = [];
@@ -263,51 +277,132 @@ try {
   const repaid = repayDebt(withdrawn, 1000, today());
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
-  const sql = new DatabaseSync(path.join(folder, "test.db"), {
-    readOnly: true,
+  sql = new DatabaseSync(path.join(folder, "test.db"));
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 1);
+  assert.deepEqual(sql.prepare("PRAGMA foreign_key_check").all(), []);
+  assert.equal(
+    sql.prepare("PRAGMA integrity_check").get().integrity_check,
+    "ok",
+  );
+  for (const [table, count] of Object.entries({
+    ahorros_mensuales: 2,
+    inversiones_mensuales: 1,
+    reposiciones_deuda_interna: 2,
+    destinos_ahorro: 2,
+    deudas: 1,
+    cuotas_deudas: 3,
+    posibles_gastos: 1,
+  })) {
+    assert.equal(
+      sql.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count,
+      count,
+    );
+  }
+  assert.equal(
+    sql.prepare("SELECT efectivo_centimos FROM perfil").get().efectivo_centimos,
+    1700,
+  );
+  assert.equal(
+    sql.prepare("SELECT estado FROM cuotas_deudas WHERE mes='2026-02'").get()
+      .estado,
+    "apartado",
+  );
+  assert.equal(
+    sql
+      .prepare(
+        "SELECT metodo_calculo FROM destinos_ahorro WHERE id='account-test'",
+      )
+      .get().metodo_calculo,
+    "dias_reales_360",
+  );
+  assert.equal(
+    sql
+      .prepare(
+        "SELECT capital_centimos FROM destinos_ahorro WHERE id='account-test'",
+      )
+      .get().capital_centimos,
+    null,
+  );
+  assert.equal(
+    sql
+      .prepare(
+        "SELECT fecha_inicio FROM destinos_ahorro WHERE id='account-test'",
+      )
+      .get().fecha_inicio,
+    null,
+  );
+  const tables = sql
+    .prepare("SELECT name FROM sqlite_schema WHERE type='table'")
+    .all();
+  assert.equal(tables.length, 17);
+  for (const { name } of tables) {
+    const columns = sql
+      .prepare(`PRAGMA table_info(${name})`)
+      .all()
+      .map((row) => row.name);
+    assert.ok(!columns.includes("payload") && !columns.includes("document"));
+  }
+  sql.exec("PRAGMA foreign_keys=ON");
+  assert.throws(
+    () =>
+      sql.exec(
+        "INSERT INTO cuotas_deudas VALUES(1,0,'inexistente','2029-01',100,'pendiente')",
+      ),
+    /FOREIGN KEY/,
+  );
+  assert.throws(
+    () => sql.exec("UPDATE cuotas_deudas SET importe_centimos=-1"),
+    /CHECK/,
+  );
+  // Un fallo de SQL después del borrado debe recuperar el perfil completo, incluidas sus relaciones.
+  sql.exec(
+    "CREATE TRIGGER fallo_controlado BEFORE INSERT ON compromisos BEGIN SELECT RAISE(ABORT,'fallo de prueba'); END",
+  );
+  const brokenWrite = structuredClone(repaid);
+  brokenWrite.commitments.push({
+    id: "abort-test",
+    name: "Prueba de rollback",
+    amount: 100,
   });
-  assert.equal(
-    sql.prepare("SELECT COUNT(*) AS count FROM savings_months").get().count,
-    2,
-  );
-  assert.equal(
-    sql.prepare("SELECT COUNT(*) AS count FROM investment_months").get().count,
-    1,
-  );
-  assert.equal(
-    sql.prepare("SELECT COUNT(*) AS count FROM internal_debt_payments").get()
-      .count,
-    2,
-  );
-  const metadata = JSON.parse(
-    sql.prepare("SELECT document FROM profile_settings WHERE id=1").get()
-      .document,
-  );
-  assert.equal(metadata.savings, undefined);
-  assert.equal(metadata.accounts, undefined);
-  assert.equal(metadata.cash, 1700);
-  assert.equal(metadata.mortgageOffer, 9000000);
-  assert.equal(metadata.possibleExpenses, undefined);
-  assert.equal(metadata.debts, undefined);
-  assert.equal(metadata.savingsPlacements, undefined);
-  assert.equal(
-    sql.prepare("SELECT COUNT(*) AS count FROM savings_placements").get().count,
-    2,
-  );
-  assert.equal(
-    sql.prepare("SELECT COUNT(*) AS count FROM external_debts").get().count,
-    1,
-  );
-  assert.equal(
-    sql.prepare("SELECT COUNT(*) AS count FROM possible_expenses").get().count,
-    1,
-  );
+  assert.equal((await put(brokenWrite)).status, 500);
+  assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
+  sql.exec("DROP TRIGGER fallo_controlado");
   sql.close();
+  sql = undefined;
+  // Retiradas de intereses quedan vinculadas a su deuda mediante una clave externa.
+  const interestWithdrawal = withdrawSavings(
+    repaid,
+    100,
+    "Intereses de prueba",
+    today(),
+    "interest",
+  );
+  assert.equal((await put(interestWithdrawal)).status, 204);
+  assert.deepEqual(
+    await (await fetch(`${base}/api/state`)).json(),
+    interestWithdrawal,
+  );
+  await stop();
+  await runMigrationChecks({
+    folder,
+    start,
+    stop,
+    base,
+    profile: interestWithdrawal,
+  });
   console.log(
     "API OK: Swagger, validación, escritura/lectura y persistencia tras reiniciar. Base de pruebas independiente.",
   );
 } finally {
+  sql?.close();
   await stop();
-  for (const file of readdirSync(folder)) unlinkSync(path.join(folder, file));
-  rmdirSync(folder);
+  const target = path.resolve(folder);
+  assert.equal(path.dirname(target), path.resolve(os.tmpdir()));
+  assert.ok(path.basename(target).startsWith("zentro-api-test-"));
+  rmSync(target, {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 100,
+  });
 }
