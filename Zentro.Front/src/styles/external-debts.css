@@ -1,0 +1,113 @@
+/* external-debts: kept in cascade order by styles/index.css. */
+.external-debt-primary .metric {
+  min-width: 0;
+  min-height: 200px;
+  padding-bottom: 60px;
+}
+.external-debt-primary .metric > span {
+  font-weight: 650;
+}
+.external-debt-primary .metric h2 {
+  font-size: 36px;
+  font-weight: 800;
+  white-space: normal;
+}
+.external-debt-primary .metric-action {
+  color: inherit;
+}
+.dental-history thead th:not(:first-child),
+.dental-history tfoot td:not(:first-child),
+.dental-history td:not(:first-child) {
+  text-align: center;
+  width: 24%;
+}
+.dental-history .history-year th {
+  width: auto;
+  text-align: left;
+}
+.debt-amount {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 125px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.debt-empty {
+  color: var(--muted);
+  opacity: 0.5;
+}
+.dental-history tfoot {
+  background: var(--soft);
+  font-weight: 650;
+}
+.unplanned-debt {
+  margin: 16px 0 0;
+  font-size: 15px;
+}
+.installment-status {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.installment-status legend {
+  font-size: 16px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.installment-status-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.form-grid .installment-status-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  color: inherit;
+}
+.installment-status-choice input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.installment-status-choice:has(input:checked) {
+  border-color: currentColor;
+  font-weight: 700;
+}
+.installment-status-choice:has(input:focus-visible) {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.dental-modal-footer .remove-installment {
+  margin-right: auto;
+  border-color: transparent;
+  background: transparent;
+  color: #a24458;
+}
+.dark .dental-modal-footer .remove-installment {
+  color: #efb6c4;
+}
+@media (max-width: 650px) {
+  .external-debt-primary .metric h2 {
+    font-size: 30px;
+  }
+  .dental-modal-footer {
+    flex-wrap: wrap;
+  }
+  .dental-modal-footer .remove-installment {
+    width: 100%;
+  }
+  .installment-status-options {
+    gap: 6px;
+  }
+  .form-grid .installment-status-choice {
+    font-size: 14px;
+  }
+}

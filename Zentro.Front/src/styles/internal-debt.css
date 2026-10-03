@@ -1,0 +1,225 @@
+/* internal-debt: kept in cascade order by styles/index.css. */
+.debt-table-panel,
+.distribution-panel {
+  border-top: 3px solid #f0b45a;
+}
+.distribution-panel {
+  border-top-color: #818cf8;
+}
+.table-heading {
+  margin-bottom: 22px;
+  gap: 16px;
+}
+.table-heading h3 {
+  margin: 6px 0;
+}
+.table-heading p {
+  margin: 0;
+  font-size: 16px;
+}
+.table-eyebrow {
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+}
+.table-count {
+  padding: 7px 11px;
+  border-radius: 20px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.debt-table-panel th {
+  background: color-mix(in srgb, #f59e0b 9%, var(--panel));
+}
+.distribution-panel th {
+  background: color-mix(in srgb, #818cf8 10%, var(--panel));
+}
+.debt-table-panel td,
+.distribution-panel td {
+  padding: 18px 14px;
+}
+.debt-table-panel th,
+.distribution-panel th {
+  padding: 14px;
+}
+.repaid-value {
+  color: #15805e;
+  font-weight: 650;
+}
+.repayment-progress {
+  width: 85px;
+  height: 4px;
+  border-radius: 8px;
+  margin-top: 8px;
+  background: color-mix(in srgb, #10b981 15%, var(--panel));
+  overflow: hidden;
+}
+.repayment-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #10b981;
+}
+.amount-pill {
+  display: inline-flex;
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-weight: 650;
+}
+.amount-pill.pending {
+  color: #9a6012;
+  background: color-mix(in srgb, #f59e0b 12%, var(--panel));
+}
+.amount-pill.settled {
+  color: #15805e;
+  background: color-mix(in srgb, #10b981 12%, var(--panel));
+}
+.amount-pill.scheduled {
+  color: #6356ba;
+  background: color-mix(in srgb, #818cf8 12%, var(--panel));
+}
+.table-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.table-action {
+  padding: 8px 10px;
+  font-size: 14px;
+  border-color: transparent;
+}
+.table-action.edit {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+}
+.table-action.edit:hover {
+  border-color: var(--accent);
+}
+.table-action.delete {
+  color: #c55252;
+  background: color-mix(in srgb, #ef4444 8%, var(--panel));
+}
+.table-action.delete:hover {
+  border-color: #ef4444;
+  background: color-mix(in srgb, #ef4444 15%, var(--panel));
+}
+.distribution-panel th:last-child,
+.distribution-panel td:last-child {
+  text-align: center;
+}
+.distribution-month {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+.month-marker {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  color: #6356ba;
+  background: color-mix(in srgb, #818cf8 12%, var(--panel));
+  font-size: 14px;
+}
+.forecast-total {
+  font-weight: 700;
+  color: var(--accent-text);
+}
+.schedule-month-label {
+  grid-column: 1/-1;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 650;
+  text-transform: capitalize;
+}
+.schedule-month-label small {
+  display: block;
+  margin-top: 6px;
+  text-transform: none;
+}
+.delete-debt-summary {
+  grid-column: 1/-1;
+  padding: 20px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #ef4444 6%, var(--panel));
+}
+.delete-debt-summary h4 {
+  font-size: 22px;
+  margin: 14px 0 10px;
+}
+.delete-debt-summary p {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.delete-debt-icon {
+  color: #c55252;
+}
+.delete-confirm {
+  background: #c34141;
+  color: white;
+  border-color: #c34141;
+}
+.delete-confirm:hover {
+  background: #a63232;
+  border-color: #a63232;
+}
+.dark .repaid-value,
+.dark .amount-pill.settled {
+  color: #6ee7b7;
+}
+.dark .amount-pill.pending {
+  color: #fcd34d;
+}
+.dark .amount-pill.scheduled,
+.dark .month-marker {
+  color: #c4b5fd;
+}
+.dark .table-action.delete,
+.dark .delete-debt-icon {
+  color: #fca5a5;
+}
+@media (max-width: 650px) {
+  .table-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .table-action {
+    min-height: 36px;
+  }
+}
+.form-note {
+  grid-column: 1/-1;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 650px) {
+  .section-title {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .cards.two > * {
+    min-width: 0;
+  }
+}
+@media (max-width: 700px) {
+  .account-detail > .section-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .account-history-chart {
+    height: 250px;
+  }
+  .account-history-toolbar {
+    flex-wrap: wrap;
+  }
+}

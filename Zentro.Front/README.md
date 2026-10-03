@@ -1,24 +1,31 @@
 # Zentro.Front
 
-React, TypeScript y Vite. Arranque conjunto y requisitos en el [README de la raíz](../README.md). El front utiliza el puerto 5187 y la API el 5080.
+React, TypeScript y Vite. Requisitos y arranque conjunto en el [README principal](../README.md).
 
-## Modelo
+## Organización
 
-- `src/model.ts`: perfil v2, ahorro, inversión, intereses, día a día y deuda interna. Importes enteros en céntimos.
-- `src/Dashboard.tsx`: cuatro páginas, tablas, formularios y gráficas de importes realizados y previstos.
-- `src/profileStorage.ts`: carga desde SQLite mediante la API y cola ordenada de escrituras con pendientes conservados en el navegador.
-- `src/format.ts`: fechas, meses, formato de euros y conversión decimal.
+- `src/app`: componente raíz, navegación y estructura de sidebar/navbar.
+- `src/features`: páginas, formularios, hooks y servicios agrupados por área. `history` comparte gráficos e historial entre ahorro e inversión; `profile` coordina edición y persistencia.
+- `src/domain`: contrato del perfil, validación, aportaciones, totales, distribución y operaciones de deuda interna. No depende de React ni del navegador.
+- `src/shared`: componentes comunes, transporte HTTP y utilidades de fechas/importes.
+- `src/styles`: CSS por responsabilidad, importado en orden desde `index.css`.
+- `tests`: datos ficticios, pruebas del dominio y flujos de navegador.
 
-El ahorro por trabajo procede del historial mensual neto más reposiciones nuevas menos retiradas nuevas. Los intereses tienen saldo inicial y sus propios abonos. La inversión refleja aportaciones netas. Las reposiciones históricas no alteran de nuevo el ahorro: ya figuran en el historial. El patrimonio excluye saldo diario y efectivo.
+La [guía de arquitectura](../docs/architecture.md) documenta las dependencias y las reglas financieras. Los componentes reciben datos y acciones mediante props; los hooks de perfil centralizan el guardado y la edición. Cada formulario tiene un tipo explícito de acción y registro.
 
-Los pendientes de gastos e ingresos afectan solo a la previsión diaria. Realizarlos los incorpora una vez al saldo actual. Un nuevo saldo indicado incluye todo lo ya realizado y mantiene los pendientes.
+## Desarrollo
 
-Efectivo y posibles gastos son datos independientes: ninguno modifica el saldo diario, el ahorro, la inversión ni el patrimonio. Se guardan en SQLite y las copias de seguridad junto al perfil. Los perfiles anteriores sin estos campos siguen siendo válidos.
+Desde la raíz: `npm.cmd run dev` inicia front y API. Para iniciar solo el front: `npm.cmd run dev:front`. Vite escucha en `127.0.0.1:5187` y dirige `/api` a la API local en el puerto 5080.
 
-El plan genera previsiones de ahorro e inversión desde su inicio hasta el horizonte configurado. Las cuotas de reposición se limitan al compromiso pendiente, descuentan lo ya repuesto cada mes y desaparecen cuando la deuda se salda. Registrar la aportación base no elimina una reposición todavía pendiente de ese mes. Las previsiones no forman parte de los totales actuales.
+Desde esta carpeta:
 
-## Comprobaciones
+```powershell
+npm.cmd run build
+npm.cmd test
+npm.cmd run format
+npm.cmd run format:check
+```
 
-`npm.cmd test` ejecuta pruebas del modelo. `npm.cmd run build` compila. `node browser-profile-test.mjs` verifica la interfaz con API y SQLite temporales; requiere Chromium de Playwright y el front iniciado.
+Las pruebas de navegador se ejecutan desde la raíz con `npm.cmd run test:e2e`, que prepara Vite y utiliza APIs y bases temporales. Ver [comprobaciones](../docs/testing.md).
 
-El perfil nuevo es vacío. Los datos ficticios de pruebas no están en la aplicación. Exportar e importar copias desde el engranaje conserva el perfil completo.
+El perfil inicial está vacío. La persistencia usa SQLite mediante HTTP; la última escritura pendiente queda conservada en el navegador si la API falla. Los fixtures nunca se importan desde `src/`.

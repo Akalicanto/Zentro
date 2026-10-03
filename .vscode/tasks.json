@@ -1,9 +1,44 @@
 {
   "version": "2.0.0",
   "tasks": [
-    { "label": "Zentro: arrancar todo", "type": "shell", "command": "npm.cmd", "args": ["run", "dev"], "problemMatcher": [], "presentation": { "reveal": "always", "panel": "dedicated" } },
-    { "label": "Zentro: compilar API", "type": "process", "command": "${env:ProgramFiles}/dotnet/dotnet.exe", "args": ["build", "${workspaceFolder}/Zentro.Api/Zentro.Api.csproj"], "problemMatcher": "$msCompile" },
-    { "label": "Zentro: compilar todo", "type": "shell", "command": "npm.cmd", "args": ["run", "build"], "problemMatcher": [], "group": { "kind": "build", "isDefault": true } },
-    { "label": "Zentro: verificar", "type": "shell", "command": "npm.cmd", "args": ["test"], "problemMatcher": [], "group": "test" }
+    {
+      "label": "Zentro: arrancar todo",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "dev"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Zentro: compilar API",
+      "type": "process",
+      "command": "${env:ProgramFiles}/dotnet/dotnet.exe",
+      "args": ["build", "${workspaceFolder}/Zentro.Api/Zentro.Api.csproj"],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Zentro: compilar todo",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "build"],
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Zentro: verificar",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["test"],
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "Zentro: verificar interfaz",
+      "type": "shell",
+      "command": "npm.cmd",
+      "args": ["run", "test:e2e"],
+      "problemMatcher": [],
+      "group": "test"
+    }
   ]
 }

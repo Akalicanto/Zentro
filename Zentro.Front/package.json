@@ -7,7 +7,10 @@
     "dev": "vite --host 127.0.0.1 --port 5187 --strictPort",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1 --port 5188 --strictPort",
-    "test": "tsx --test src/model.test.ts"
+    "test": "tsx --test tests/unit/*.test.ts",
+    "test:e2e": "node tests/e2e/profile.test.mjs && node tests/e2e/internalDebt.test.mjs",
+    "format": "prettier --write src tests *.ts *.json index.html",
+    "format:check": "prettier --check src tests *.ts *.json index.html"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

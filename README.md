@@ -1,77 +1,85 @@
 # Zentro
 
-Repositorio con **Zentro.Front** (React, TypeScript y Vite) y **Zentro.Api** (.NET 10 y SQLite).
+Aplicación de finanzas personales para uso local: **React + TypeScript + Vite** en `Zentro.Front`, **ASP.NET Core .NET 10 + SQLite** en `Zentro.Api`. Una instalación nueva empieza vacía; los datos personales permanecen en la base local.
 
-## Arrancar desde VS Code
+## Arrancar
 
-Abre esta carpeta raíz. En **Ejecutar y depurar** selecciona **Zentro: Front + API + Swagger** y pulsa **▶** o **F5**. Arranca ambos servicios con recarga automática y abre el front y Swagger en el navegador cuando están listos.
-
-- Front: http://127.0.0.1:5187
-- Swagger: http://127.0.0.1:5080/swagger
-- API: http://127.0.0.1:5080/api/health
-
-**Ctrl+C** en la terminal o **Stop / Shift+F5** detiene los dos servicios. Los puertos son fijos; si están ocupados, el arranque falla sin detener otros programas. También puedes hacer doble clic en `Iniciar-Zentro.cmd` o ejecutar `npm.cmd run dev` desde la raíz.
-
-El perfil **Zentro.Api: depurar C#** permite poner puntos de interrupción en el backend. Úsalo con el arranque conjunto detenido y ejecuta el front por separado con `npm.cmd run dev:front`.
-
-## Instalación y comprobaciones
-
-Requisitos: Git, Node.js 24 LTS, SDK .NET 10 y VS Code. En este ordenador ya están instalados junto con las extensiones C# y C# Dev Kit.
+Requisitos: Git, Node.js 24, SDK .NET 10 y VS Code con C# Dev Kit.
 
 ```powershell
-npm.cmd run setup   # instala el front y restaura NuGet
-npm.cmd run build   # compila front y API
-npm.cmd test        # modelo financiero y API con SQLite temporal
+npm.cmd run setup
+npm.cmd run dev
 ```
 
-Si una terminal abierta antes de la instalación no encuentra las herramientas, abre una nueva.
+En VS Code, abre esta carpeta raíz y elige **Zentro: Front + API + Swagger** en Ejecutar y depurar. **F5** arranca ambos servicios con recarga automática y abre front y Swagger. **Shift+F5** o **Ctrl+C** los detiene. También puedes usar `Iniciar-Zentro.cmd`.
+
+| Servicio local  | Dirección                        |
+| --------------- | -------------------------------- |
+| Interfaz        | http://127.0.0.1:5187            |
+| Swagger         | http://127.0.0.1:5080/swagger    |
+| Salud de la API | http://127.0.0.1:5080/api/health |
+
+Los puertos son fijos. Si están ocupados, el arranque falla sin detener otros programas. El perfil **Zentro.Api: depurar C#** permite poner puntos de interrupción; úsalo con el arranque conjunto detenido y `npm.cmd run dev:front` por separado.
 
 ## Estructura
 
 ```text
 Zentro/
-  Zentro.Front/        interfaz, modelo financiero y cliente de persistencia
-  Zentro.Api/          API .NET 10
-    Data/             repositorio SQLite y validación del documento
-    Properties/       perfil de desarrollo en el puerto 5080
-  .vscode/            arranque, tareas y extensiones recomendadas
-  scripts/            arranque conjunto y prueba de integración de la API
-  Zentro.slnx          solución .NET
-  global.json         SDK .NET 10
+├── Zentro.Api/
+│   ├── Controllers/                 rutas y respuestas HTTP
+│   ├── Models/                      contrato financiero tipado
+│   ├── Services/                    coordinación de operaciones
+│   ├── Validation/Rules/            reglas por área
+│   ├── Infrastructure/Persistence/  SQLite, esquema y repositorio
+│   ├── Extensions/                  registro de dependencias
+│   ├── OpenApi/                     documentación Swagger
+│   └── Data/                        base privada, ignorada por Git
+├── Zentro.Front/
+│   ├── src/app/                     navegación y estructura visual
+│   ├── src/features/                páginas, hooks y formularios por área
+│   ├── src/domain/                  tipos y cálculos sin React
+│   ├── src/shared/                  componentes, utilidades y HTTP
+│   ├── src/styles/                  estilos separados por responsabilidad
+│   ├── public/                      recursos utilizados por la interfaz
+│   └── tests/                       fixtures, unidades y navegador
+├── tests/integration/               pruebas de API y persistencia
+├── scripts/                         arranque y ejecución de pruebas
+├── docs/                            arquitectura, pruebas y originales del logo
+└── .vscode/                         tareas y depuración conjunta
 ```
 
-## Datos y páginas
+La [guía de arquitectura](docs/architecture.md) explica cada capa, las dependencias y cómo ampliar el proyecto. Hay instrucciones específicas para el [frontend](Zentro.Front/README.md) y la [API](Zentro.Api/README.md).
 
-El sidebar tiene Mi espacio, Día a día, Ahorros, Inversión y Deudas. Mi espacio reúne patrimonio, disponibilidad diaria, efectivo, ahorro por trabajo, intereses, inversión y una oferta hipotecaria editable. Patrimonio = ahorro por trabajo + intereses + capital invertido; excluye el día a día, el efectivo y la oferta hipotecaria. La inversión refleja aportaciones, sin rentabilidad variable. Sus gráficos comparan aportaciones reales, objetivos mensuales registrados y previsiones; el objetivo puede cambiar cada mes.
-
-Deudas muestra el tratamiento del dentista y un calendario editable. Cada cuota está pagada, apartada (dinero preparado aún no abonado) o pendiente. Falta por pagar = deuda total − cuotas realmente pagadas; incluye el dinero apartado. El calendario agrupa los meses por año y permite añadir, editar, cambiar el estado y eliminar cuotas. Se guarda en `external_debts` y su seguimiento no modifica el saldo diario, el ahorro, la inversión ni la deuda interna. Los meses sin planificar siguen contando en el importe restante.
-
-Día a día permite indicar el saldo actual y añadir, editar, eliminar o realizar gastos e ingresos mensuales. Los pendientes modifican la previsión. Al realizarlos, pasan al saldo actual sin duplicarse. Indicar un nuevo saldo incluye los movimientos realizados anteriores y mantiene pendientes los futuros.
-
-Efectivo se actualiza de forma independiente y no participa en los cálculos financieros. Posibles gastos es una lista editable sin mes ni cuenta: conserva conceptos e importes estimados sin descontarlos del saldo ni del patrimonio. La lista se persiste en `possible_expenses` y el efectivo en `profile_settings`. Las tablas tienen edición general y el mes diario empieza en el mes actual.
-
-Ahorros separa el historial de trabajo, los intereses generados y la deuda interna. Una retirada nueva reduce el ahorro y aumenta la deuda. Reponerlo aumenta el ahorro y reduce la deuda. Los pagos históricos ya incluidos en el ahorro no se suman otra vez. La previsión añade la aportación base y las reposiciones pendientes, limitadas a la deuda existente. Inversión tiene su propia tabla y gráfica. Vacío, cero y valores negativos se conservan por separado.
-
-Distribución de ahorros permite añadir y editar depósitos y cuentas remuneradas: capital, TIN/TAE, plazo, fecha inicial y retención estimada. Un destino puede tomar automáticamente el capital restante. Los gráficos muestran ubicación e intereses netos estimados; estos intereses futuros no se añaden al patrimonio. Mi espacio también recoge la distribución. La cuenta admite un mes equivalente o días reales/360, el método publicado por [Trade Republic](https://support.traderepublic.com/es-es/1533-What-do-I-need-to-know-about-interest). La retención inicial editable es del 19 % conforme al [artículo 90 del Reglamento del IRPF](https://www.boe.es/buscar/act.php?id=BOE-A-2007-6820#a90); representa una estimación, no la liquidación final. Una nueva base no contiene destinos ni importes de ejemplo.
-
-Los historiales y calendarios mensuales destacan con color la fila del mes actual, sin etiquetas de texto. Las listas de gastos, ingresos y conceptos por reponer conservan sus colores habituales. El sidebar se contrae desde una pestaña de color sólido integrada en su borde y cambia del logo completo al símbolo. Sidebar y navbar comparten un degradado simétrico violeta–crema–violeta. Los KPI de ahorro e inversión usan la misma paleta pastel del resto de la aplicación. La identidad y sus versiones para favicon están en [`public/brand`](Zentro.Front/public/brand/README.md).
-
-El engranaje del encabezado permite configurar el plan mensual y exportar o importar copias JSON. Una base nueva empieza vacía y no carga ejemplos. Los botones de información aparecen en la esquina inferior derecha de los bloques y muestran sus explicaciones al pulsarlos. La oferta hipotecaria se guarda en `profile_settings` y no modifica saldos, deuda ni patrimonio.
-
-SQLite se crea en `Zentro.Api/Data/zentro.db`. El perfil v2 guarda colecciones independientes en `savings_months`, `investment_months`, `savings_placements`, `interest_entries`, `daily_expenses`, `daily_incomes`, `internal_debt_items`, `internal_debt_payments`, `internal_debt_schedule` y `commitments`. `profile_settings` contiene saldos iniciales y preferencias. Lectura y escritura del perfil son transacciones; los importes se guardan en céntimos. No hay entidades de cuentas en el modelo actual.
-
-La API expone `/api/state` (GET y PUT) y `/api/health`, documentadas en Swagger. El navegador conserva pendientes en `zentro.v3.pending` si falla la API. Evita editar simultáneamente en varias pestañas: se guarda el perfil completo y prevalece la última escritura. Para cambiar la ruta de SQLite configura `Zentro__DatabasePath`.
-
-Las bases de datos, copias y archivos privados están excluidos de Git. Los datos financieros no se incorporan al código ni a los ejemplos de pruebas. El proyecto está preparado para uso local, sin conexiones bancarias ni despliegue público.
-
-## Verificación
-
-`npm.cmd test` verifica el modelo y la API con SQLite temporal, incluyendo persistencia y las tablas independientes. Con el front arrancado y el backend compilado:
+## Comprobar y dar formato
 
 ```powershell
-cd Zentro.Front
-npx.cmd playwright install chromium
-node browser-profile-test.mjs
+npm.cmd run build         # compila ambos proyectos
+npm.cmd test              # cálculos y API con SQLite temporal
+npm.cmd run test:e2e      # interfaz, recarga y móvil con datos ficticios
+npm.cmd run format        # Prettier y dotnet format
+npm.cmd run format:check  # verifica el formato sin modificar archivos
 ```
 
-La prueba de navegador utiliza su propia API y base temporal: comprueba las cinco páginas, gastos/ingresos, retiradas/reposiciones, intereses, inversión, distribución editable, cuotas del dentista, recarga y móvil sin modificar datos del usuario. También verifica que abrir el modal de distribución no redibuje los gráficos. Sus fixtures están en `Zentro.Front/tests/profile.ts` y no se cargan en la aplicación.
+La primera vez que ejecutes las pruebas de navegador, instala Chromium con `npx.cmd --prefix Zentro.Front playwright install chromium`. Los detalles de aislamiento y cobertura están en [docs/testing.md](docs/testing.md). Las pruebas no escriben en la base del usuario.
+
+## Datos y funciones
+
+**Mi espacio** reúne patrimonio, disponibilidad diaria, efectivo, ahorro por trabajo, intereses, capital invertido y una oferta hipotecaria editable. Patrimonio = ahorro + intereses registrados + capital invertido. El saldo diario, el efectivo y la oferta hipotecaria no forman parte de esa suma.
+
+**Día a día** conserva el saldo actual y movimientos mensuales de gastos e ingresos. Los previstos afectan a la previsión; realizarlos incorpora el importe al saldo una sola vez. Efectivo y posibles gastos se mantienen de forma independiente.
+
+**Ahorros** incluye historial real, objetivos, previsiones, intereses registrados, distribución y deuda interna. Una retirada nueva reduce el ahorro y aumenta la deuda interna; una reposición hace lo inverso. Los pagos históricos ya incluidos no se contabilizan de nuevo. La distribución indica dónde está el dinero, con estimaciones netas de depósitos y cuentas remuneradas, sin añadir rendimientos futuros al patrimonio.
+
+**Inversión** conserva las aportaciones y sus objetivos mensuales, sin incorporar rentabilidad variable. Comparte filtros, gráficos e historial con ahorro. Los meses sin registrar, los ceros y los valores negativos se distinguen.
+
+**Deudas** mantiene calendarios de cuotas pagadas, apartadas o pendientes. Lo apartado todavía forma parte del importe por pagar. Estas deudas no modifican automáticamente el resto de las áreas.
+
+El engranaje permite configurar el plan e importar o exportar copias JSON. Los botones de información explican los cálculos. Los historiales y calendarios destacan con color la fila del mes actual.
+
+## Persistencia y Git
+
+SQLite se crea en `Zentro.Api/Data/zentro.db`; `Zentro__DatabasePath` permite elegir otra ruta. La API guarda colecciones independientes y ajustes dentro de una transacción, con importes enteros en céntimos. El navegador conserva la última escritura pendiente si la API falla y la reintenta al recargar.
+
+La API expone `GET /api/state`, `PUT /api/state` y `GET /api/health`. El perfil se guarda completo; evita editar simultáneamente en varias pestañas porque prevalece la última escritura. Front, API y Swagger funcionan en localhost; subir el código a GitHub no los publica como servicio.
+
+`.gitignore` excluye bases SQLite y auxiliares, copias privadas, exportaciones, secretos y resultados de compilación. Los fixtures son ficticios y no se cargan en la aplicación. La [identidad visual](docs/brand/README.md) conserva los originales del logo; la interfaz solo sirve las versiones que utiliza.

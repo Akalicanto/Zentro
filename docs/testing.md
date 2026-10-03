@@ -1,0 +1,28 @@
+# Comprobaciones
+
+Ejecutar desde la raíz, con Node.js 24 y el SDK .NET 10:
+
+```powershell
+npm.cmd run build
+npm.cmd test
+npx.cmd --prefix Zentro.Front playwright install chromium
+npm.cmd run test:e2e
+npm.cmd run format:check
+```
+
+## Qué verifica cada suite
+
+| Ubicación                                          | Cobertura                                                                                                                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Zentro.Front/tests/unit/financialProfile.test.ts` | Importes, saldos, meses, objetivos, previsiones, retiradas, reposiciones, distribución e intereses estimados.                                                |
+| `tests/integration/api.test.mjs`                   | Contrato Swagger, documentos inválidos, coherencia de colecciones, transacciones y persistencia tras reiniciar la API.                                       |
+| `Zentro.Front/tests/e2e/profile.test.mjs`          | Las cinco páginas, formularios, movimientos, gráficos, distribución, cuotas, recarga y móvil. Comprueba también que abrir un modal no redibuja los gráficos. |
+| `Zentro.Front/tests/e2e/internalDebt.test.mjs`     | Edición, eliminación, redistribución y persistencia de deuda interna, incluida la presentación móvil.                                                        |
+
+Los fixtures están en `Zentro.Front/tests/fixtures/`. Son sintéticos y no se importan desde `src/`.
+
+La integración de API y la suite de navegador `profile.test.mjs` crean bases SQLite temporales y arrancan sus propias APIs en puertos libres. Las llamadas del navegador se redirigen a esas APIs. La suite `internalDebt.test.mjs` utiliza un perfil ficticio en memoria mediante interceptación HTTP para comprobar la edición y validación de la interfaz. Ninguna escribe en `Zentro.Api/Data/zentro.db`. Al terminar, detienen sus procesos y eliminan los datos temporales.
+
+El ejecutor de navegador arranca Vite si no está disponible en el puerto 5187 y detiene únicamente el proceso que ha creado. Si el front ya estaba abierto, lo reutiliza. Los puertos de prueba de las APIs son independientes.
+
+`npm.cmd run format` aplica Prettier al front, scripts, pruebas y documentación, y `dotnet format` al backend. `.editorconfig` define sangría y finales de línea; `.gitattributes` conserva LF en los archivos de texto y trata las imágenes como binarios.

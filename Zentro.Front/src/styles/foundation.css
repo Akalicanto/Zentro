@@ -1,0 +1,147 @@
+/* foundation: kept in cascade order by styles/index.css. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700&family=Plus+Jakarta+Sans:wght@400;500;600;650;700;750;800&display=swap");
+:root {
+  font-family: "Inter", system-ui, sans-serif;
+  color: #302a3b;
+  background: #f7f5f2;
+  font-synthesis: none;
+  font-size: 18px;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  line-height: 1.5;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+.button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 550;
+  transition: 0.18s;
+}
+button:hover,
+.button:hover {
+  background: var(--soft);
+  border-color: #94a3b8;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+input,
+select {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  padding: 10px;
+  border-radius: 7px;
+  min-width: 0;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1,
+h2,
+h3 {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+h1 {
+  font-size: 36px;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  margin-bottom: 9px;
+}
+h2 {
+  font-size: 29px;
+  letter-spacing: -0.035em;
+  font-weight: 650;
+  margin: 12px 0;
+}
+h3 {
+  font-size: 22px;
+  letter-spacing: -0.4px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+small {
+  font-size: 16px;
+  color: var(--muted);
+  font-weight: 400;
+}
+strong {
+  font-weight: 600;
+}
+button svg {
+  flex-shrink: 0;
+}
+.app {
+  --text: #302a3b;
+  --muted: #706878;
+  --panel: #fffdf8;
+  --bg: #f8f4ee;
+  --line: #e5ddea;
+  --soft: #f3edf8;
+  --accent: #70529e;
+  --accent-hover: #5a3e85;
+  --accent-soft: #eee3fa;
+  --accent-text: #62428e;
+  --highlight: #423354;
+  --navigation-gradient-stops: #eee3fa 0%, #fff8ed 50%, #eee3fa 100%;
+  --sidebar-tab-bg: #eee3fa;
+  --sidebar-tab-hover: #e7d7f6;
+  --sidebar-tab-top: 104px;
+  --sidebar-tab-height: 76px;
+  --chart-primary: #8060b4;
+  --chart-secondary: #a198aa;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 0% 0%, #e9e0fa55, transparent 40%),
+    radial-gradient(ellipse at 100% 80%, #f8e2ce44, transparent 40%), var(--bg);
+  color: var(--text);
+}
+.app.dark {
+  color-scheme: dark;
+  --text: #f1edf5;
+  --muted: #b5abbf;
+  --panel: #24212a;
+  --bg: #18151d;
+  --line: #3d3546;
+  --soft: #302a38;
+  --accent: #c2a5ee;
+  --accent-hover: #d5bdf8;
+  --accent-soft: #3b2d50;
+  --accent-text: #dbc6f5;
+  --highlight: #463553;
+  --navigation-gradient-stops: #352b43 0%, #302c28 50%, #352b43 100%;
+  --sidebar-tab-bg: #352b43;
+  --sidebar-tab-hover: #443454;
+  --chart-primary: #c2a5ee;
+  --chart-secondary: #a198aa;
+  background:
+    radial-gradient(ellipse at 90% 0%, #c2a5ee08, transparent 50%), var(--bg);
+}

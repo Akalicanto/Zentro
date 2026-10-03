@@ -1,0 +1,187 @@
+/* motion: kept in cascade order by styles/index.css. */
+/* Motion stays brief so the financial data is readable during navigation. */
+@keyframes zentro-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes zentro-card {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.975);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.002);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes zentro-chart-reveal {
+  from {
+    opacity: 0.25;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes zentro-tab-line {
+  from {
+    transform: scaleX(0.25);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+@keyframes zentro-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.app {
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+.content {
+  animation: zentro-enter 360ms var(--motion-ease);
+}
+.savings-tab-content {
+  animation: zentro-enter 300ms var(--motion-ease);
+}
+.cards > .metric {
+  animation: zentro-card 580ms var(--motion-ease) backwards;
+}
+.cards > .metric:nth-child(2) {
+  animation-delay: 70ms;
+}
+.cards > .metric:nth-child(3) {
+  animation-delay: 140ms;
+}
+.cards > .metric:nth-child(4) {
+  animation-delay: 210ms;
+}
+.cards > .metric:nth-child(5) {
+  animation-delay: 280ms;
+}
+.chart {
+  animation: zentro-chart-reveal 750ms var(--motion-ease);
+}
+.savings-tab-content .panel,
+.content > .panel,
+.cards > .panel {
+  animation: zentro-enter 480ms var(--motion-ease) backwards;
+}
+.account-detail-tabs button {
+  position: relative;
+  overflow: hidden;
+}
+.account-detail-tabs button.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  animation: zentro-tab-line 320ms var(--motion-ease);
+}
+.modal-backdrop {
+  animation: zentro-fade 120ms ease-out;
+}
+.modal {
+  animation: zentro-enter 180ms var(--motion-ease);
+}
+.app button,
+.app .button {
+  transition:
+    transform 180ms var(--motion-ease),
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+.app button:active:not(:disabled),
+.app .button:active {
+  transform: scale(0.97);
+}
+.app button:disabled {
+  cursor: default;
+}
+.app input,
+.app select {
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.metric {
+  transition:
+    transform 240ms var(--motion-ease),
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+.panel {
+  transition:
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+.account-detail-tabs button.active {
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.app nav button svg,
+.debt-action > svg {
+  transition: transform 240ms var(--motion-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .metric:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px #0f172a10;
+  }
+  .dark .metric:hover {
+    box-shadow: 0 10px 24px #00000028;
+  }
+  .app button.primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px #0f172a18;
+  }
+  .app nav button:hover svg {
+    transform: translateX(2px);
+  }
+  .debt-action:hover:not(:disabled) > svg {
+    transform: translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app *,
+  .app *::before,
+  .app *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .app .metric:hover,
+  .app button:hover,
+  .app button:active,
+  .app nav button:hover svg,
+  .app .debt-action:hover > svg {
+    transform: none !important;
+  }
+}
+.recharts-default-tooltip {
+  background: var(--panel) !important;
+  border-color: var(--line) !important;
+  color: var(--text) !important;
+}

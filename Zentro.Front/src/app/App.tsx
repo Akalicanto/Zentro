@@ -1,0 +1,69 @@
+import { type Profile, currentMonth } from "../domain/index.ts";
+import { useProfileStore } from "../features/profile/hooks/useProfileStore.ts";
+import { useProfileEditor } from "../features/profile/hooks/useProfileEditor.ts";
+import { useHistoryView } from "../features/history/hooks/useHistoryView.ts";
+import { useState } from "react";
+import { type Page, pages } from "./navigation.ts";
+import AppShell from "./components/AppShell.tsx";
+import ProfileForms from "../features/profile/components/ProfileForms.tsx";
+import OverviewPage from "../features/profile/components/OverviewPage.tsx";
+import DailyPage from "../features/daily/components/DailyPage.tsx";
+import SavingsPage from "../features/savings/components/SavingsPage.tsx";
+import InvestmentPage from "../features/investment/components/InvestmentPage.tsx";
+import DebtsPage from "../features/debts/components/DebtsPage.tsx";
+
+export default function App({ initialData }: { initialData: Profile }) {
+  const { data, error, save } = useProfileStore(initialData);
+  const editor = useProfileEditor(data, save),
+    controls = useHistoryView();
+  const [page, setPage] = useState<Page>(() => {
+    const value = new URLSearchParams(location.hash.slice(1)).get("pagina");
+    return pages.includes(value as Page) ? (value as Page) : "Mi espacio";
+  });
+  const [savingsTab, setSavingsTab] = useState("Historial");
+  function navigate(next: Page) {
+    setPage(next);
+    controls.setYear(currentMonth().slice(0, 4));
+    history.replaceState(null, "", `#pagina=${encodeURIComponent(next)}`);
+  }
+  const open = editor.open;
+  return (
+    <AppShell
+      page={page}
+      error={error}
+      navigate={navigate}
+      open={open}
+      overlay={
+        editor.modal ? (
+          <ProfileForms data={data} {...editor} modal={editor.modal} />
+        ) : null
+      }
+    >
+      {page === "Mi espacio" && (
+        <OverviewPage
+          data={data}
+          open={open}
+          navigate={navigate}
+          setSavingsTab={setSavingsTab}
+        />
+      )}
+      {page === "Día a día" && (
+        <DailyPage data={data} open={open} save={save} />
+      )}
+      {page === "Ahorros" && (
+        <SavingsPage
+          data={data}
+          open={open}
+          save={save}
+          savingsTab={savingsTab}
+          setSavingsTab={setSavingsTab}
+          historyControls={controls}
+        />
+      )}
+      {page === "Inversión" && (
+        <InvestmentPage data={data} open={open} controls={controls} />
+      )}
+      {page === "Deudas" && <DebtsPage profile={data} onSave={save} />}
+    </AppShell>
+  );
+}

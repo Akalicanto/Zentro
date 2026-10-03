@@ -1,0 +1,61 @@
+# Arquitectura
+
+Zentro es una aplicación local. React consume la API .NET; SQLite conserva el perfil financiero. No se cargan datos de demostración al arrancar.
+
+## Backend
+
+```text
+HTTP → Controller → ProfileService → ProfileValidator
+                                  → IProfileRepository → SQLite
+```
+
+- `Program.cs` configura el servidor y registra las dependencias mediante `Extensions/ServiceCollectionExtensions.cs`.
+- `Controllers/` contiene rutas, códigos HTTP y documentación Swagger. No contiene SQL ni reglas financieras.
+- `Models/` define el contrato v2 con tipos explícitos. Los importes son enteros en céntimos y los tipos de interés son puntos básicos.
+- `Services/` coordina validación y persistencia a través de interfaces. Un documento inválido nunca llega al repositorio.
+- `Validation/Rules/` separa las reglas de movimientos diarios, aportaciones, intereses, destinos, deudas y plan. `ProfileValidator` comprueba después la coherencia entre colecciones y los saldos agregados.
+- `Infrastructure/Persistence/` concentra conexión, esquema y consultas. `ProfileCollections` es la lista cerrada de tablas; los valores SQL se parametrizan.
+- `OpenApi/` describe el contrato del documento en Swagger, sin cargar datos privados.
+- `Data/` contiene únicamente la base privada, excluida de Git.
+
+Cada operación abre y libera su conexión. Leer el perfil usa una transacción para obtener una instantánea coherente. Guardarlo sustituye las colecciones y sus ajustes dentro de una única transacción. El acceso es síncrono: SQLite realiza estas operaciones localmente y no necesita una capa de tareas artificiales.
+
+El repositorio conserva el JSON original de cada registro y los campos adicionales del documento. Los modelos tipados sirven para validar y documentar el contrato, sin alterar copias existentes al serializarlas de nuevo. `JsonRequired` diferencia un campo ausente de un importe `null`; este último representa un mes sin registrar. Los campos opcionales de versiones anteriores pueden omitirse. La lectura de la antigua tabla `app_state` se mantiene para abrir bases anteriores.
+
+## Frontend
+
+```text
+app/ → features/ → domain/
+                 → shared/
+```
+
+- `app/` reúne las páginas, navegación y estructura visual. `App.tsx` conecta los hooks de perfil y edición con las páginas.
+- `features/` agrupa cada área: perfil, día a día, ahorros, inversión, deuda interna y deudas externas. Sus componentes, formularios y hooks permanecen junto a la funcionalidad correspondiente.
+- `features/history/` comparte filtros, gráficos e historial mensual entre ahorro e inversión.
+- `features/profile/hooks/` controla el estado y los formularios; `forms/applyProfileForm.ts` transforma sus entradas sin depender de la interfaz.
+- `features/profile/services/profileStorage.ts` ordena las escrituras y conserva la última pendiente en el navegador si falla la API. Una recarga intenta guardarla antes de cargar la base.
+- `domain/` define tipos, cálculos, validación y operaciones financieras. No importa React, no hace llamadas HTTP y no lee almacenamiento.
+- `shared/api/` contiene el transporte HTTP; `shared/utils/`, las funciones de fechas, importes e identificadores; `shared/components/`, elementos visuales compartidos.
+- `styles/` separa base, navegación, componentes y áreas. `index.css` fija el orden de la cascada; cambiar ese orden puede modificar la apariencia.
+
+Los gráficos se memoizan para evitar redibujarlos al abrir formularios. Las clases visuales y la paleta se conservan durante esta reorganización. Los formularios usan una unión discriminada (`ProfileModal`), de modo que cada acción recibe el tipo correcto de registro.
+
+## Reglas que deben conservarse
+
+- Patrimonio = ahorro por trabajo + intereses registrados + capital invertido. El saldo diario, el efectivo y la oferta hipotecaria quedan fuera de esta suma.
+- El ahorro neto de un mes incluye su aportación, reposiciones nuevas y retiradas nuevas. Los pagos históricos ya incluidos no se suman otra vez.
+- Vacío, cero y valores negativos son situaciones distintas. Las previsiones no forman parte del patrimonio actual.
+- Los movimientos diarios pendientes modifican la previsión; realizarlos modifica el saldo una sola vez.
+- La distribución indica dónde está el ahorro, sin crear aportaciones ni cobrar intereses estimados.
+- Las cuotas apartadas del dentista siguen pendientes de pago. Las deudas externas no modifican automáticamente otras áreas.
+- Efectivo y posibles gastos se conservan como datos independientes.
+
+## Añadir una funcionalidad
+
+1. Definir el contrato en `domain/types.ts` y `Models/`, manteniendo compatibilidad con perfiles anteriores cuando corresponda.
+2. Implementar los cálculos en `domain/` y las reglas del servidor en `Validation/Rules/`.
+3. Añadir su colección a `ProfileCollections` si requiere persistencia independiente.
+4. Crear los componentes y hooks en su carpeta de `features/`; conectarlos desde `app/`.
+5. Verificar la regla financiera con datos ficticios y, si cambia un flujo, añadir una comprobación de navegador. Nunca convertir datos personales en fixtures.
+
+Las rutas siguen siendo `GET /api/state`, `PUT /api/state` y `GET /api/health`. El contrato guarda el perfil completo: dos pestañas que editan simultáneamente pueden sobrescribirse; prevalece la última escritura.

@@ -2,13 +2,20 @@
   "name": "zentro-workspace",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "dev:front": "npm --prefix Zentro.Front run dev",
     "dev:api": "dotnet watch --project Zentro.Api --non-interactive run --launch-profile http",
     "setup": "npm --prefix Zentro.Front ci && dotnet restore Zentro.slnx",
     "build": "npm --prefix Zentro.Front run build && dotnet build Zentro.slnx",
-    "test": "npm --prefix Zentro.Front test && dotnet build Zentro.slnx && node scripts/api-test.mjs"
+    "test": "npm --prefix Zentro.Front test && dotnet build Zentro.slnx && node tests/integration/api.test.mjs",
+    "test:e2e": "dotnet build Zentro.slnx && node scripts/test-e2e.mjs",
+    "format": "npm --prefix Zentro.Front run format && npm run format:repo && dotnet format Zentro.slnx --no-restore",
+    "format:check": "npm --prefix Zentro.Front run format:check && npm run format:repo:check && dotnet format Zentro.slnx --no-restore --verify-no-changes",
+    "format:repo": "node Zentro.Front/node_modules/prettier/bin/prettier.cjs --write \".vscode/**/*.json\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\" \"docs/**/*.md\" \"*.md\" \"*.json\" \"Zentro.Api/*.md\" \"Zentro.Front/*.md\"",
+    "format:repo:check": "node Zentro.Front/node_modules/prettier/bin/prettier.cjs --check \".vscode/**/*.json\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\" \"docs/**/*.md\" \"*.md\" \"*.json\" \"Zentro.Api/*.md\" \"Zentro.Front/*.md\""
   }
 }

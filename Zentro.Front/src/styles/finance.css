@@ -1,0 +1,198 @@
+/* finance: kept in cascade order by styles/index.css. */
+.savings-primary .metric,
+.daily-primary .metric {
+  position: relative;
+  padding-bottom: 58px;
+}
+.metric-action {
+  position: absolute;
+  bottom: 18px;
+  right: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 550;
+}
+.metric-action:hover {
+  text-decoration: underline;
+}
+.debt-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.daily-primary {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.daily-primary .metric {
+  grid-column: span 2;
+}
+.daily-primary .metric:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+.daily-current-month {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 18px;
+}
+.daily-current-month h3 {
+  margin: 0;
+}
+.cash-form-month {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--soft);
+  text-transform: capitalize;
+}
+.investment-primary .metric {
+  padding-bottom: 24px;
+}
+.daily-primary .metric h2 {
+  font-weight: 800;
+}
+.daily-primary .metric {
+  min-width: 0;
+}
+.cash-panel .table-wrap,
+.possible-expenses-panel .table-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.cash-panel td,
+.possible-expenses-panel td {
+  padding: 18px 14px;
+}
+.cash-panel th,
+.possible-expenses-panel th {
+  padding: 14px;
+  background: var(--soft);
+}
+.cash-panel .section-title {
+  flex-wrap: wrap;
+}
+.possible-expenses-panel {
+  margin-top: 24px;
+}
+.possible-expenses-panel td:nth-child(2),
+.possible-expenses-panel th:nth-child(2) {
+  text-align: right;
+}
+@media (max-width: 1250px) {
+  .daily-primary {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+@media (min-width: 651px) and (max-width: 1100px) {
+  .daily-primary .metric {
+    grid-column: span 3;
+  }
+  .daily-primary .metric:last-child {
+    grid-column: span 6;
+  }
+}
+@media (max-width: 650px) {
+  .daily-primary {
+    grid-template-columns: 1fr;
+  }
+  .daily-primary .metric,
+  .daily-primary .metric:nth-child(-n + 2) {
+    grid-column: auto;
+  }
+}
+.debt-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  text-align: left;
+  background: var(--panel);
+}
+.debt-action > svg {
+  padding: 10px;
+  box-sizing: content-box;
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.debt-action strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+.debt-action small {
+  display: block;
+  font-size: 16px;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.debt-action.repay > svg {
+  color: var(--chart-primary);
+}
+.debt-action:hover:not(:disabled) {
+  border-color: var(--chart-primary);
+  background: var(--soft);
+}
+@media (max-width: 650px) {
+  .debt-actions {
+    grid-template-columns: 1fr;
+  }
+}
+.month-selection {
+  grid-column: 1/-1;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+}
+.month-selection legend {
+  font-weight: 650;
+  padding: 0 8px;
+}
+.month-selection-grid,
+.month-value-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.month-selection-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.month-selection-grid select {
+  padding: 14px;
+  font-size: 18px;
+}
+.month-selection p {
+  margin: 16px 0 0;
+  font-size: 16px;
+}
+.month-value-fields {
+  grid-column: 1/-1;
+}
+@media (max-width: 650px) {
+  .savings-primary .metric h2 {
+    font-size: 26px;
+  }
+  .month-value-fields {
+    grid-template-columns: 1fr;
+  }
+  .savings-page-bar {
+    padding: 18px;
+  }
+}
+.home-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}

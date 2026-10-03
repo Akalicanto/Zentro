@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./Dashboard";
-import "./style.css";
-import { loadData } from "./profileStorage";
+import App from "./app/App.tsx";
+import "./styles/index.css";
+import { loadData } from "./features/profile/services/profileStorage.ts";
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 async function start() {
   root.render(

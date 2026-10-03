@@ -1,24 +1,49 @@
+# Sistema y editores; .vscode se comparte para el arranque conjunto.
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# React / Node / TypeScript
 node_modules/
 dist/
+.vite/
 .npm-cache/
+*.tsbuildinfo
+
+# .NET
+bin/
+obj/
+TestResults/
+
+# Informes y artefactos de comprobación
+coverage/
+playwright-report/
+test-results/
 checks/
 *.log
-*.tsbuildinfo
+.server.pid
+
+# Datos financieros privados y copias (incluidos auxiliares de SQLite)
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+backups/
+zentro-*.json
+zentro-*.csv
+
+# Configuración privada, claves y herramientas locales
 .env
 .env.*
 !.env.example
 *.pem
 *.key
-.server.pid
-bin/
-obj/
-*.db
-*.db-shm
-*.db-wal
-*.sqlite
-*.sqlite-shm
-*.sqlite-wal
-backups/
-zentro-*.json
-zentro-*.csv
 .tools/

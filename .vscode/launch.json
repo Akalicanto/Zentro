@@ -19,8 +19,15 @@
       "preLaunchTask": "Zentro: compilar API",
       "program": "${workspaceFolder}/Zentro.Api/bin/Debug/net10.0/Zentro.Api.dll",
       "cwd": "${workspaceFolder}/Zentro.Api",
-      "env": { "ASPNETCORE_ENVIRONMENT": "Development", "ASPNETCORE_URLS": "http://127.0.0.1:5080" },
-      "serverReadyAction": { "action": "openExternally", "pattern": "Now listening on: (https?://\\S+)", "uriFormat": "%s/swagger" }
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://127.0.0.1:5080"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on: (https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      }
     }
   ]
 }
