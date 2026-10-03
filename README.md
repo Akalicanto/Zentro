@@ -23,6 +23,8 @@ Los puertos son fijos. Si están ocupados, el arranque falla sin detener otros p
 
 ## Estructura
 
+El [acceso de escritorio](docs/desktop.md) abre el proyecto en Firefox y apaga los servicios al cerrar su ventana.
+
 ```text
 Zentro/
 ├── Zentro.Api/

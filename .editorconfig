@@ -16,5 +16,8 @@ csharp_prefer_braces = true:warning
 [*.md]
 trim_trailing_whitespace = false
 
-[*.cmd]
+[*.{cmd,vbs}]
 end_of_line = crlf
+
+[*.ps1]
+indent_size = 4

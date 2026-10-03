@@ -1,1 +1,7 @@
-{ "recommendations": ["ms-dotnettools.csdevkit", "ms-dotnettools.csharp"] }
+{
+  "recommendations": [
+    "ms-dotnettools.csdevkit",
+    "ms-dotnettools.csharp",
+    "qwtel.sqlite-viewer"
+  ]
+}
