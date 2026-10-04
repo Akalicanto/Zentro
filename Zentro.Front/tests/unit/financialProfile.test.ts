@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { testProfile } from "../fixtures/profile.ts";
+import { applyProfileForm } from "../../src/features/profile/forms/applyProfileForm.ts";
 import {
   wealthTotals,
   cashTotals,
@@ -281,6 +282,81 @@ test("El saldo actual y el previsto distinguen pendientes sin doble descuento", 
   p.daily.opening = 26000;
   p.daily.expenses[0].includedInOpening = true;
   assert.equal(cashTotals(p).current, 26000);
+});
+test("Borrar gastos y actualizar el saldo recalcula solo los pendientes", () => {
+  let profile = testProfile();
+  profile.daily.expenses.push(
+    { ...profile.daily.expenses[0], id: "delete-planned", amount: 7500 },
+    {
+      ...profile.daily.expenses[0],
+      id: "done-expense",
+      amount: 1200,
+      status: "done",
+    },
+  );
+  profile.daily.incomes = [
+    { ...profile.daily.expenses[0], id: "planned-income", amount: 2500 },
+    {
+      ...profile.daily.expenses[0],
+      id: "done-income",
+      amount: 3200,
+      status: "done",
+    },
+  ];
+  profile.possibleExpenses = [
+    { id: "independent", concept: "Posible gasto", amount: 100000 },
+  ];
+  profile.cash = 50000;
+  profile.daily.expenses = profile.daily.expenses.filter(
+    (row) => row.id !== "delete-planned",
+  );
+  assert.deepEqual(cashTotals(profile), {
+    current: 32000,
+    forecast: 30500,
+    expenses: 4000,
+    incomes: 2500,
+  });
+  const form = new FormData();
+  form.set("amount", "400,25");
+  profile = applyProfileForm(
+    profile,
+    { type: "balance" },
+    form,
+    currentMonth(),
+  );
+  assert.deepEqual(cashTotals(profile), {
+    current: 40025,
+    forecast: 38525,
+    expenses: 4000,
+    incomes: 2500,
+  });
+  assert.ok(
+    profile.daily.expenses.find((row) => row.id === "done-expense")
+      ?.includedInOpening,
+  );
+  assert.ok(
+    profile.daily.incomes.find((row) => row.id === "done-income")
+      ?.includedInOpening,
+  );
+  profile.daily.expenses = profile.daily.expenses.filter(
+    (row) => row.id !== "expense",
+  );
+  assert.deepEqual(cashTotals(profile), {
+    current: 40025,
+    forecast: 42525,
+    expenses: 0,
+    incomes: 2500,
+  });
+  profile.daily.incomes = profile.daily.incomes.filter(
+    (row) => row.id !== "planned-income",
+  );
+  assert.deepEqual(cashTotals(profile), {
+    current: 40025,
+    forecast: 40025,
+    expenses: 0,
+    incomes: 0,
+  });
+  validateProfile(profile);
 });
 test("El plan añade reposiciones solo hasta saldar la deuda; no ahorra previsiones", () => {
   const p = testProfile();

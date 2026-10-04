@@ -2,32 +2,27 @@ import type { CashRow, ExternalDebt, Profile } from "./types.ts";
 import { sum } from "../shared/utils/money.ts";
 
 export function cashTotals(profile: Profile) {
-  const change = (rows: CashRow[], status: string) =>
+  const realizedChange = (rows: CashRow[]) =>
     sum(
       rows
-        .filter((r) => r.status === status && !r.includedInOpening)
+        .filter((r) => r.status === "done" && !r.includedInOpening)
         .map((r) => r.amount),
     );
   const current =
     profile.daily.opening +
-    change(profile.daily.incomes, "done") -
-    change(profile.daily.expenses, "done");
+    realizedChange(profile.daily.incomes) -
+    realizedChange(profile.daily.expenses);
+  const pendingTotal = (rows: CashRow[]) =>
+    sum(
+      rows.filter((row) => row.status === "planned").map((row) => row.amount),
+    );
+  const expenses = pendingTotal(profile.daily.expenses);
+  const incomes = pendingTotal(profile.daily.incomes);
   return {
     current,
-    forecast:
-      current +
-      change(profile.daily.incomes, "planned") -
-      change(profile.daily.expenses, "planned"),
-    expenses: sum(
-      profile.daily.expenses
-        .filter((r) => r.status === "planned")
-        .map((r) => r.amount),
-    ),
-    incomes: sum(
-      profile.daily.incomes
-        .filter((r) => r.status === "planned")
-        .map((r) => r.amount),
-    ),
+    forecast: current - expenses + incomes,
+    expenses,
+    incomes,
   };
 }
 export function debtTotals(profile: Profile) {
