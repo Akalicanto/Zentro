@@ -154,16 +154,6 @@ export default function ProfileForms({
                     value={modal.item?.month || dailyMonth}
                   />
                 </label>
-                <label>
-                  Estado
-                  <select
-                    name="status"
-                    defaultValue={modal.item?.status || "planned"}
-                  >
-                    <option value="planned">Previsto</option>
-                    <option value="done">Realizado</option>
-                  </select>
-                </label>
               </>
             )}
             {modal.type === "balance" &&
@@ -391,8 +381,8 @@ export default function ProfileForms({
           </div>
           {modal.type === "balance" && (
             <p className="form-note">
-              Este saldo sustituye la referencia anterior e incluye todos los
-              movimientos ya realizados. Los pendientes se mantienen.
+              Este es el dinero que tienes ahora. Los gastos e ingresos de las
+              tablas se mantienen para calcular la previsión.
             </p>
           )}
           <div className="modal-footer">

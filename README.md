@@ -68,7 +68,7 @@ La primera vez que ejecutes las pruebas de navegador, instala Chromium con `npx.
 
 **Mi espacio** reúne patrimonio, disponibilidad diaria, efectivo, ahorro por trabajo, intereses, capital invertido y una oferta hipotecaria editable. Patrimonio = ahorro + intereses registrados + capital invertido. El saldo diario, el efectivo y la oferta hipotecaria no forman parte de esa suma.
 
-**Día a día** conserva el saldo actual y movimientos mensuales de gastos e ingresos. Los previstos afectan a la previsión; realizarlos incorpora el importe al saldo una sola vez. Efectivo y posibles gastos se mantienen de forma independiente.
+**Día a día** conserva el saldo actual y movimientos mensuales de gastos e ingresos. Todos los gastos e ingresos son previsiones, sin selector de estado. Crear, editar o borrar registros recalcula el saldo previsto; el saldo actual se introduce manualmente. Efectivo y posibles gastos se mantienen de forma independiente.
 
 **Ahorros** incluye historial real, objetivos, previsiones, intereses registrados, distribución y deuda interna. Una retirada nueva reduce el ahorro y aumenta la deuda interna; una reposición hace lo inverso. Los pagos históricos ya incluidos no se contabilizan de nuevo. La distribución indica dónde está el dinero, con estimaciones netas de depósitos y cuentas remuneradas, sin añadir rendimientos futuros al patrimonio.
 

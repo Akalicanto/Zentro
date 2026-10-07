@@ -22,11 +22,7 @@ export default function DailyPage({ data, open, save }: Props) {
   });
   const [editingPossible, setEditingPossible] = useState(false);
   function removeCash(kind: "expenses" | "incomes", id: string) {
-    if (
-      confirm(
-        "¿Eliminar este registro? Se recalculará el saldo y la previsión.",
-      )
-    )
+    if (confirm("¿Eliminar este registro? Se recalculará la previsión."))
       save({
         ...data,
         daily: {
@@ -36,7 +32,9 @@ export default function DailyPage({ data, open, save }: Props) {
       });
   }
   function cashTable(kind: "expenses" | "incomes") {
-    const rows = data.daily[kind].filter((r) => r.month === dailyMonth);
+    const rows = data.daily[kind].filter(
+      (row) => row.month === dailyMonth && row.status === "planned",
+    );
     const expense = kind === "expenses";
     const editing = editingCash[kind];
     return (
@@ -84,8 +82,7 @@ export default function DailyPage({ data, open, save }: Props) {
               <tr>
                 <th>Concepto</th>
                 <th>Importe</th>
-                <th>Estado</th>
-                <th />
+                {editing && <th aria-label="Acciones" />}
               </tr>
             </thead>
             <tbody>
@@ -103,52 +100,19 @@ export default function DailyPage({ data, open, save }: Props) {
                     ) : (
                       row.concept
                     )}
-                    {row.includedInOpening && (
-                      <small>Ya incluido en el saldo indicado</small>
-                    )}
                   </td>
                   <td>{euro(row.amount)}</td>
-                  <td>
-                    <span
-                      className={`badge ${row.status === "done" ? "green" : "amber"}`}
-                    >
-                      {row.status === "done" ? "Realizado" : "Previsto"}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      {row.status === "planned" && (
-                        <button
-                          className="icon"
-                          aria-label={`Realizar ${row.concept}`}
-                          onClick={() =>
-                            save({
-                              ...data,
-                              daily: {
-                                ...data.daily,
-                                [kind]: data.daily[kind].map((r) =>
-                                  r.id === row.id
-                                    ? { ...r, status: "done" }
-                                    : r,
-                                ),
-                              },
-                            })
-                          }
-                        >
-                          <Check size={15} />
-                        </button>
-                      )}
-                      {editing && (
-                        <button
-                          className="icon danger"
-                          aria-label={`Eliminar ${row.concept}`}
-                          onClick={() => removeCash(kind, row.id)}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  {editing && (
+                    <td>
+                      <button
+                        className="icon danger"
+                        aria-label={`Eliminar ${row.concept}`}
+                        onClick={() => removeCash(kind, row.id)}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -161,10 +125,10 @@ export default function DailyPage({ data, open, save }: Props) {
           </p>
         )}
         <PanelInfo title={expense ? "Gastos" : "Ingresos"}>
-          Las tablas muestran el mes actual. Los movimientos previstos modifican
-          el saldo después de pendientes. Al realizarlos, pasan al saldo actual
-          una sola vez. Los movimientos ya incluidos en un saldo actualizado no
-          se vuelven a sumar ni descontar.
+          Todos los registros son previsiones. El saldo después de pendientes es
+          tu saldo actual menos los gastos más los ingresos previstos. Crear,
+          editar o borrar un registro solo cambia esa previsión; el saldo actual
+          lo actualizas tú.
         </PanelInfo>
       </section>
     );

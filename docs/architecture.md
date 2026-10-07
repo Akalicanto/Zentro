@@ -46,7 +46,7 @@ Los gráficos se memoizan para evitar redibujarlos al abrir formularios. Las cla
 - Patrimonio = ahorro por trabajo + intereses registrados + capital invertido. El saldo diario, el efectivo y la oferta hipotecaria quedan fuera de esta suma.
 - El ahorro neto de un mes incluye su aportación, reposiciones nuevas y retiradas nuevas. Los pagos históricos ya incluidos no se suman otra vez.
 - Vacío, cero y valores negativos son situaciones distintas. Las previsiones no forman parte del patrimonio actual.
-- Los movimientos diarios pendientes modifican la previsión; realizarlos modifica el saldo una sola vez.
+- Los gastos e ingresos diarios son siempre previsiones: crean, editan o eliminan importes pendientes sin modificar el saldo actual manual. Los estados antiguos se conservan únicamente por compatibilidad con perfiles anteriores.
 - La distribución indica dónde está el ahorro, sin crear aportaciones ni cobrar intereses estimados.
 - Las cuotas apartadas del dentista siguen pendientes de pago. Las deudas externas no modifican automáticamente otras áreas.
 - Efectivo y posibles gastos se conservan como datos independientes.

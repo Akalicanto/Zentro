@@ -284,9 +284,19 @@ try {
     .locator("nav")
     .getByRole("button", { name: "Día a día", exact: true })
     .click();
-  await page.getByRole("button", { name: "Realizar Gasto de prueba" }).click();
+  assert.equal(
+    await page
+      .locator(".cash-panel")
+      .getByRole("columnheader", { name: "Estado", exact: true })
+      .count(),
+    0,
+  );
+  assert.equal(
+    await page.getByRole("button", { name: /^Realizar / }).count(),
+    0,
+  );
   assert.ok(
-    (await metric("Saldo actual · ING").innerText()).includes("260,00"),
+    (await metric("Saldo actual · ING").innerText()).includes("300,00"),
   );
   assert.ok(
     (await metric("Saldo después de pendientes").innerText()).includes(
@@ -294,11 +304,12 @@ try {
     ),
   );
   await page.getByRole("button", { name: "Añadir ingreso" }).click();
+  assert.equal(await page.getByLabel("Estado", { exact: true }).count(), 0);
   await page.getByLabel("Concepto", { exact: true }).fill("Ingreso de prueba");
   await page.getByLabel("Importe (€)", { exact: true }).fill("50");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
   assert.ok(
-    (await metric("Saldo actual · ING").innerText()).includes("260,00"),
+    (await metric("Saldo actual · ING").innerText()).includes("300,00"),
   );
   assert.ok(
     (await metric("Saldo después de pendientes").innerText()).includes(
@@ -306,11 +317,37 @@ try {
     ),
   );
   await page
-    .getByRole("button", { name: "Realizar Ingreso de prueba" })
+    .getByRole("button", { name: "Editar gastos", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Editar Gasto de prueba", exact: true })
+    .click();
+  assert.equal(await page.getByLabel("Estado", { exact: true }).count(), 0);
+  await page.getByLabel("Importe (€)", { exact: true }).fill("60");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  assert.ok(
+    (await metric("Saldo actual · ING").innerText()).includes("300,00"),
+  );
+  assert.ok(
+    (await metric("Saldo después de pendientes").innerText()).includes(
+      "290,00",
+    ),
+  );
+  page.once("dialog", (dialog) => dialog.accept());
+  await page
+    .getByRole("button", { name: "Eliminar Gasto de prueba", exact: true })
     .click();
   assert.ok(
-    (await metric("Saldo actual · ING").innerText()).includes("310,00"),
+    (await metric("Saldo actual · ING").innerText()).includes("300,00"),
   );
+  assert.ok(
+    (await metric("Saldo después de pendientes").innerText()).includes(
+      "350,00",
+    ),
+  );
+  await page
+    .getByRole("button", { name: "Terminar edición de gastos", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Actualizar saldo", exact: true })
     .click();
@@ -323,6 +360,11 @@ try {
     () => localStorage.getItem("zentro.v3.pending") === null,
   );
   const beforeIndependent = await state();
+  assert.ok(
+    (await metric("Saldo después de pendientes").innerText()).includes(
+      "150,00",
+    ),
+  );
   await page
     .getByRole("button", { name: "Actualizar efectivo", exact: true })
     .click();
@@ -368,15 +410,15 @@ try {
   ])
     assert.deepEqual(independent[key], beforeIndependent[key]);
   await page
-    .getByRole("button", { name: "Editar gastos", exact: true })
+    .getByRole("button", { name: "Editar ingresos", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Editar Gasto de prueba", exact: true })
+    .getByRole("button", { name: "Editar Ingreso de prueba", exact: true })
     .click();
-  await page.getByRole("dialog", { name: "Gasto", exact: true }).waitFor();
+  await page.getByRole("dialog", { name: "Ingreso", exact: true }).waitFor();
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   await page
-    .getByRole("button", { name: "Terminar edición de gastos", exact: true })
+    .getByRole("button", { name: "Terminar edición de ingresos", exact: true })
     .click();
   await page
     .locator("nav")

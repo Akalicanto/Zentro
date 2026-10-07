@@ -32,9 +32,8 @@ export function applyProfileForm(
       concept: text("concept"),
       amount: money("amount"),
       month: text("month"),
-      status: text("status") as CashRow["status"],
-      includedInOpening:
-        text("status") === "done" && (old?.includedInOpening || false),
+      status: "planned",
+      includedInOpening: false,
     };
     next.daily[kind] = [
       ...next.daily[kind].filter((r) => r.id !== row.id),
