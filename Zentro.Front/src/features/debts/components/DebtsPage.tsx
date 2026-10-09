@@ -15,6 +15,7 @@ import {
   type ExternalDebt,
 } from "../../../domain/index.ts";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
+import DebtAnalytics from "./DebtAnalytics.tsx";
 
 const statuses = [
   { value: "paid", label: "Pagado" },
@@ -166,6 +167,7 @@ export default function DebtsPage({
           </small>
         </div>
       </div>
+      {debt && <DebtAnalytics debt={debt} />}
       <section
         className={`panel history-panel external-debt-panel${editing ? " is-editing" : ""}`}
       >

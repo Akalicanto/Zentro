@@ -30,3 +30,5 @@ La integración de API y la suite de navegador `profile.test.mjs` crean bases SQ
 El ejecutor de navegador arranca Vite si no está disponible en el puerto 5187 y detiene únicamente el proceso que ha creado. Si el front ya estaba abierto, lo reutiliza. Los puertos de prueba de las APIs son independientes.
 
 `npm.cmd run format` aplica Prettier al front, scripts, pruebas y documentación, y `dotnet format` al backend. `.editorconfig` define sangría y finales de línea; `.gitattributes` conserva LF en los archivos de texto y trata las imágenes como binarios.
+
+Las estadísticas de deuda tienen pruebas en `Zentro.Front/tests/unit/debtAnalytics.test.ts`: porcentajes, cuotas apartadas aún pendientes, importes sin calendario, orden de meses y deuda vacía o saldada. La suite de navegador comprueba gráficos, filtro, actualización al cambiar una cuota y diseño sin desbordamiento en móvil.

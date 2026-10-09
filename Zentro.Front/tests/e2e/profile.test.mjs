@@ -258,6 +258,52 @@ try {
   assert.ok((await metric("Falta por pagar").innerText()).includes("150,00"));
   assert.ok((await metric("Falta por pagar").innerText()).includes("50,00"));
   await page
+    .getByRole("heading", { name: "Así va tu deuda", exact: true })
+    .waitFor();
+  assert.ok(
+    (await page.locator(".debt-donut .donut-total").innerText()).includes(
+      "40 %",
+    ),
+  );
+  assert.ok(
+    (await page.locator(".debt-prepared-progress").innerText()).includes(
+      "60 %",
+    ),
+  );
+  assert.equal(await page.locator(".debt-stat").count(), 3);
+  assert.ok(
+    (await page.locator(".debt-stat").first().innerText()).includes("2"),
+  );
+  await page
+    .getByLabel("Año del gráfico de deuda", { exact: true })
+    .selectOption("2026");
+  assert.ok(
+    await page.locator(".debt-monthly-chart .recharts-bar-rectangle").count(),
+  );
+  await page
+    .getByLabel("Año del gráfico de deuda", { exact: true })
+    .selectOption("all");
+  fs.mkdirSync(path.join(root, "checks"), { recursive: true });
+  await page.locator(".debt-analytics").screenshot({
+    path: path.join(root, "checks", "debt-analytics-light.png"),
+  });
+  await page.getByRole("button", { name: "Modo oscuro", exact: true }).click();
+  await page
+    .locator(".debt-analytics")
+    .screenshot({ path: path.join(root, "checks", "debt-analytics-dark.png") });
+  await page.getByRole("button", { name: "Modo claro", exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  assert.equal(
+    await page
+      .locator(".debt-analytics")
+      .evaluate((element) => element.scrollWidth > element.clientWidth),
+    false,
+  );
+  await page.locator(".debt-analytics").screenshot({
+    path: path.join(root, "checks", "debt-analytics-mobile.png"),
+  });
+  await page.setViewportSize({ width: 1512, height: 1100 });
+  await page
     .getByRole("button", { name: "Editar cuotas", exact: true })
     .click();
   await page
@@ -267,6 +313,11 @@ try {
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
   assert.ok((await metric("Ya pagado").innerText()).includes("150,00"));
   assert.ok((await metric("Falta por pagar").innerText()).includes("100,00"));
+  assert.ok(
+    (await page.locator(".debt-donut .donut-total").innerText()).includes(
+      "60 %",
+    ),
+  );
   await page.waitForFunction(
     () => localStorage.getItem("zentro.v3.pending") === null,
   );
