@@ -8,7 +8,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { testProfile } from "../fixtures/profile.ts";
 import { verifySettings } from "./settingsChecks.mjs";
-import { verifySimulator } from "./simulatorChecks.mjs";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const folder = fs.mkdtempSync(
   path.join(os.tmpdir(), "zentro-profile-browser-"),
@@ -77,7 +76,6 @@ try {
     "Ahorros",
     "Inversión",
     "Deudas",
-    "Simulador",
   ]);
   assert.equal(await page.getByText("Cuentas", { exact: true }).count(), 0);
   assert.equal(
@@ -132,7 +130,6 @@ try {
     path: path.join(root, "checks/planning-dark.png"),
   });
   await page.getByRole("button", { name: "Modo claro", exact: true }).click();
-  await verifySimulator(page, state, root);
   const beforeMortgage = await state();
   await page
     .getByRole("button", { name: "Actualizar oferta", exact: true })
@@ -668,7 +665,7 @@ try {
   assert.deepEqual(await state(), saved);
   assert.deepEqual(errors, []);
   console.log(
-    "OK: seis páginas, calendario, simulador sin modificar datos, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, distribución editable sin redibujar gráficos al abrir modal, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
+    "OK: cinco páginas, calendario, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, distribución editable sin redibujar gráficos al abrir modal, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
   );
 } finally {
   await browser?.close();

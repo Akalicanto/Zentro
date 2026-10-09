@@ -13,7 +13,6 @@ import DailyPage from "../features/daily/components/DailyPage.tsx";
 import SavingsPage from "../features/savings/components/SavingsPage.tsx";
 import InvestmentPage from "../features/investment/components/InvestmentPage.tsx";
 import DebtsPage from "../features/debts/components/DebtsPage.tsx";
-import SimulatorPage from "../features/simulator/components/SimulatorPage.tsx";
 
 export default function App({ initialData }: { initialData: Profile }) {
   const { data, error, save } = useProfileStore(initialData);
@@ -78,7 +77,6 @@ export default function App({ initialData }: { initialData: Profile }) {
         <InvestmentPage data={data} open={open} controls={controls} />
       )}
       {page === "Deudas" && <DebtsPage profile={data} onSave={save} />}
-      {page === "Simulador" && <SimulatorPage data={data} />}
     </AppShell>
   );
 }

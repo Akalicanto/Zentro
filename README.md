@@ -78,8 +78,6 @@ Incluye un calendario financiero de 6 o 12 meses que reúne las aportaciones pen
 
 **Deudas** mantiene calendarios de cuotas pagadas, apartadas o pendientes. Incluye un gráfico del reparto de la deuda, barras de cuotas por mes con filtro de año, progreso pagado/preparado, número de cuotas por pagar, primera cuota pendiente y final del calendario. Los importes sin mes asignado se muestran aparte. Lo apartado todavía forma parte del importe por pagar. Estas deudas no modifican automáticamente el resto de las áreas.
 
-**Simulador** permite ensayar aportaciones futuras de ahorro e inversión, una aportación extra y un objetivo de patrimonio durante 6 a 120 meses. Compara el escenario con las aportaciones base del plan actual y muestra cuándo se alcanza el objetivo. Parte del patrimonio registrado, sin estimar rentabilidades ni nuevos intereses. Los escenarios son temporales: no se guardan ni modifican el perfil, los saldos o el plan.
-
 El engranaje abre **Configuración**: permite actualizar saldo actual de ING, efectivo, intereses acumulados y oferta hipotecaria; ajustar el plan mensual; y editar capital, interés, retención y plazo de los destinos del ahorro. Guardar o cancelar una edición devuelve al panel. Las copias JSON están en una sección desplegable. Los historiales mensuales se editan desde sus páginas y los totales calculados no se modifican directamente. Los botones de información explican los cálculos. Los historiales y calendarios destacan con color la fila del mes actual.
 
 ## Persistencia y Git
