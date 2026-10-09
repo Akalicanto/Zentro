@@ -12,6 +12,7 @@ import {
   Sun,
   Moon,
   Settings,
+  Telescope,
 } from "lucide-react";
 
 import type { ReactNode } from "react";
@@ -78,6 +79,7 @@ export default function AppShell({
               Sprout,
               TrendingUp,
               CreditCard,
+              Telescope,
             ][index];
             return (
               <button
@@ -144,6 +146,9 @@ export default function AppShell({
                 )}
                 {page === "Deudas" && (
                   <CreditCard size={27} aria-hidden="true" />
+                )}
+                {page === "Simulador" && (
+                  <Telescope size={27} aria-hidden="true" />
                 )}
                 {page}
               </h1>

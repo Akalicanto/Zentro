@@ -4,5 +4,6 @@ export const pages = [
   "Ahorros",
   "Inversión",
   "Deudas",
+  "Simulador",
 ] as const;
 export type Page = (typeof pages)[number];

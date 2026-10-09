@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { testProfile } from "../fixtures/profile.ts";
 import { verifySettings } from "./settingsChecks.mjs";
+import { verifySimulator } from "./simulatorChecks.mjs";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const folder = fs.mkdtempSync(
   path.join(os.tmpdir(), "zentro-profile-browser-"),
@@ -76,6 +77,7 @@ try {
     "Ahorros",
     "Inversión",
     "Deudas",
+    "Simulador",
   ]);
   assert.equal(await page.getByText("Cuentas", { exact: true }).count(), 0);
   assert.equal(
@@ -95,6 +97,42 @@ try {
       .locator(".metric")
       .filter({ has: page.getByText(label, { exact: true }) });
   assert.ok((await metric("Patrimonio neto").innerText()).includes("714,00"));
+  const planning = page.locator(".monthly-planning");
+  fs.mkdirSync(path.join(root, "checks"), { recursive: true });
+  await planning
+    .getByRole("heading", { name: "Tu calendario financiero" })
+    .waitFor();
+  assert.equal(await planning.locator("tbody tr").count(), 6);
+  await planning.getByRole("button", { name: "12 meses", exact: true }).click();
+  assert.equal(await planning.locator("tbody tr").count(), 12);
+  assert.equal(
+    await planning.locator(".planning-chart .recharts-bar").count(),
+    4,
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await planning.scrollIntoViewIfNeeded();
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    ),
+    false,
+  );
+  await planning.screenshot({
+    path: path.join(root, "checks/planning-mobile.png"),
+  });
+  await page.setViewportSize({ width: 1512, height: 1100 });
+  await page.waitForTimeout(450);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await planning.getByRole("button", { name: "6 meses", exact: true }).click();
+  await planning.screenshot({
+    path: path.join(root, "checks/planning-desktop.png"),
+  });
+  await page.getByRole("button", { name: "Modo oscuro", exact: true }).click();
+  await planning.screenshot({
+    path: path.join(root, "checks/planning-dark.png"),
+  });
+  await page.getByRole("button", { name: "Modo claro", exact: true }).click();
+  await verifySimulator(page, state, root);
   const beforeMortgage = await state();
   await page
     .getByRole("button", { name: "Actualizar oferta", exact: true })
@@ -630,7 +668,7 @@ try {
   assert.deepEqual(await state(), saved);
   assert.deepEqual(errors, []);
   console.log(
-    "OK: cinco páginas, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, distribución editable sin redibujar gráficos al abrir modal, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
+    "OK: seis páginas, calendario, simulador sin modificar datos, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, distribución editable sin redibujar gráficos al abrir modal, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
   );
 } finally {
   await browser?.close();

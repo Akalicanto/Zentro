@@ -1,0 +1,65 @@
+.simulator-controls {
+  border-top: 3px solid #b69bcd;
+}
+.simulator-intro {
+  color: var(--muted);
+  font-size: 16px;
+  max-width: 850px;
+}
+.simulator-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+.simulator-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.simulator-fields input,
+.simulator-fields select {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 18px;
+}
+.simulator-chart {
+  height: 340px;
+  margin: 20px 0;
+}
+.simulator-details > summary {
+  color: var(--accent-text);
+  cursor: pointer;
+  font-weight: 600;
+  padding: 14px 0;
+}
+.simulator-details table {
+  min-width: 780px;
+}
+.simulator-details td:not(:first-child),
+.simulator-details th:not(:first-child) {
+  text-align: right;
+}
+@media (max-width: 900px) {
+  .simulator-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .simulator-fields {
+    grid-template-columns: 1fr;
+  }
+  .simulator-controls .section-title {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .simulator-chart {
+    height: 270px;
+  }
+}

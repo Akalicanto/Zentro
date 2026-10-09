@@ -1,0 +1,116 @@
+.monthly-planning {
+  border-top: 3px solid #b69bcd;
+}
+.planning-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+.planning-range {
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.planning-range button {
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: var(--muted);
+}
+.planning-range button[aria-pressed="true"] {
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 2px 8px #0000000c;
+}
+.planning-highlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.planning-highlights > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: color-mix(in srgb, #b69bcd 12%, var(--panel));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.planning-highlights > div:nth-child(2) {
+  background: color-mix(in srgb, #8eafce 12%, var(--panel));
+}
+.planning-highlights > div:nth-child(3) {
+  background: color-mix(in srgb, #cf9aac 12%, var(--panel));
+}
+.planning-highlights span,
+.planning-highlights small {
+  color: var(--muted);
+}
+.planning-highlights strong {
+  font-size: clamp(24px, 2vw, 32px);
+}
+.planning-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.planning-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.planning-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.planning-chart {
+  height: 280px;
+  margin: 14px 0;
+}
+.planning-caption {
+  text-align: left;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 12px 0;
+}
+.monthly-planning td:not(:first-child),
+.monthly-planning th:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+.monthly-planning td:first-child {
+  white-space: nowrap;
+}
+.monthly-planning .planning-current td {
+  background: color-mix(in srgb, #8eafce 20%, var(--panel));
+}
+.planning-note {
+  color: var(--muted);
+  font-size: 14px;
+}
+@media (max-width: 750px) {
+  .planning-highlights {
+    grid-template-columns: 1fr;
+  }
+  .monthly-planning .section-title {
+    align-items: flex-start;
+    gap: 16px;
+    flex-direction: column;
+  }
+  .planning-chart {
+    height: 240px;
+  }
+}

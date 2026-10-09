@@ -14,6 +14,7 @@ import MetricCard from "../../../shared/components/MetricCard.tsx";
 import { ArrowUpRight } from "lucide-react";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
 import Chart from "../../history/components/ContributionChart.tsx";
+import MonthlyPlanning from "../../planning/components/MonthlyPlanning.tsx";
 
 type Props = {
   data: Profile;
@@ -221,6 +222,7 @@ export default function OverviewPage({
           </button>
         </section>
       </div>
+      <MonthlyPlanning data={data} />
       <div className="cards two">
         <section className="panel">
           <h3>Ahorro por trabajo</h3>

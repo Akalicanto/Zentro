@@ -32,3 +32,7 @@ El ejecutor de navegador arranca Vite si no está disponible en el puerto 5187 y
 `npm.cmd run format` aplica Prettier al front, scripts, pruebas y documentación, y `dotnet format` al backend. `.editorconfig` define sangría y finales de línea; `.gitattributes` conserva LF en los archivos de texto y trata las imágenes como binarios.
 
 Las estadísticas de deuda tienen pruebas en `Zentro.Front/tests/unit/debtAnalytics.test.ts`: porcentajes, cuotas apartadas aún pendientes, importes sin calendario, orden de meses y deuda vacía o saldada. La suite de navegador comprueba gráficos, filtro, actualización al cambiar una cuota y diseño sin desbordamiento en móvil.
+
+`Zentro.Front/tests/unit/monthlyPlanning.test.ts` comprueba que el calendario financiero no repite aportaciones cerradas ni cuotas apartadas o pagadas, respeta objetivos por mes, limita reposiciones y no extiende el horizonte del plan. La suite de navegador verifica las vistas de 6 y 12 meses, las barras y la ausencia de desbordamiento en móvil; guarda capturas de claro, oscuro y móvil en `checks/`.
+
+`Zentro.Front/tests/unit/scenarios.test.ts` cubre la aportación extra única, objetivos alcanzados o fuera de plazo, escenarios sin aportaciones, comparación del mismo periodo y validación de entradas. `simulatorChecks.mjs` comprueba interacción, resultados, restablecimiento, validación, oscuro y móvil, y verifica que el perfil de la API se mantiene intacto después de simular.
