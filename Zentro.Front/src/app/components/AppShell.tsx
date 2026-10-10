@@ -53,9 +53,9 @@ export default function AppShell({
           }}
         >
           <span className="brand-mark">
-            <img src="/brand/symbol.svg" alt="" />
+            <img src="/brand/symbol-mini.png" alt="" />
           </span>
-          <span className="brand-name">Zentro</span>
+          <span className="brand-name">entro</span>
         </a>
         <button
           className="sidebar-edge-toggle"
@@ -94,9 +94,9 @@ export default function AppShell({
       <main>
         <header>
           <div className="header-left">
-            <span className="mobile-brand">
-              <img src="/brand/symbol.svg" alt="" />
-              Zentro
+            <span className="mobile-brand" aria-label="Zentro">
+              <img src="/brand/symbol-mini.png" alt="" />
+              <span aria-hidden="true">entro</span>
             </span>
           </div>
           <div className="header-right">

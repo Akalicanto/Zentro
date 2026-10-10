@@ -37,6 +37,7 @@
 .brand-name {
   display: inline-flex;
   white-space: nowrap;
+  margin-left: 57px;
 }
 .brand {
   display: flex;
@@ -52,15 +53,23 @@
   position: absolute;
   left: 3px;
   top: 7px;
-  opacity: 0;
-  transform: scale(0.9);
-  background: transparent;
+  opacity: 1;
+  transform: scale(1);
+  background: #fff8ed;
+  border: 1px solid #8060b438;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px #42335410;
   display: grid;
   place-items: center;
   width: 48px;
   height: 48px;
   margin-right: 10px;
   flex-shrink: 0;
+}
+.dark .brand-mark {
+  background: #fff3e1;
+  border-color: #c2a5ee;
+  box-shadow: 0 3px 16px #0002;
 }
 .brand-mark img {
   width: 100%;

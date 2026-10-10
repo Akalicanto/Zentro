@@ -87,14 +87,21 @@
   .mobile-brand {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 3px;
     font-family: "Plus Jakarta Sans", system-ui, sans-serif;
     font-weight: 800;
     color: var(--accent-text);
   }
   .mobile-brand img {
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
+    background: #fff8ed;
+    border: 1px solid #8060b438;
+    border-radius: 10px;
+  }
+  .dark .mobile-brand img {
+    background: #fff3e1;
+    border-color: #c2a5ee;
   }
   .modal {
     width: 100%;

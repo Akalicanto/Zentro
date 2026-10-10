@@ -8,7 +8,7 @@ export default defineConfig({
       registerType: "prompt",
       injectRegister: false,
       includeAssets: [
-        "brand/symbol.svg",
+        "brand/symbol-mini.png",
         "brand/favicon-32.png",
         "brand/apple-touch-icon.png",
       ],
@@ -31,16 +31,16 @@ export default defineConfig({
             purpose: "any",
           },
           {
-            src: "/brand/icon-512.png",
+            src: "/brand/icon-maskable-512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any",
+            purpose: "maskable",
           },
           {
             src: "/brand/icon-512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "maskable",
+            purpose: "any",
           },
         ],
       },
