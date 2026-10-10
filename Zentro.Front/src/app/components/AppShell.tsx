@@ -15,6 +15,8 @@ import {
 
 import type { ReactNode } from "react";
 import PwaStatus from "../../shared/components/PwaStatus.tsx";
+import type { ExternalDebt } from "../../domain/types.ts";
+import DebtNavigation from "../../features/debts/components/DebtNavigation.tsx";
 type Props = {
   page: Page;
   error: string;
@@ -22,6 +24,9 @@ type Props = {
   open: OpenProfileForm;
   children: ReactNode;
   overlay: ReactNode;
+  debts: ExternalDebt[];
+  selectedDebtId: string | null;
+  selectDebt: (id: string | null, section?: "payments" | "activity") => void;
 };
 export default function AppShell({
   page,
@@ -30,6 +35,9 @@ export default function AppShell({
   open,
   children,
   overlay,
+  debts,
+  selectedDebtId,
+  selectDebt,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(
@@ -90,6 +98,12 @@ export default function AppShell({
             );
           })}
         </nav>
+        <DebtNavigation
+          debts={debts}
+          selectedId={page === "Deudas" ? selectedDebtId : null}
+          collapsed={collapsed}
+          onSelect={selectDebt}
+        />
       </aside>
       <main>
         <header>

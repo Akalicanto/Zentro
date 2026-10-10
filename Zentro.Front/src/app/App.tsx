@@ -23,8 +23,31 @@ export default function App({ initialData }: { initialData: Profile }) {
     return pages.includes(value as Page) ? (value as Page) : "Mi espacio";
   });
   const [savingsTab, setSavingsTab] = useState("Historial");
+  const [debtId, setDebtId] = useState<string | null>(() =>
+    new URLSearchParams(location.hash.slice(1)).get("deuda"),
+  );
+  const [debtSection, setDebtSection] = useState<"payments" | "activity">(() =>
+    new URLSearchParams(location.hash.slice(1)).get("seccion") === "activity"
+      ? "activity"
+      : "payments",
+  );
+  function selectDebt(
+    id: string | null,
+    section: "payments" | "activity" = "payments",
+  ) {
+    setPage("Deudas");
+    setDebtId(id);
+    setDebtSection(section);
+    const params = new URLSearchParams({ pagina: "Deudas" });
+    if (id) {
+      params.set("deuda", id);
+      params.set("seccion", section);
+    }
+    history.replaceState(null, "", `#${params}`);
+  }
   function navigate(next: Page) {
     setPage(next);
+    if (next === "Deudas") setDebtId(null);
     controls.setYear(currentMonth().slice(0, 4));
     history.replaceState(null, "", `#pagina=${encodeURIComponent(next)}`);
   }
@@ -35,6 +58,9 @@ export default function App({ initialData }: { initialData: Profile }) {
       error={error}
       navigate={navigate}
       open={open}
+      debts={data.debts ?? []}
+      selectedDebtId={debtId}
+      selectDebt={selectDebt}
       overlay={
         editor.modal ? (
           editor.modal.type === "settings" ? (
@@ -76,7 +102,15 @@ export default function App({ initialData }: { initialData: Profile }) {
       {page === "Inversión" && (
         <InvestmentPage data={data} open={open} controls={controls} />
       )}
-      {page === "Deudas" && <DebtsPage profile={data} onSave={save} />}
+      {page === "Deudas" && (
+        <DebtsPage
+          profile={data}
+          onSave={save}
+          selectedId={debtId}
+          section={debtSection}
+          onSelect={selectDebt}
+        />
+      )}
     </AppShell>
   );
 }

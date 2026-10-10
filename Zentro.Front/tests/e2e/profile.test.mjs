@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { testProfile } from "../fixtures/profile.ts";
 import { verifySettings } from "./settingsChecks.mjs";
+import { verifyDebtManagement } from "./debtManagementChecks.mjs";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const folder = fs.mkdtempSync(
   path.join(os.tmpdir(), "zentro-profile-browser-"),
@@ -260,9 +261,8 @@ try {
     .locator("nav")
     .getByRole("button", { name: "Deudas", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Indicar deuda", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Añadir deuda", exact: true }).click();
+  await page.getByLabel("Nombre de la deuda", { exact: true }).fill("Dentista");
   await page.getByLabel("Deuda total (€)", { exact: true }).fill("250");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
   for (const row of [
@@ -628,6 +628,12 @@ try {
     .locator("nav")
     .getByRole("button", { name: "Deudas", exact: true })
     .click();
+  await page
+    .locator(".debt-summary-card")
+    .filter({
+      has: page.getByRole("heading", { name: "Dentista", exact: true }),
+    })
+    .click();
   await page.waitForFunction(
     () => document.documentElement.scrollWidth <= innerWidth,
   );
@@ -682,6 +688,8 @@ try {
   assert.ok(await page.getByRole("dialog").isVisible());
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   assert.deepEqual(await state(), saved);
+  assert.deepEqual(errors, []);
+  await verifyDebtManagement({ page, state, root });
   assert.deepEqual(errors, []);
   console.log(
     "OK: cinco páginas, calendario, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, distribución editable sin redibujar gráficos al abrir modal, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",

@@ -2,9 +2,9 @@
 
 Zentro utiliza **SQLite relacional** en `Zentro.Api/Data/zentro.db`. Las tablas y columnas están en español. Cada dato tiene su columna, tipo y restricciones; no hay columnas `payload`, `document` ni registros JSON. No hace falta instalar un servidor MySQL.
 
-El [esquema SQL](../Zentro.Api/Infrastructure/Persistence/Schema/001_relacional.sql) define las 17 tablas, sus claves, restricciones, índices y vistas. Se incluye en el ensamblado de la API, también al publicar. `PRAGMA user_version` identifica la versión de estructura; es independiente de la versión del contrato HTTP.
+El [esquema SQL](../Zentro.Api/Infrastructure/Persistence/Schema/001_relacional.sql) define las 18 tablas, sus claves, restricciones, índices y vistas. Se incluye en el ensamblado de la API, también al publicar. `PRAGMA user_version` identifica la versión de estructura; es independiente de la versión del contrato HTTP.
 
-La versión de estructura actual es **2**. La [migración 002](../Zentro.Api/Infrastructure/Persistence/Schema/002_previsiones_sin_mes.sql) elimina `mes` de `movimientos_diarios`: las previsiones diarias no caducan al cambiar de mes. Se conserva cada registro y su importe. La API crea un respaldo privado antes de actualizar una base de versión 1. Los historiales de ahorro, inversión y cuotas siguen teniendo meses.
+La versión de estructura actual es **3**. La [migración 002](../Zentro.Api/Infrastructure/Persistence/Schema/002_previsiones_sin_mes.sql) elimina `mes` de `movimientos_diarios`: las previsiones diarias no caducan al cambiar de mes. Se conserva cada registro y su importe. La API crea un respaldo privado antes de actualizar una base de versión 1. Los historiales de ahorro, inversión y cuotas siguen teniendo meses.
 
 ## Consultar desde VS Code
 
@@ -97,3 +97,5 @@ Si falla cualquier comprobación, la transacción se revierte. La base original 
 Las copias están en `%LOCALAPPDATA%\Zentro\backups`, fuera del repositorio. `Zentro__DatabasePath` permite cambiar la ubicación de la base y `Zentro__BackupDirectory` la de los respaldos. No copies una base activa ignorando sus auxiliares; usa el respaldo nativo o cierra la aplicación primero.
 
 Git comparte el esquema y las migraciones, **nunca los datos**: `.gitignore` excluye `.db`, auxiliares SQLite, respaldos y exportaciones. El JSON permanece como formato de intercambio HTTP y de exportación/importación de la interfaz; no se almacena dentro de columnas.
+
+La [migración 003](../Zentro.Api/Infrastructure/Persistence/Schema/003_gestion_deudas.sql) añade fechas de creación, cierre y archivo, notas e historial a las deudas existentes. El historial se guarda en la tabla relacional `historial_deudas`, con `deuda_id`, `fecha`, `descripcion` y orden, sin JSON. Las cuotas e importes anteriores permanecen intactos. El cierre exige que el total esté pagado. El archivo conserva los datos y los excluye de las deudas activas y del calendario financiero.

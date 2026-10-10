@@ -1,0 +1,216 @@
+import { useState } from "react";
+import { X } from "lucide-react";
+import ModalFrame from "../../../shared/components/ModalFrame.tsx";
+import {
+  cents,
+  uid,
+  today,
+  currentMonth,
+  euro,
+  externalDebtTotals,
+  planDebtInstallments,
+  recordDebtActivity,
+  completeDebt,
+  archiveDebt,
+  type ExternalDebt,
+} from "../../../domain/index.ts";
+
+export type DebtEditorMode =
+  "create" | "edit" | "plan" | "complete" | "archive";
+export default function DebtEditor({
+  mode,
+  debt,
+  onSave,
+  onClose,
+}: {
+  mode: DebtEditorMode;
+  debt?: ExternalDebt;
+  onSave: (debt: ExternalDebt) => boolean;
+  onClose: () => void;
+}) {
+  const [error, setError] = useState("");
+  const [plan, setPlan] = useState(false);
+  const title = {
+    create: "Añadir deuda",
+    edit: "Editar deuda",
+    plan: "Planificar cuotas",
+    complete: "Completar deuda",
+    archive: "Eliminar deuda",
+  }[mode];
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      const form = new FormData(event.currentTarget);
+      let next: ExternalDebt;
+      if (mode === "complete") next = completeDebt(debt!);
+      else if (mode === "archive") next = archiveDebt(debt!);
+      else if (mode === "plan")
+        next = planDebtInstallments(
+          debt!,
+          String(form.get("start")),
+          Number(form.get("count")),
+        );
+      else {
+        const total = cents(String(form.get("amount")));
+        if (total <= 0)
+          throw Error("La deuda debe tener un importe mayor que cero.");
+        const name = String(form.get("name")).trim();
+        if (!name) throw Error("Pon un nombre a la deuda.");
+        next = recordDebtActivity(
+          {
+            ...debt,
+            id: debt?.id ?? uid(),
+            name,
+            total,
+            installments: debt?.installments ?? [],
+            notes: String(form.get("notes") ?? "").trim(),
+            createdOn:
+              debt?.createdOn ?? (mode === "create" ? today() : undefined),
+          },
+          mode === "create"
+            ? "Deuda creada."
+            : "Nombre, total o notas actualizados.",
+        );
+        if (mode === "create" && plan)
+          next = planDebtInstallments(
+            next,
+            String(form.get("start")),
+            Number(form.get("count")),
+          );
+      }
+      if (onSave(next)) onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Revisa los datos.");
+    }
+  }
+  return (
+    <ModalFrame onClose={onClose}>
+      <section
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="debt-editor-title"
+      >
+        <div className="section-title">
+          <h3 id="debt-editor-title">{title}</h3>
+          <button
+            className="icon"
+            aria-label="Cerrar formulario"
+            onClick={onClose}
+          >
+            <X />
+          </button>
+        </div>
+        <form onSubmit={submit}>
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          {(mode === "create" || mode === "edit") && (
+            <div className="form-grid">
+              <label className="full">
+                Nombre de la deuda
+                <input
+                  name="name"
+                  required
+                  maxLength={100}
+                  defaultValue={debt?.name ?? ""}
+                  autoFocus
+                />
+              </label>
+              <label className="full">
+                Deuda total (€)
+                <input
+                  name="amount"
+                  required
+                  inputMode="decimal"
+                  defaultValue={debt ? debt.total / 100 : ""}
+                />
+              </label>
+              <label className="full">
+                Notas
+                <textarea
+                  name="notes"
+                  maxLength={2000}
+                  rows={3}
+                  defaultValue={debt?.notes ?? ""}
+                  placeholder="Condiciones, contacto o cualquier detalle útil"
+                />
+              </label>
+              {mode === "create" && (
+                <label className="debt-plan-option full">
+                  <input
+                    type="checkbox"
+                    checked={plan}
+                    onChange={(e) => setPlan(e.target.checked)}
+                  />{" "}
+                  Crear un calendario de cuotas
+                </label>
+              )}
+            </div>
+          )}
+          {(mode === "plan" || plan) && (
+            <div className="form-grid debt-plan-fields">
+              <label>
+                Primer mes
+                <input
+                  type="month"
+                  name="start"
+                  required
+                  defaultValue={currentMonth()}
+                />
+              </label>
+              <label>
+                Número de cuotas
+                <input
+                  type="number"
+                  name="count"
+                  min={1}
+                  max={120}
+                  required
+                  defaultValue={12}
+                />
+              </label>
+              <p className="form-note full">
+                Repartiremos el importe sin calendario en cuotas iguales. La
+                última ajusta los céntimos. Las cuotas existentes se conservan.
+              </p>
+            </div>
+          )}
+          {mode === "complete" && (
+            <p className="debt-confirm-copy">
+              Vas a cerrar <strong>{debt?.name}</strong> y registrar como
+              pagados los{" "}
+              <strong>{euro(externalDebtTotals(debt!).remaining)}</strong>{" "}
+              restantes. El calendario y el historial se conservarán. El saldo
+              diario, el ahorro y la inversión no cambian.
+            </p>
+          )}
+          {mode === "archive" && (
+            <p className="debt-confirm-copy">
+              Se quitará <strong>{debt?.name}</strong> de las deudas activas y
+              del calendario financiero. Sus cuotas e historial se conservarán
+              en «Eliminadas», desde donde podrás recuperarla.
+            </p>
+          )}
+          <div className="modal-footer">
+            <button type="button" onClick={onClose}>
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className={mode === "archive" ? "delete-confirm" : "primary"}
+            >
+              {mode === "archive"
+                ? "Eliminar y conservar historial"
+                : mode === "complete"
+                  ? "Confirmar deuda completada"
+                  : "Guardar"}
+            </button>
+          </div>
+        </form>
+      </section>
+    </ModalFrame>
+  );
+}

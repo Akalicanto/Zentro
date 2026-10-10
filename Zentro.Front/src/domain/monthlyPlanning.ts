@@ -20,6 +20,7 @@ export function monthlyPlanning(
       investment?.actual == null ? (investment?.plannedBase ?? 0) : 0;
     const repayment = saving?.plannedRepayment ?? 0;
     const installments = (profile.debts ?? [])
+      .filter((debt) => !debt.archivedOn && !debt.completedOn)
       .flatMap((debt) => debt.installments)
       .filter((row) => row.month === month);
     const debts = sum(

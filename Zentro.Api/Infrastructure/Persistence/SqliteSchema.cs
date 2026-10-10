@@ -8,7 +8,7 @@ namespace Zentro.Api.Infrastructure.Persistence;
 /// <summary>Migraciones de estructura, independientes de la versión del contrato HTTP.</summary>
 public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileValidator validator)
 {
-    private const int CurrentVersion = 2;
+    private const int CurrentVersion = 3;
     private static readonly JsonSerializerOptions ComparisonOptions = new(JsonSerializerDefaults.Web);
 
     public void Initialize()
@@ -41,11 +41,16 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
             Backup(connection);
         }
 
-        if (version == 1)
+        if (version is 1 or 2)
         {
             using var upgrade = connection.BeginTransaction();
             var upgradeSession = new SqliteSession(connection, upgrade);
-            ApplyUndatedForecasts(upgradeSession);
+            if (version == 1)
+            {
+                ApplyUndatedForecasts(upgradeSession);
+            }
+
+            ApplyDebtManagement(upgradeSession);
             upgradeSession.Execute($"PRAGMA user_version={CurrentVersion}");
             upgrade.Commit();
             return;
@@ -69,6 +74,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         using var sql = new StreamReader(schema);
         session.Execute(sql.ReadToEnd());
         ApplyUndatedForecasts(session);
+        ApplyDebtManagement(session);
         if (profile is not null)
         {
             ProfileRepository.WriteSnapshot(session, profile);
@@ -100,5 +106,13 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         destination.Open();
         // La API nativa incluye los datos del WAL y produce una copia coherente.
         source.BackupDatabase(destination);
+    }
+
+    private static void ApplyDebtManagement(SqliteSession session)
+    {
+        using var resource = typeof(SqliteSchema).Assembly.GetManifestResourceStream("Zentro.Api.Infrastructure.Persistence.Schema.003_gestion_deudas.sql")
+            ?? throw new InvalidOperationException("No se encuentra la migración de deudas.");
+        using var sql = new StreamReader(resource);
+        session.Execute(sql.ReadToEnd());
     }
 }

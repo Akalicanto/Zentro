@@ -105,14 +105,14 @@ export async function runMigrationChecks({
       const migrated = new DatabaseSync(file, { readOnly: true });
       assert.equal(
         migrated.prepare("PRAGMA user_version").get().user_version,
-        2,
+        3,
       );
       assert.deepEqual(migrated.prepare("PRAGMA foreign_key_check").all(), []);
       assert.equal(
         migrated
           .prepare("SELECT COUNT(*) AS n FROM sqlite_schema WHERE type='table'")
           .get().n,
-        17,
+        18,
       );
       assert.equal(
         migrated
@@ -162,17 +162,27 @@ export async function runMigrationChecks({
   }
   // Actualiza una base relacional v1 con previsiones de meses distintos sin perder importes.
   const versionOneFile = path.join(folder, "legacy-document.db");
+  const relationalProfile = {
+    ...original,
+    debts: original.debts.map(
+      ({ createdOn, completedOn, archivedOn, notes, activity, ...debt }) =>
+        debt,
+    ),
+  };
   const versionOne = new DatabaseSync(versionOneFile);
   versionOne.exec(
-    "ALTER TABLE movimientos_diarios ADD COLUMN mes TEXT NOT NULL DEFAULT '2025-01'; DROP INDEX movimientos_por_tipo; CREATE INDEX movimientos_por_mes ON movimientos_diarios(perfil_id,mes,tipo); PRAGMA user_version=1;",
+    "DROP TABLE historial_deudas; ALTER TABLE deudas DROP COLUMN fecha_creacion; ALTER TABLE deudas DROP COLUMN fecha_cierre; ALTER TABLE deudas DROP COLUMN fecha_archivo; ALTER TABLE deudas DROP COLUMN notas; ALTER TABLE deudas DROP COLUMN historial_registrado; ALTER TABLE movimientos_diarios ADD COLUMN mes TEXT NOT NULL DEFAULT '2025-01'; DROP INDEX movimientos_por_tipo; CREATE INDEX movimientos_por_mes ON movimientos_diarios(perfil_id,mes,tipo); PRAGMA user_version=1;",
   );
   versionOne.close();
   const backupCount = readdirSync(snapshots).length;
   await start(versionOneFile);
-  assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), original);
+  assert.deepEqual(
+    await (await fetch(`${base}/api/state`)).json(),
+    relationalProfile,
+  );
   await stop();
   const upgraded = new DatabaseSync(versionOneFile, { readOnly: true });
-  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 3);
   assert.equal(
     upgraded
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -182,6 +192,34 @@ export async function runMigrationChecks({
   );
   assert.equal(readdirSync(snapshots).length, backupCount + 1);
   upgraded.close();
+  // Actualiza también la versión 2 que utiliza el perfil local actual.
+  const versionTwo = new DatabaseSync(versionOneFile);
+  versionTwo.exec(
+    "DROP TABLE historial_deudas; ALTER TABLE deudas DROP COLUMN fecha_creacion; ALTER TABLE deudas DROP COLUMN fecha_cierre; ALTER TABLE deudas DROP COLUMN fecha_archivo; ALTER TABLE deudas DROP COLUMN notas; ALTER TABLE deudas DROP COLUMN historial_registrado; PRAGMA user_version=2;",
+  );
+  versionTwo.close();
+  await start(versionOneFile);
+  assert.deepEqual(
+    await (await fetch(`${base}/api/state`)).json(),
+    relationalProfile,
+  );
+  await stop();
+  const versionThree = new DatabaseSync(versionOneFile, { readOnly: true });
+  assert.equal(
+    versionThree.prepare("PRAGMA user_version").get().user_version,
+    3,
+  );
+  assert.equal(
+    versionThree
+      .prepare(
+        "SELECT COUNT(*) AS n FROM sqlite_schema WHERE name='historial_deudas'",
+      )
+      .get().n,
+    1,
+  );
+  assert.deepEqual(versionThree.prepare("PRAGMA foreign_key_check").all(), []);
+  versionThree.close();
+  assert.equal(readdirSync(snapshots).length, backupCount + 2);
   const invalid = structuredClone(original);
   delete invalid.savings[0].actual;
   const file = path.join(folder, "invalid-legacy.db");

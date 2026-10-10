@@ -117,6 +117,30 @@ export function validateProfile(raw: unknown): Profile {
         throw Error(
           "Revisa la deuda y sus cuotas: no pueden superar el total ni repetir un mes.",
         );
+      if (
+        [debt.createdOn, debt.completedOn, debt.archivedOn].some(
+          (d) => d !== undefined && !date(d),
+        ) ||
+        (debt.notes !== undefined &&
+          (typeof debt.notes !== "string" || debt.notes.length > 2000)) ||
+        (debt.completedOn !== undefined &&
+          debt.installments
+            .filter((r) => r.status === "paid")
+            .reduce((n, r) => n + r.amount, 0) !== debt.total) ||
+        (debt.activity !== undefined &&
+          (!Array.isArray(debt.activity) ||
+            !unique(debt.activity) ||
+            debt.activity.some(
+              (r) =>
+                !date(r.date) ||
+                typeof r.description !== "string" ||
+                !r.description.trim() ||
+                r.description.length > 1000,
+            )))
+      )
+        throw Error(
+          "Revisa las fechas, notas e historial. Una deuda completada debe estar pagada por entero.",
+        );
     }
   }
   for (const rows of [profile.savings, profile.investment]) {

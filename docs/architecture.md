@@ -20,7 +20,7 @@ HTTP → Controller → ProfileService → ProfileValidator
 
 Cada operación abre y libera su conexión. Leer el perfil usa una transacción para obtener una instantánea coherente. Guardarlo sustituye las colecciones y sus ajustes dentro de una única transacción. El acceso es síncrono: SQLite realiza estas operaciones localmente y no necesita una capa de tareas artificiales.
 
-El repositorio lee y escribe modelos tipados sobre 17 tablas relacionales, con claves foráneas y restricciones. No guarda documentos JSON. `JsonRequired` diferencia un campo ausente de un importe `null`; este último representa un mes sin registrar. Los campos opcionales de versiones anteriores pueden omitirse; los campos desconocidos se rechazan para evitar pérdidas silenciosas. `LegacyProfileReader` se utiliza exclusivamente durante la migración inicial y las tablas antiguas desaparecen al completarla. La [guía de base de datos](database.md) describe las tablas, vistas, relaciones y copias privadas.
+El repositorio lee y escribe modelos tipados sobre 18 tablas relacionales, con claves foráneas y restricciones. No guarda documentos JSON. `JsonRequired` diferencia un campo ausente de un importe `null`; este último representa un mes sin registrar. Los campos opcionales de versiones anteriores pueden omitirse; los campos desconocidos se rechazan para evitar pérdidas silenciosas. `LegacyProfileReader` se utiliza exclusivamente durante la migración inicial y las tablas antiguas desaparecen al completarla. La [guía de base de datos](database.md) describe las tablas, vistas, relaciones y copias privadas.
 
 ## Frontend
 
@@ -68,3 +68,7 @@ Las rutas siguen siendo `GET /api/state`, `PUT /api/state` y `GET /api/health`. 
 `shared/components/PwaStatus.tsx` ofrece instalación, estado de conexión y actualización voluntaria. Vite genera el manifiesto y el service worker. Solo se precargan archivos estáticos; las respuestas `/api` no se almacenan en esa caché. `styles/mobile.css` reúne navegación inferior, áreas seguras y ajustes táctiles.
 
 La API sirve `wwwroot` desde el directorio de salida, donde MSBuild copia la compilación React. Los activos se sirven mediante `UseStaticFiles`; el manifiesto de activos estáticos del SDK se desactiva porque los archivos proceden de Vite. Ejecuta la compilación del front antes de publicar .NET. Más detalles en [Android](android.md).
+
+## Gestión de deudas
+
+`DebtsPage` coordina la vista general, filtros de activas/completadas/eliminadas, detalle y selección por ID. `DebtNavigation` ofrece un desplegable por deuda activa. La URL conserva la deuda y la pestaña para recargar directamente su ficha. `DebtDetail` reutiliza calendario y gráficos, `DebtEditor` gestiona creación, datos, planificación y confirmaciones. `domain/externalDebts.ts` aplica cierre, reapertura, archivo, recuperación y reparto exacto en céntimos. Completar registra cuotas pagadas únicamente en la deuda; no modifica los otros saldos.

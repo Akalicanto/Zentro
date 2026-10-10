@@ -1,463 +1,397 @@
-import ModalFrame from "../../../shared/components/ModalFrame.tsx";
-import { Fragment, useState } from "react";
-import { ArrowUpDown, Check, Pencil, Plus, X } from "lucide-react";
+import { useState } from "react";
 import {
-  addMonth,
-  cents,
-  currentMonth,
-  euro,
+  ArrowLeft,
+  Plus,
+  Pencil,
+  CheckCheck,
+  Trash2,
+  RotateCcw,
+  CalendarDays,
+  ChevronRight,
+} from "lucide-react";
+import {
+  debtStatus,
+  debtAnalytics,
   externalDebtTotals,
+  euro,
   monthName,
+  currentMonth,
   sum,
-  uid,
   validateProfile,
+  reopenDebt,
+  restoreDebt,
   type Profile,
-  type DebtInstallment,
   type ExternalDebt,
 } from "../../../domain/index.ts";
+import MetricCard from "../../../shared/components/MetricCard.tsx";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
-import DebtAnalytics from "./DebtAnalytics.tsx";
-
-const statuses = [
-  { value: "paid", label: "Pagado" },
-  { value: "reserved", label: "Apartado" },
-  { value: "pending", label: "Pendiente" },
-] as const;
-const months = Array.from({ length: 12 }, (_, i) =>
-  new Date(2000, i, 1).toLocaleDateString("es-ES", { month: "long" }),
-);
+import DebtDetail from "./DebtDetail.tsx";
+import DebtEditor, { type DebtEditorMode } from "./DebtEditor.tsx";
 
 export default function DebtsPage({
   profile,
   onSave,
+  selectedId,
+  section,
+  onSelect,
 }: {
   profile: Profile;
   onSave: (profile: Profile) => boolean;
+  selectedId: string | null;
+  section: "payments" | "activity";
+  onSelect: (id: string | null, section?: "payments" | "activity") => void;
 }) {
-  const debt = profile.debts?.find((d) => d.name.toLowerCase() === "dentista");
-  const [editing, setEditing] = useState(false);
-  const [descending, setDescending] = useState(false);
-  const [modal, setModal] = useState<"total" | "installment" | null>(null);
-  const [selected, setSelected] = useState<DebtInstallment>();
-  const [month, setMonth] = useState(currentMonth());
-  const [error, setError] = useState("");
-  const rows = [...(debt?.installments ?? [])].sort((a, b) =>
-    descending
-      ? b.month.localeCompare(a.month)
-      : a.month.localeCompare(b.month),
+  const debts = profile.debts ?? [];
+  const debt = debts.find((d) => d.id === selectedId);
+  const [filter, setFilter] = useState<"active" | "completed" | "archived">(
+    "active",
   );
-  const totals = debt
-    ? externalDebtTotals(debt)
-    : { total: 0, paid: 0, reserved: 0, remaining: 0, pending: 0 };
-  const calendarTotal = sum(rows.map((r) => r.amount));
-  const years = [
-    ...new Set([
-      ...rows.map((r) => r.month.slice(0, 4)),
-      month.slice(0, 4),
-      ...Array.from({ length: 11 }, (_, i) =>
-        String(Number(currentMonth().slice(0, 4)) - 5 + i),
-      ),
-    ]),
-  ].sort((a, b) => b.localeCompare(a));
-  function openTotal() {
-    setError("");
-    setModal("total");
-  }
-  function openInstallment(row?: DebtInstallment) {
-    setError("");
-    setSelected(row);
-    const last = [...rows]
-      .sort((a, b) => a.month.localeCompare(b.month))
-      .at(-1);
-    setMonth(row?.month ?? (last ? addMonth(last.month, 1) : currentMonth()));
-    setModal("installment");
-  }
-  function saveDebt(nextDebt: ExternalDebt) {
-    const next = {
+  const [search, setSearch] = useState("");
+  const [modal, setModal] = useState<{
+    mode: DebtEditorMode;
+    debt?: ExternalDebt;
+  } | null>(null);
+  const [error, setError] = useState("");
+  const active = debts.filter((d) => debtStatus(d) === "active");
+  const live = debts.filter((d) => !d.archivedOn);
+  const visible = debts.filter(
+    (d) =>
+      debtStatus(d) === filter &&
+      d.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
+  );
+  const outstanding = active
+    .flatMap((d) => d.installments.map((r) => ({ ...r, debt: d })))
+    .filter((r) => r.status !== "paid")
+    .sort((a, b) => a.month.localeCompare(b.month));
+  const overdue = outstanding.filter((r) => r.month < currentMonth());
+  function saveDebt(next: ExternalDebt) {
+    const nextProfile = {
       ...profile,
-      debts: [
-        ...(profile.debts ?? []).filter((d) => d.id !== nextDebt.id),
-        nextDebt,
-      ],
+      debts: debts.some((d) => d.id === next.id)
+        ? debts.map((d) => (d.id === next.id ? next : d))
+        : [...debts, next],
     };
-    validateProfile(next);
-    return onSave(next);
+    validateProfile(nextProfile);
+    const saved = onSave(nextProfile);
+    if (saved) {
+      setError("");
+      onSelect(next.id);
+    }
+    return saved;
   }
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function action(next: ExternalDebt) {
     try {
-      const form = new FormData(event.currentTarget);
-      const amount = cents(String(form.get("amount") ?? ""));
-      const next = structuredClone(
-        debt ?? { id: uid(), name: "Dentista", total: 0, installments: [] },
-      );
-      if (modal === "total") next.total = amount;
-      else {
-        if (!selected && next.installments.some((r) => r.month === month))
-          throw Error("Este mes ya tiene una cuota. Edítala desde la tabla.");
-        next.installments = [
-          ...next.installments.filter((r) => r.month !== selected?.month),
-          {
-            month,
-            amount,
-            status: form.get("status") as DebtInstallment["status"],
-          },
-        ].sort((a, b) => a.month.localeCompare(b.month));
-      }
-      if (saveDebt(next)) setModal(null);
+      saveDebt(next);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Revisa la cuota.");
+      setError(err instanceof Error ? err.message : "No se pudo guardar.");
     }
   }
-  function removeInstallment() {
-    if (
-      !debt ||
-      !selected ||
-      !confirm(
-        "¿Eliminar esta cuota del calendario? El total de la deuda se conserva y se recalculan los importes pagados y pendientes.",
-      )
-    )
-      return;
-    try {
-      if (
-        saveDebt({
-          ...debt,
-          installments: debt.installments.filter(
-            (r) => r.month !== selected.month,
-          ),
-        })
-      )
-        setModal(null);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "No se ha podido eliminar la cuota.",
-      );
-    }
-  }
+  const open = (mode: DebtEditorMode, item?: ExternalDebt) => {
+    setError("");
+    setModal({ mode, debt: mode === "create" ? undefined : (item ?? debt) });
+  };
   return (
     <>
-      <div className="debt-page-title">
-        <h2>Dentista</h2>
-        <span>Plan de pagos</span>
-      </div>
-      <div className="cards three external-debt-primary">
-        <div className="metric tone-lilac">
-          <span>Deuda total</span>
-          <h2>{euro(totals.total)}</h2>
-          <small>Importe del tratamiento</small>
-          <button className="metric-action" onClick={openTotal}>
-            <Pencil size={13} />
-            {debt ? "Actualizar total" : "Indicar deuda"}
-          </button>
-        </div>
-        <div className="metric tone-sage">
-          <span>Ya pagado</span>
-          <h2>{euro(totals.paid)}</h2>
-          <small>
-            {euro(totals.paid + totals.reserved)} pagados o preparados
-          </small>
-        </div>
-        <div className="metric tone-rose">
-          <span>Falta por pagar</span>
-          <h2>{euro(totals.remaining)}</h2>
-          <small>
-            {euro(totals.reserved)} apartados · {euro(totals.pending)} por
-            preparar
-          </small>
-        </div>
-      </div>
-      {debt && <DebtAnalytics debt={debt} />}
-      <section
-        className={`panel history-panel external-debt-panel${editing ? " is-editing" : ""}`}
-      >
-        <div className="section-title table-heading">
-          <div>
-            <span className="table-eyebrow">CUOTA A CUOTA</span>
-            <h3>Calendario de pagos</h3>
-          </div>
-          <div className="history-actions">
-            <div className="history-order">
-              <button
-                onClick={() => setDescending(!descending)}
-                aria-label="Cambiar orden de las cuotas"
-              >
-                <ArrowUpDown size={16} />
-                {descending ? "Recientes primero" : "Antiguos primero"}
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
+      <div className="debt-manager-heading">
+        <div>
+          {debt ? (
+            <>
+              <button className="debt-back" onClick={() => onSelect(null)}>
+                <ArrowLeft size={16} />
+                Todas las deudas
               </button>
-            </div>
-            <button
-              className={`history-edit-toggle${editing ? " active" : ""}`}
-              aria-label={
-                editing ? "Terminar edición de cuotas" : "Editar cuotas"
-              }
-              aria-pressed={editing}
-              disabled={!rows.length}
-              onClick={() => setEditing(!editing)}
-            >
-              {editing ? <Check size={16} /> : <Pencil size={16} />}{" "}
-              {editing ? "Terminar edición" : "Editar"}
-            </button>
-            <button
-              className="history-edit-toggle"
-              disabled={!debt}
-              onClick={() => openInstallment()}
-            >
-              <Plus size={16} />
-              Añadir mes
-            </button>
-          </div>
+              <h2>
+                {debt.name}
+                <span className={`debt-state debt-state-${debtStatus(debt)}`}>
+                  {
+                    {
+                      active: "Activa",
+                      completed: "Completada",
+                      archived: "Eliminada",
+                    }[debtStatus(debt)]
+                  }
+                </span>
+              </h2>
+              {debt.notes && <p className="debt-notes">{debt.notes}</p>}
+            </>
+          ) : (
+            <>
+              <h2>Tus deudas, bajo control</h2>
+              <p>Lo pendiente hoy y lo que ya has dejado atrás.</p>
+            </>
+          )}
         </div>
-        {editing && (
-          <p className="history-edit-note">
-            Selecciona un mes para cambiar el importe o su estado.
-          </p>
-        )}
-        <div className="table-wrap">
-          <table className="monthly-history dental-history">
-            <thead>
-              <tr>
-                <th>Mes</th>
-                {statuses.map((s) => (
-                  <th key={s.value} className={`debt-column-${s.value}`}>
-                    {s.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => (
-                <Fragment key={row.month}>
-                  {(i === 0 ||
-                    rows[i - 1].month.slice(0, 4) !==
-                      row.month.slice(0, 4)) && (
-                    <tr className="history-year">
-                      <th colSpan={4} scope="rowgroup">
-                        <span className="history-year-label">
-                          {row.month.slice(0, 4)}
-                        </span>
-                      </th>
-                    </tr>
-                  )}
-                  <tr
-                    className={
-                      row.month === currentMonth()
-                        ? "current-month-row"
-                        : undefined
-                    }
-                    aria-current={
-                      row.month === currentMonth() ? "date" : undefined
-                    }
-                  >
-                    <td>
-                      <span className="history-month-cell">
-                        {editing ? (
-                          <button
-                            className="history-month-edit"
-                            aria-label={`Editar cuota ${row.month}`}
-                            onClick={() => openInstallment(row)}
-                          >
-                            {monthName(row.month).replace(/ de \d{4}$/, "")}
-                          </button>
-                        ) : (
-                          monthName(row.month).replace(/ de \d{4}$/, "")
-                        )}
-                      </span>
-                    </td>
-                    {statuses.map((s) => (
-                      <td key={s.value} className={`debt-column-${s.value}`}>
-                        {row.status === s.value ? (
-                          <span className={`debt-amount debt-${s.value}`}>
-                            {euro(row.amount)}
-                          </span>
-                        ) : (
-                          <span className="debt-empty">—</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                </Fragment>
-              ))}
-              {!rows.length && (
-                <tr>
-                  <td colSpan={4} className="empty">
-                    {debt
-                      ? "Añade las cuotas del tratamiento."
-                      : "Indica el total de la deuda para empezar."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-            {!!rows.length && (
-              <tfoot>
-                <tr>
-                  <th scope="row">Total del calendario</th>
-                  <td>{euro(totals.paid)}</td>
-                  <td>{euro(totals.reserved)}</td>
-                  <td>
-                    {euro(
-                      sum(
-                        rows
-                          .filter((r) => r.status === "pending")
-                          .map((r) => r.amount),
-                      ),
-                    )}
-                  </td>
-                </tr>
-              </tfoot>
+        <button className="primary" onClick={() => open("create", undefined)}>
+          <Plus size={17} />
+          Añadir deuda
+        </button>
+      </div>
+      {debt ? (
+        <>
+          <div className="debt-manager-actions">
+            {!debt.archivedOn && !debt.completedOn && (
+              <>
+                <button onClick={() => open("edit")}>
+                  <Pencil size={16} />
+                  Editar deuda
+                </button>
+                <button
+                  disabled={
+                    debt.total <= sum(debt.installments.map((r) => r.amount))
+                  }
+                  onClick={() => open("plan")}
+                >
+                  <CalendarDays size={16} />
+                  Planificar cuotas
+                </button>
+                <button onClick={() => open("complete")}>
+                  <CheckCheck size={16} />
+                  Completar deuda
+                </button>
+              </>
             )}
-          </table>
-        </div>
-        {debt && calendarTotal < debt.total && (
-          <p className="unplanned-debt">
-            {euro(debt.total - calendarTotal)} sin mes asignado.
-          </p>
-        )}
-        <PanelInfo title="Calendario de pagos">
-          Pagado: dinero ya abonado al dentista. Apartado: dinero preparado que
-          todavía no has pagado. Pendiente: dinero que aún falta preparar y
-          pagar. Falta por pagar incluye el dinero apartado. Cambiar una cuota
-          actualiza únicamente esta deuda; no modifica el saldo diario, el
-          ahorro, la inversión ni la deuda interna.
-        </PanelInfo>
-      </section>
-      {modal && (
-        <ModalFrame onClose={() => setModal(null)}>
-          <section
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="dental-modal-title"
-          >
-            <div className="section-title">
-              <h3 id="dental-modal-title">
-                {modal === "total"
-                  ? "Deuda del dentista"
-                  : selected
-                    ? "Editar cuota"
-                    : "Añadir cuota"}
-              </h3>
-              <button
-                className="icon"
-                aria-label="Cerrar formulario"
-                onClick={() => setModal(null)}
-              >
-                <X />
+            {debt.completedOn && !debt.archivedOn && (
+              <button onClick={() => action(reopenDebt(debt))}>
+                <RotateCcw size={16} />
+                Reabrir deuda
               </button>
-            </div>
-            <form onSubmit={submit}>
-              {error && (
-                <p className="error" role="alert">
-                  {error}
+            )}
+            {debt.archivedOn ? (
+              <button onClick={() => action(restoreDebt(debt))}>
+                <RotateCcw size={16} />
+                Recuperar deuda
+              </button>
+            ) : (
+              <button className="debt-remove" onClick={() => open("archive")}>
+                <Trash2 size={16} />
+                Eliminar deuda
+              </button>
+            )}
+          </div>
+          <div className="tabs" role="tablist" aria-label="Detalle de deuda">
+            <button
+              role="tab"
+              aria-selected={section === "payments"}
+              className={section === "payments" ? "active" : ""}
+              onClick={() => onSelect(debt.id, "payments")}
+            >
+              Plan de pagos
+            </button>
+            <button
+              role="tab"
+              aria-selected={section === "activity"}
+              className={section === "activity" ? "active" : ""}
+              onClick={() => onSelect(debt.id, "activity")}
+            >
+              Historial de cambios
+            </button>
+          </div>
+          {section === "payments" ? (
+            <DebtDetail
+              key={debt.id}
+              debt={debt}
+              profile={profile}
+              onSave={onSave}
+            />
+          ) : (
+            <section className="panel debt-activity-panel">
+              <h3>Historial de {debt.name}</h3>
+              {debt.completedOn && (
+                <p>
+                  Cerrada el{" "}
+                  {new Date(debt.completedOn + "T12:00:00").toLocaleDateString(
+                    "es-ES",
+                  )}
+                  .
                 </p>
               )}
-              <div className="form-grid">
-                {modal === "installment" && (
-                  <fieldset className="month-selection">
-                    <legend>Mes de la cuota</legend>
-                    <div className="month-selection-grid">
-                      <label>
-                        Mes
-                        <select
-                          aria-label="Mes de la cuota"
-                          value={month.slice(5)}
-                          disabled={!!selected}
-                          onChange={(e) =>
-                            setMonth(`${month.slice(0, 4)}-${e.target.value}`)
-                          }
-                        >
-                          {months.map((name, i) => (
-                            <option
-                              key={name}
-                              value={String(i + 1).padStart(2, "0")}
-                            >
-                              {name.charAt(0).toUpperCase() + name.slice(1)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label>
-                        Año
-                        <select
-                          aria-label="Año de la cuota"
-                          value={month.slice(0, 4)}
-                          disabled={!!selected}
-                          onChange={(e) =>
-                            setMonth(`${e.target.value}-${month.slice(5)}`)
-                          }
-                        >
-                          {years.map((y) => (
-                            <option key={y}>{y}</option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                  </fieldset>
-                )}
-                <label className="full">
-                  {modal === "total"
-                    ? "Deuda total (€)"
-                    : "Importe de la cuota (€)"}
-                  <input
-                    name="amount"
-                    required
-                    inputMode="decimal"
-                    defaultValue={
-                      modal === "total"
-                        ? debt
-                          ? debt.total / 100
-                          : ""
-                        : selected
-                          ? selected.amount / 100
-                          : ""
-                    }
-                  />
-                </label>
-                {modal === "installment" && (
-                  <fieldset className="installment-status full">
-                    <legend>Estado de la cuota</legend>
-                    <div className="installment-status-options">
-                      {statuses.map((s) => (
-                        <label
-                          key={s.value}
-                          className={`installment-status-choice debt-${s.value}`}
-                        >
-                          <input
-                            type="radio"
-                            name="status"
-                            value={s.value}
-                            defaultChecked={
-                              (selected?.status ?? "pending") === s.value
-                            }
-                          />
-                          <span>{s.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                )}
+              <ol className="debt-activity">
+                {[...(debt.activity ?? [])].reverse().map((row) => (
+                  <li key={row.id}>
+                    <time dateTime={row.date}>
+                      {new Date(row.date + "T12:00:00").toLocaleDateString(
+                        "es-ES",
+                      )}
+                    </time>
+                    <span>{row.description}</span>
+                  </li>
+                ))}
+              </ol>
+              {!debt.activity?.length && (
+                <p className="empty">
+                  Los cambios que hagas desde ahora aparecerán aquí. Tus cuotas
+                  anteriores se conservan.
+                </p>
+              )}
+              <PanelInfo title="Historial de deuda">
+                Este historial recoge las operaciones realizadas en Zentro desde
+                la incorporación de esta función; las cuotas importadas siguen
+                en el plan de pagos.
+              </PanelInfo>
+            </section>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="cards three debts-overview-kpis">
+            <MetricCard
+              label="Por pagar"
+              amount={sum(active.map((d) => externalDebtTotals(d).remaining))}
+              note={`${active.length} deudas activas`}
+              tone="rose"
+            />
+            <MetricCard
+              label="Dinero apartado"
+              amount={sum(active.map((d) => externalDebtTotals(d).reserved))}
+              note="Preparado, todavía por abonar"
+              tone="butter"
+            />
+            <MetricCard
+              label="Ya pagado"
+              amount={sum(live.map((d) => externalDebtTotals(d).paid))}
+              note="Deudas activas y completadas"
+              tone="sage"
+            />
+          </div>
+          {outstanding[0] && (
+            <section className="panel debt-next-payment">
+              <CalendarDays size={24} />
+              <div>
+                <span>Próxima cuota por pagar</span>
+                <strong>
+                  {outstanding[0].debt.name} · {euro(outstanding[0].amount)}
+                </strong>
+                <small>
+                  {monthName(outstanding[0].month)}
+                  {outstanding[0].status === "reserved"
+                    ? " · Dinero apartado"
+                    : ""}
+                </small>
               </div>
-              <div className="modal-footer dental-modal-footer">
-                {modal === "installment" && selected && (
+              <button onClick={() => onSelect(outstanding[0].debt.id)}>
+                Ver deuda
+                <ChevronRight size={16} />
+              </button>
+            </section>
+          )}
+          {overdue.length > 0 && (
+            <p className="debt-overdue" role="status">
+              Hay {overdue.length} cuotas de meses anteriores sin marcar como
+              pagadas: {euro(sum(overdue.map((r) => r.amount)))}. Revisa si
+              falta actualizar su estado.
+            </p>
+          )}
+          <section className="panel debts-list-panel">
+            <div className="section-title">
+              <h3>Listado de deudas</h3>
+              <label className="debt-search">
+                Buscar deuda
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Nombre"
+                />
+              </label>
+            </div>
+            <div
+              className="debt-filters"
+              role="tablist"
+              aria-label="Estado de las deudas"
+            >
+              {(["active", "completed", "archived"] as const).map((status) => (
+                <button
+                  key={status}
+                  role="tab"
+                  aria-selected={filter === status}
+                  onClick={() => setFilter(status)}
+                >
+                  {
+                    {
+                      active: "Activas",
+                      completed: "Completadas",
+                      archived: "Eliminadas",
+                    }[status]
+                  }
+                  <span>
+                    {debts.filter((d) => debtStatus(d) === status).length}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className="debt-summary-grid">
+              {visible.map((item) => {
+                const a = debtAnalytics(item);
+                return (
                   <button
-                    type="button"
-                    className="remove-installment"
-                    onClick={removeInstallment}
+                    className={`debt-summary-card debt-state-${debtStatus(item)}`}
+                    key={item.id}
+                    onClick={() => onSelect(item.id)}
                   >
-                    Eliminar cuota
+                    <div>
+                      <h4>{item.name}</h4>
+                      <ChevronRight size={20} />
+                    </div>
+                    <span>
+                      {debtStatus(item) === "completed"
+                        ? "Completada"
+                        : debtStatus(item) === "archived"
+                          ? "Conservada en el historial"
+                          : "Falta por pagar"}
+                    </span>
+                    <strong>{euro(a.totals.remaining)}</strong>
+                    <div className="debt-card-progress">
+                      <i style={{ width: `${a.paidPercent}%` }} />
+                    </div>
+                    <small>
+                      {euro(a.totals.paid)} de {euro(item.total)} pagados
+                    </small>
+                    {a.next && (
+                      <small>
+                        Siguiente: {monthName(a.next.month)} ·{" "}
+                        {euro(a.next.amount)}
+                      </small>
+                    )}
+                    {a.unassigned > 0 && (
+                      <small>{euro(a.unassigned)} sin calendario</small>
+                    )}
                   </button>
-                )}
-                <button type="button" onClick={() => setModal(null)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="primary">
-                  Guardar
-                </button>
+                );
+              })}
+            </div>
+            {!visible.length && (
+              <div className="empty">
+                {search
+                  ? "No hay deudas con ese nombre."
+                  : filter === "active"
+                    ? "No tienes deudas activas. Añade una cuando lo necesites."
+                    : filter === "completed"
+                      ? "Las deudas que completes se guardarán aquí."
+                      : "Las deudas eliminadas se conservarán aquí para recuperarlas."}
               </div>
-            </form>
+            )}
+            <PanelInfo title="Tus deudas">
+              Los totales pendientes y el calendario financiero incluyen solo
+              deudas activas. Lo apartado sigue pendiente de pago. Eliminar
+              conserva la ficha y sus cuotas; completar registra el importe
+              restante como pagado tras confirmarlo. Estas operaciones no
+              modifican tus otros saldos.
+            </PanelInfo>
           </section>
-        </ModalFrame>
+        </>
+      )}
+      {modal && (
+        <DebtEditor
+          mode={modal.mode}
+          debt={modal.debt}
+          onSave={saveDebt}
+          onClose={() => setModal(null)}
+        />
       )}
     </>
   );

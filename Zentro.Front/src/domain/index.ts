@@ -3,6 +3,7 @@ export type * from "./types.ts";
 export * from "./profile.ts";
 export * from "./totals.ts";
 export * from "./debtAnalytics.ts";
+export * from "./externalDebts.ts";
 export * from "./monthlyPlanning.ts";
 export * from "./contributions.ts";
 export * from "./savingsDistribution.ts";

@@ -44,7 +44,13 @@ export type ExternalDebt = {
   name: string;
   total: number;
   installments: DebtInstallment[];
+  createdOn?: string;
+  completedOn?: string;
+  archivedOn?: string;
+  notes?: string;
+  activity?: DebtActivity[];
 };
+export type DebtActivity = { id: string; date: string; description: string };
 export type SavingsPlacement = {
   id: string;
   name: string;

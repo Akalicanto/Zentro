@@ -141,6 +141,15 @@ try {
       id: "external-test",
       name: "Dentista",
       total: 25000,
+      createdOn: "2026-01-01",
+      notes: "Nota de prueba",
+      activity: [
+        {
+          id: "test-log",
+          date: "2026-01-01",
+          description: "Deuda de prueba creada.",
+        },
+      ],
       installments: [
         { month: "2026-01", amount: 10000, status: "paid" },
         { month: "2026-02", amount: 5000, status: "reserved" },
@@ -152,6 +161,16 @@ try {
     { id: "possible-test", concept: "Posible gasto de prueba", amount: 8000 },
   ];
   assert.equal((await put(state)).status, 204);
+  for (const bad of [
+    { completedOn: "2026-10-10" },
+    { notes: "x".repeat(2001) },
+    { activity: [{ id: "bad", date: "2026-13-01", description: "Inválido" }] },
+  ]) {
+    assert.equal(
+      (await put({ ...state, debts: [{ ...state.debts[0], ...bad }] })).status,
+      400,
+    );
+  }
   const oldDaily = structuredClone(state);
   oldDaily.daily.expenses[0].month = "2024-08";
   assert.equal((await put(oldDaily)).status, 204);
@@ -289,7 +308,7 @@ try {
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
   sql = new DatabaseSync(path.join(folder, "test.db"));
-  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 3);
   assert.equal(
     sql
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -352,7 +371,7 @@ try {
   const tables = sql
     .prepare("SELECT name FROM sqlite_schema WHERE type='table'")
     .all();
-  assert.equal(tables.length, 17);
+  assert.equal(tables.length, 18);
   for (const { name } of tables) {
     const columns = sql
       .prepare(`PRAGMA table_info(${name})`)
