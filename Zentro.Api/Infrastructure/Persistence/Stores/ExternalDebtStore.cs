@@ -17,6 +17,7 @@ internal static class ExternalDebtStore
                 ArchivedOn = row.OptionalText("fecha_archivo"),
                 Notes = row.OptionalText("notas"),
                 Activity = row.Flag("historial_registrado") ? ReadActivity(session, row.Text("id")) : null,
+                Advances = row.Flag("adelantos_registrados") ? DebtAdvanceStore.Read(session, row.Text("id")) : null,
                 Installments = []
             });
 
@@ -35,7 +36,9 @@ internal static class ExternalDebtStore
                 ("fecha_cierre", row.CompletedOn),
                 ("fecha_archivo", row.ArchivedOn),
                 ("notas", row.Notes),
-                ("historial_registrado", row.Activity is null ? 0 : 1));
+                ("historial_registrado", row.Activity is null ? 0 : 1),
+                ("adelantos_registrados", row.Advances is null ? 0 : 1));
+            DebtAdvanceStore.Write(session, row.Advances ?? [], row.Id);
             for (var activityIndex = 0; activityIndex < (row.Activity?.Count ?? 0); activityIndex++)
             {
                 var activity = row.Activity![activityIndex];

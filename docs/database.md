@@ -2,9 +2,11 @@
 
 Zentro utiliza **SQLite relacional** en `Zentro.Api/Data/zentro.db`. Las tablas y columnas están en español. Cada dato tiene su columna, tipo y restricciones; no hay columnas `payload`, `document` ni registros JSON. No hace falta instalar un servidor MySQL.
 
-El [esquema SQL](../Zentro.Api/Infrastructure/Persistence/Schema/001_relacional.sql) define las 18 tablas, sus claves, restricciones, índices y vistas. Se incluye en el ensamblado de la API, también al publicar. `PRAGMA user_version` identifica la versión de estructura; es independiente de la versión del contrato HTTP.
+El [esquema SQL](../Zentro.Api/Infrastructure/Persistence/Schema/001_relacional.sql) y sus migraciones definen las 19 tablas, sus claves, restricciones, índices y vistas. Se incluye en el ensamblado de la API, también al publicar. `PRAGMA user_version` identifica la versión de estructura; es independiente de la versión del contrato HTTP.
 
-La versión de estructura actual es **3**. La [migración 002](../Zentro.Api/Infrastructure/Persistence/Schema/002_previsiones_sin_mes.sql) elimina `mes` de `movimientos_diarios`: las previsiones diarias no caducan al cambiar de mes. Se conserva cada registro y su importe. La API crea un respaldo privado antes de actualizar una base de versión 1. Los historiales de ahorro, inversión y cuotas siguen teniendo meses.
+La versión de estructura actual es **5**. La [migración 002](../Zentro.Api/Infrastructure/Persistence/Schema/002_previsiones_sin_mes.sql) elimina `mes` de `movimientos_diarios`: las previsiones diarias no caducan al cambiar de mes. Se conserva cada registro y su importe. La API crea un respaldo privado antes de actualizar una base de versión 1. Los historiales de ahorro, inversión y cuotas siguen teniendo meses.
+
+Los adelantos se guardan en `adelantos_deudas`: deuda, fecha, importe en céntimos y estrategia (`cuotas` o `importe`), con claves foráneas. La migración 004 añade la tabla y la 005 incluye estos pagos en `vista_deudas`, sin duplicar cuotas. Ambas conservan los datos existentes y crean un respaldo antes de actualizar.
 
 ## Consultar desde VS Code
 
@@ -41,6 +43,7 @@ Usa la aplicación para modificar los datos: además de las restricciones SQL, l
 | `calendario_reposiciones`    | `mes` e `importe_centimos` previsto.                                                                                                                               |
 | `deudas`                     | `nombre` y `total_centimos` de cada deuda externa.                                                                                                                 |
 | `cuotas_deudas`              | `deuda_id`, `mes`, `importe_centimos`, `estado` (`pagado`/`apartado`/`pendiente`).                                                                                 |
+| `adelantos_deudas`           | `deuda_id`, `fecha`, `importe_centimos`, `estrategia` (`cuotas`/`importe`); pagos anticipados aceptados.                                                           |
 | `plan_mensual`               | `mes_inicio`, `mes_final`, importes previstos de ahorro, inversión y reposición, y objetivo de ahorro.                                                             |
 | `posibles_gastos`            | `concepto` e `importe_centimos`; independiente de meses y cuentas.                                                                                                 |
 | `compromisos`                | `nombre` e `importe_centimos` opcional.                                                                                                                            |
@@ -59,6 +62,7 @@ erDiagram
     perfil ||--|| plan_mensual : configura
     perfil ||--o{ deudas : tiene
     deudas ||--o{ cuotas_deudas : contiene
+    deudas ||--o{ adelantos_deudas : recibe
     perfil ||--o{ retiradas_deuda_interna : registra
     perfil ||--o{ reposiciones_deuda_interna : registra
     reposiciones_deuda_interna ||--o{ repartos_reposiciones : reparte

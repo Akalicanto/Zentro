@@ -27,7 +27,10 @@ const dotnet =
     : "dotnet";
 const child = spawn(
   dotnet,
-  [path.join(root, "Zentro.Api/bin/Debug/net10.0/Zentro.Api.dll")],
+  [
+    process.env.ZENTRO_TEST_API_DLL ||
+      path.join(root, "Zentro.Api/bin/Debug/net10.0/Zentro.Api.dll"),
+  ],
   {
     cwd: path.join(root, "Zentro.Api"),
     windowsHide: true,
@@ -72,7 +75,9 @@ try {
   await page.getByRole("heading", { name: "Mi espacio", level: 1 }).waitFor();
   assert.equal((await fetch(`${api}/api/state`)).status, 204);
   assert.deepEqual(
-    await page.locator("#zentro-navigation button").allTextContents(),
+    await page
+      .locator("#zentro-navigation button:not(.debt-navigation-disclosure)")
+      .allTextContents(),
     ["Mi espacio", "Día a día", "Ahorros", "Inversión", "Deudas"],
   );
   assert.equal(await page.getByText("Cuentas", { exact: true }).count(), 0);

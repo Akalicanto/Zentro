@@ -10,10 +10,13 @@ export async function verifyDebtManagement({ page, state, root }) {
     .locator("#zentro-navigation")
     .getByRole("button", { name: "Deudas", exact: true })
     .click();
-  assert.equal(await debtNavigation.getAttribute("aria-expanded"), "true");
-  await debtNavigation.click();
-  assert.equal(await debtNavigation.getAttribute("aria-expanded"), "false");
-  await debtNavigation.click();
+  const disclosure = page.locator(".debt-navigation-disclosure");
+  assert.equal(await disclosure.getAttribute("aria-expanded"), "true");
+  const overviewUrl = page.url();
+  await disclosure.click();
+  assert.equal(await disclosure.getAttribute("aria-expanded"), "false");
+  assert.equal(page.url(), overviewUrl);
+  await disclosure.click();
   await page.getByRole("button", { name: "Añadir deuda", exact: true }).click();
   await page
     .getByLabel("Nombre de la deuda", { exact: true })
@@ -26,6 +29,12 @@ export async function verifyDebtManagement({ page, state, root }) {
   await page.waitForFunction(
     () => localStorage.getItem("zentro.v3.pending") === null,
   );
+  const detailUrl = page.url();
+  await disclosure.click();
+  assert.equal(page.url(), detailUrl);
+  await page.getByRole("heading", { name: /^Préstamo de prueba/ }).waitFor();
+  await disclosure.click();
+  assert.equal(page.url(), detailUrl);
   let data = await state();
   let loan = data.debts.find((d) => d.name === "Préstamo de prueba");
   assert.equal(data.debts.length, original.debts.length + 1);
@@ -210,6 +219,106 @@ export async function verifyDebtManagement({ page, state, root }) {
     .locator(".debt-sidebar-tree button")
     .filter({ hasText: "Préstamo de prueba" })
     .click();
+  await page
+    .getByRole("button", { name: "Todas las deudas", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Añadir deuda", exact: true }).click();
+  await page
+    .getByLabel("Nombre de la deuda", { exact: true })
+    .fill("Simulador de prueba");
+  await page.getByLabel("Deuda total (€)", { exact: true }).fill("100,01");
+  await page.getByLabel("Crear un calendario de cuotas").check();
+  await page.getByLabel("Primer mes", { exact: true }).fill("2027-02");
+  await page.getByLabel("Número de cuotas", { exact: true }).fill("4");
+  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  await page.waitForFunction(
+    () => localStorage.getItem("zentro.v3.pending") === null,
+  );
+  const beforeSimulation = await state();
+  await page
+    .getByRole("button", { name: "Valorar adelanto", exact: true })
+    .click();
+  await page
+    .getByLabel("¿Cuánto quieres adelantar? (€)", { exact: true })
+    .fill("3000");
+  assert.ok(
+    await page
+      .getByRole("button", {
+        name: "Aceptar y registrar adelanto",
+        exact: true,
+      })
+      .isDisabled(),
+  );
+  await page
+    .getByLabel("¿Cuánto quieres adelantar? (€)", { exact: true })
+    .fill("30");
+  await page.getByRole("button", { name: /Reducir importe/ }).click();
+  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  assert.deepEqual(await state(), beforeSimulation);
+  await page
+    .getByRole("button", { name: "Valorar adelanto", exact: true })
+    .click();
+  await page
+    .getByLabel("¿Cuánto quieres adelantar? (€)", { exact: true })
+    .fill("30");
+  await page.waitForTimeout(300);
+  await page.screenshot({
+    path: path.join(root, "checks/debt-advance-light.png"),
+  });
+  await page
+    .getByRole("button", { name: "Aceptar y registrar adelanto", exact: true })
+    .click();
+  await page.waitForFunction(
+    () => localStorage.getItem("zentro.v3.pending") === null,
+  );
+  let simulationDebt = (await state()).debts.find(
+    (d) => d.name === "Simulador de prueba",
+  );
+  assert.equal(simulationDebt.total, 10001);
+  assert.equal(simulationDebt.advances[0].amount, 3000);
+  assert.equal(simulationDebt.installments.length, 3);
+  assert.deepEqual(
+    simulationDebt.installments.map((r) => r.amount),
+    [2500, 2500, 2001],
+  );
+  await page
+    .getByRole("heading", { name: "Adelantos realizados", exact: true })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Valorar adelanto", exact: true })
+    .click();
+  await page
+    .getByLabel("¿Cuánto quieres adelantar? (€)", { exact: true })
+    .fill("10");
+  await page.getByRole("button", { name: /Reducir importe/ }).click();
+  await page
+    .getByRole("button", { name: "Aceptar y registrar adelanto", exact: true })
+    .click();
+  await page.waitForFunction(
+    () => localStorage.getItem("zentro.v3.pending") === null,
+  );
+  simulationDebt = (await state()).debts.find(
+    (d) => d.id === simulationDebt.id,
+  );
+  assert.deepEqual(
+    simulationDebt.installments.map((r) => r.amount),
+    [2001, 2000, 2000],
+  );
+  assert.equal(simulationDebt.advances.length, 2);
+  assert.deepEqual(
+    { ...(await state()), debts: beforeSimulation.debts },
+    beforeSimulation,
+  );
+  await page.reload();
+  await page.getByRole("heading", { name: /^Simulador de prueba/ }).waitFor();
+  assert.deepEqual(
+    (await state()).debts.find((d) => d.id === simulationDebt.id),
+    simulationDebt,
+  );
+  await page
+    .locator(".debt-sidebar-tree button")
+    .filter({ hasText: "Préstamo de prueba" })
+    .click();
   const saved = await state();
   loan = saved.debts.find((d) => d.id === loan.id);
   assert.equal(loan.archivedOn, undefined);
@@ -233,7 +342,7 @@ export async function verifyDebtManagement({ page, state, root }) {
   await page.screenshot({
     path: path.join(root, "checks/debts-overview-dark.png"),
   });
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 427, height: 876 });
   await page.waitForTimeout(450);
   assert.equal(
     await page.evaluate(
@@ -287,6 +396,46 @@ export async function verifyDebtManagement({ page, state, root }) {
     path: path.join(root, "checks/debt-confirm-mobile.png"),
   });
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Todas las deudas", exact: true })
+    .click();
+  await page
+    .locator(".debt-summary-card")
+    .filter({ hasText: "Simulador de prueba" })
+    .click();
+  await page
+    .getByRole("button", { name: "Valorar adelanto", exact: true })
+    .click();
+  await page
+    .getByLabel("¿Cuánto quieres adelantar? (€)", { exact: true })
+    .fill("20");
+  await page.waitForTimeout(300);
+  assert.equal(
+    await page
+      .getByRole("dialog")
+      .evaluate((el) => el.scrollWidth > el.clientWidth),
+    false,
+  );
+  await page.screenshot({
+    path: path.join(root, "checks/debt-advance-mobile.png"),
+  });
+  await page.setViewportSize({ width: 320, height: 700 });
+  const backgroundScroll = await page.evaluate(() => window.scrollY);
+  await page.getByRole("dialog").hover();
+  await page.mouse.wheel(0, 1800);
+  await page.waitForTimeout(200);
+  assert.equal(await page.evaluate(() => window.scrollY), backgroundScroll);
+  assert.equal(
+    await page
+      .getByRole("dialog")
+      .evaluate((el) => el.scrollWidth > el.clientWidth),
+    false,
+  );
+  await page
+    .getByRole("button", { name: "Cancelar", exact: true })
+    .scrollIntoViewIfNeeded();
+  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  assert.deepEqual(await state(), saved);
   console.log(
     "Gestión de deudas OK: múltiples fichas, cuotas exactas, notas, cerrar/reabrir, eliminar/recuperar, historial, SQLite, recarga y móvil; otros saldos intactos.",
   );

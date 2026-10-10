@@ -8,6 +8,7 @@ import {
   RotateCcw,
   CalendarDays,
   ChevronRight,
+  Calculator,
 } from "lucide-react";
 import {
   debtStatus,
@@ -27,6 +28,7 @@ import MetricCard from "../../../shared/components/MetricCard.tsx";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
 import DebtDetail from "./DebtDetail.tsx";
 import DebtEditor, { type DebtEditorMode } from "./DebtEditor.tsx";
+import DebtAdvanceSimulator from "./DebtAdvanceSimulator.tsx";
 
 export default function DebtsPage({
   profile,
@@ -50,6 +52,7 @@ export default function DebtsPage({
     debt?: ExternalDebt;
   } | null>(null);
   const [error, setError] = useState("");
+  const [advanceOpen, setAdvanceOpen] = useState(false);
   const active = debts.filter((d) => debtStatus(d) === "active");
   const live = debts.filter((d) => !d.archivedOn);
   const visible = debts
@@ -150,10 +153,19 @@ export default function DebtsPage({
                     <Pencil size={16} />
                     Editar deuda
                   </button>
-                  {debt.total > sum(debt.installments.map((r) => r.amount)) && (
+                  {debtAnalytics(debt).unassigned > 0 && (
                     <button onClick={() => open("plan")}>
                       <CalendarDays size={16} />
                       Planificar cuotas
+                    </button>
+                  )}
+                  {externalDebtTotals(debt).remaining > 0 && (
+                    <button
+                      className="debt-simulate-action"
+                      onClick={() => setAdvanceOpen(true)}
+                    >
+                      <Calculator size={17} />
+                      Valorar adelanto
                     </button>
                   )}
                 </>
@@ -395,6 +407,18 @@ export default function DebtsPage({
           debt={modal.debt}
           onSave={saveDebt}
           onClose={() => setModal(null)}
+        />
+      )}
+      {advanceOpen && debt && (
+        <DebtAdvanceSimulator
+          debt={debt}
+          onClose={() => setAdvanceOpen(false)}
+          onApply={(next) => {
+            const saved = saveDebt(next);
+            if (saved && externalDebtTotals(next).remaining === 0)
+              setModal({ mode: "complete", debt: next });
+            return saved;
+          }}
         />
       )}
     </>

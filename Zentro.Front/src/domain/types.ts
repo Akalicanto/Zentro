@@ -49,6 +49,13 @@ export type ExternalDebt = {
   archivedOn?: string;
   notes?: string;
   activity?: DebtActivity[];
+  advances?: DebtAdvance[];
+};
+export type DebtAdvance = {
+  id: string;
+  date: string;
+  amount: number;
+  strategy: "term" | "payment";
 };
 export type DebtActivity = { id: string; date: string; description: string };
 export type SavingsPlacement = {

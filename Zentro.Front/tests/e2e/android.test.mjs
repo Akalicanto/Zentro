@@ -1,4 +1,5 @@
-import { chromium, devices } from "@playwright/test";
+import { chromium } from "@playwright/test";
+import { pixel9Pro } from "../fixtures/pixel9Pro.mjs";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:net";
@@ -41,7 +42,7 @@ try {
   }
   browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({
-    ...devices["Pixel 7"],
+    ...pixel9Pro,
     locale: "es-ES",
   });
   await context.route(

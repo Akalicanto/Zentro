@@ -25,7 +25,11 @@ Las pruebas de `money.test.ts` y `validationLimits.test.ts` cubren conversión y
 
 `Zentro.Front/tests/e2e/settingsChecks.mjs` se ejecuta dentro de la suite de navegador. Comprueba los cuatro saldos manuales, edición del plan y del tipo de interés, retorno a configuración, cancelación sin cambios, exportación/importación, persistencia, tema oscuro y ausencia de desbordamiento en móvil.
 
-Los fixtures están en `Zentro.Front/tests/fixtures/`. Son sintéticos y no se importan desde `src/`.
+Los fixtures están en `Zentro.Front/tests/fixtures/`. Son sintéticos y no se importan desde `src/`. La emulación Android utiliza Pixel 9 Pro (427 × 876, DPR 3), con un descriptor compatible para versiones de Playwright que aún no lo incluyan.
+
+`debtAdvances.test.ts` comprueba las dos estrategias de adelanto, reparto exacto de céntimos, simulación sin modificaciones, cierre sin duplicar pagos y entradas inválidas. La integración comprueba la tabla de adelantos, sus totales SQL, persistencia y migraciones desde las versiones 1–4 hasta la 5. El navegador verifica cancelación, aceptación de ambas opciones, recarga, conservación de los demás saldos y presentación móvil.
+
+Si la API de desarrollo está abierta y bloquea su ensamblado, puede compilarse en una carpeta de comprobaciones y pasar su DLL a las suites de API y navegador mediante `ZENTRO_TEST_API_DLL`, sin detener la sesión del usuario.
 
 La integración de API y la suite de navegador `profile.test.mjs` crean bases SQLite temporales y arrancan sus propias APIs en puertos libres. Las llamadas del navegador se redirigen a esas APIs. La suite `internalDebt.test.mjs` utiliza un perfil ficticio en memoria mediante interceptación HTTP para comprobar la edición y validación de la interfaz. Ninguna escribe en `Zentro.Api/Data/zentro.db`. Al terminar, detienen sus procesos y eliminan los datos temporales.
 

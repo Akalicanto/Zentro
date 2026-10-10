@@ -32,9 +32,12 @@ export function debtTotals(profile: Profile) {
   return { original, paid, pending: original - paid };
 }
 export function externalDebtTotals(debt: ExternalDebt) {
-  const paid = sum(
-    debt.installments.filter((r) => r.status === "paid").map((r) => r.amount),
-  );
+  const paid = sum([
+    ...debt.installments
+      .filter((r) => r.status === "paid")
+      .map((r) => r.amount),
+    ...(debt.advances ?? []).map((r) => r.amount),
+  ]);
   const reserved = sum(
     debt.installments
       .filter((r) => r.status === "reserved")

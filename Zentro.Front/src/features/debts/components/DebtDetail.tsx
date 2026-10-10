@@ -49,7 +49,10 @@ export default function DebtDetail({
       : a.month.localeCompare(b.month),
   );
   const totals = externalDebtTotals(debt);
-  const calendarTotal = sum(rows.map((r) => r.amount));
+  const calendarTotal = sum([
+    ...rows.map((r) => r.amount),
+    ...(debt.advances ?? []).map((row) => row.amount),
+  ]);
   const years = [
     ...new Set([
       ...rows.map((r) => r.month.slice(0, 4)),
@@ -314,7 +317,15 @@ export default function DebtDetail({
               <tfoot>
                 <tr>
                   <th scope="row">Total del calendario</th>
-                  <td>{euro(totals.paid)}</td>
+                  <td>
+                    {euro(
+                      sum(
+                        rows
+                          .filter((row) => row.status === "paid")
+                          .map((row) => row.amount),
+                      ),
+                    )}
+                  </td>
                   <td>{euro(totals.reserved)}</td>
                   <td>
                     {euro(
@@ -343,6 +354,47 @@ export default function DebtDetail({
           inversión ni la deuda interna.
         </PanelInfo>
       </section>
+      {!!debt.advances?.length && (
+        <section className="panel debt-advances-panel">
+          <div className="section-title">
+            <h3>Adelantos realizados</h3>
+            <strong>{euro(sum(debt.advances.map((row) => row.amount)))}</strong>
+          </div>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Adelantado</th>
+                  <th>Opción aplicada</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...debt.advances].reverse().map((row) => (
+                  <tr key={row.id}>
+                    <td>
+                      {new Date(row.date + "T12:00:00").toLocaleDateString(
+                        "es-ES",
+                      )}
+                    </td>
+                    <td>{euro(row.amount)}</td>
+                    <td>
+                      {row.strategy === "term"
+                        ? "Reducir cuotas"
+                        : "Reducir importe"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <PanelInfo title="Adelantos realizados">
+            Estos pagos forman parte de «Ya pagado» y se suman a tus cuotas
+            abonadas. Cada adelanto conserva su fecha y la opción aceptada en el
+            simulador.
+          </PanelInfo>
+        </section>
+      )}
       {modal && (
         <ModalFrame onClose={() => setModal(null)}>
           <section

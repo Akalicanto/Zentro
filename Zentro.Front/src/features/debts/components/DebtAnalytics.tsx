@@ -16,6 +16,7 @@ import {
   debtAnalytics,
   euro,
   monthName,
+  sum,
   type ExternalDebt,
 } from "../../../domain/index.ts";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
@@ -41,18 +42,32 @@ const DebtAnalytics = memo(function DebtAnalytics({
 }) {
   const analytics = useMemo(() => debtAnalytics(debt), [debt]);
   const [year, setYear] = useState("all");
+  const chartMonths = [
+    ...new Set([
+      ...analytics.calendar.map((row) => row.month),
+      ...(debt.advances ?? []).map((row) => row.date.slice(0, 7)),
+    ]),
+  ].sort();
   const years = [
-    ...new Set(analytics.calendar.map((row) => row.month.slice(0, 4))),
+    ...new Set(chartMonths.map((month) => month.slice(0, 4))),
   ].sort((a, b) => b.localeCompare(a));
   const activeYear = year === "all" || years.includes(year) ? year : "all";
-  const monthly = analytics.calendar
-    .filter((row) => activeYear === "all" || row.month.startsWith(activeYear))
-    .map((row) => ({
-      month: row.month,
-      paid: row.status === "paid" ? row.amount : 0,
-      reserved: row.status === "reserved" ? row.amount : 0,
-      pending: row.status === "pending" ? row.amount : 0,
-    }));
+  const monthly = chartMonths
+    .filter((month) => activeYear === "all" || month.startsWith(activeYear))
+    .map((month) => {
+      const row = analytics.calendar.find((row) => row.month === month);
+      return {
+        month,
+        paid: sum([
+          row?.status === "paid" ? row.amount : 0,
+          ...(debt.advances ?? [])
+            .filter((advance) => advance.date.startsWith(month))
+            .map((advance) => advance.amount),
+        ]),
+        reserved: row?.status === "reserved" ? row.amount : 0,
+        pending: row?.status === "pending" ? row.amount : 0,
+      };
+    });
   const slices = categories.map((category) => ({
     ...category,
     value: analytics.totals[category.key],
@@ -257,12 +272,12 @@ const DebtAnalytics = memo(function DebtAnalytics({
             </p>
           )}
           <PanelInfo title="Cuotas por mes">
-            Cada barra muestra el importe y el estado registrado de una cuota.
-            El filtro solo cambia este gráfico. Los importes sin mes asignado no
-            aparecen en las barras. El final del calendario corresponde a la
-            última cuota por pagar; si falta asignar dinero, aún no hay una
-            fecha completa de liquidación. Estos gráficos no modifican tus
-            datos.
+            Cada barra muestra las cuotas del mes y los adelantos pagados en ese
+            mes. El filtro solo cambia este gráfico. Los importes sin mes
+            asignado no aparecen en las barras. El final del calendario
+            corresponde a la última cuota por pagar; si falta asignar dinero,
+            aún no hay una fecha completa de liquidación. Estos gráficos no
+            modifican tus datos.
           </PanelInfo>
         </section>
       </div>

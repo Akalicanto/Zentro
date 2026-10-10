@@ -19,22 +19,32 @@ export default function DebtNavigation({
   const visible = debts.filter((d) => !d.archivedOn && !d.completedOn);
   return (
     <div className="debt-navigation-group">
-      <button
-        aria-label="Deudas"
-        aria-current={active ? "page" : undefined}
-        className={active ? "active" : ""}
-        title={collapsed ? "Deudas" : undefined}
-        aria-expanded={expanded && !collapsed}
-        aria-controls="active-debt-navigation"
-        onClick={() => {
-          setExpanded(active ? !expanded : true);
-          onSelect(null);
-        }}
-      >
-        <CreditCard size={18} />
-        <span className="nav-item-label">Deudas</span>
-        <ChevronDown size={15} className="debt-navigation-chevron" />
-      </button>
+      <div className={`debt-navigation-header${active ? " active" : ""}`}>
+        <button
+          aria-label="Deudas"
+          aria-current={active ? "page" : undefined}
+          className={active ? "active" : ""}
+          title={collapsed ? "Deudas" : undefined}
+          onClick={() => {
+            setExpanded(true);
+            onSelect(null);
+          }}
+        >
+          <CreditCard size={18} />
+          <span className="nav-item-label">Deudas</span>
+        </button>
+        <button
+          className="debt-navigation-disclosure"
+          aria-label={
+            expanded ? "Ocultar deudas activas" : "Mostrar deudas activas"
+          }
+          aria-expanded={expanded && !collapsed}
+          aria-controls="active-debt-navigation"
+          onClick={() => setExpanded(!expanded)}
+        >
+          <ChevronDown size={17} className="debt-navigation-chevron" />
+        </button>
+      </div>
       <div
         id="active-debt-navigation"
         className={`debt-sidebar-tree${expanded && !collapsed ? " is-open" : ""}`}

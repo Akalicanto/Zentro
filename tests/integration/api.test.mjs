@@ -36,7 +36,10 @@ async function start(databasePath = path.join(folder, "test.db")) {
   output = "";
   child = spawn(
     dotnet,
-    [path.join(root, "Zentro.Api/bin/Debug/net10.0/Zentro.Api.dll")],
+    [
+      process.env.ZENTRO_TEST_API_DLL ||
+        path.join(root, "Zentro.Api/bin/Debug/net10.0/Zentro.Api.dll"),
+    ],
     {
       cwd: path.join(root, "Zentro.Api"),
       windowsHide: true,
@@ -334,7 +337,7 @@ try {
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
   sql = new DatabaseSync(path.join(folder, "test.db"));
-  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 3);
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 5);
   assert.equal(
     sql
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -397,7 +400,7 @@ try {
   const tables = sql
     .prepare("SELECT name FROM sqlite_schema WHERE type='table'")
     .all();
-  assert.equal(tables.length, 18);
+  assert.equal(tables.length, 19);
   for (const { name } of tables) {
     const columns = sql
       .prepare(`PRAGMA table_info(${name})`)
@@ -445,6 +448,55 @@ try {
     await (await fetch(`${base}/api/state`)).json(),
     interestWithdrawal,
   );
+  const advanced = structuredClone(interestWithdrawal);
+  advanced.debts.push({
+    id: "advance-test",
+    name: "Adelanto sintético",
+    total: 10000,
+    installments: [{ month: "2026-11", amount: 7000, status: "pending" }],
+    advances: [
+      {
+        id: "advance-1",
+        date: "2026-10-10",
+        amount: 3000,
+        strategy: "payment",
+      },
+    ],
+  });
+  assert.equal((await put(advanced)).status, 204);
+  assert.deepEqual(await (await fetch(base + "/api/state")).json(), advanced);
+  await stop();
+  await start();
+  assert.deepEqual(await (await fetch(base + "/api/state")).json(), advanced);
+  const advanceDb = new DatabaseSync(path.join(folder, "test.db"), {
+    readOnly: true,
+  });
+  assert.equal(
+    advanceDb
+      .prepare(
+        "SELECT importe_centimos FROM adelantos_deudas WHERE deuda_id='advance-test'",
+      )
+      .get().importe_centimos,
+    3000,
+  );
+  assert.equal(
+    advanceDb
+      .prepare("SELECT pagado_euros FROM vista_deudas WHERE id='advance-test'")
+      .get().pagado_euros,
+    30,
+  );
+  advanceDb.close();
+  for (const row of [
+    { id: "bad", date: "2026-02-30", amount: 3000, strategy: "payment" },
+    { id: "bad", date: "2026-10-10", amount: 3000, strategy: "other" },
+    { id: "bad", date: "2026-10-10", amount: 4000, strategy: "term" },
+  ]) {
+    const invalid = structuredClone(advanced);
+    invalid.debts.at(-1).advances = [row];
+    assert.equal((await put(invalid)).status, 400);
+    assert.deepEqual(await (await fetch(base + "/api/state")).json(), advanced);
+  }
+  assert.equal((await put(interestWithdrawal)).status, 204);
   await stop();
   await runMigrationChecks({
     folder,

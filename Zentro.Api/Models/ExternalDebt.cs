@@ -26,4 +26,6 @@ public sealed record ExternalDebt
     public string? Notes { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<DebtActivity>? Activity { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<DebtAdvance>? Advances { get; init; }
 }

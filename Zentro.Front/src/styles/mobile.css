@@ -43,19 +43,18 @@
   }
   .mobile-navigation {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
     z-index: 30;
     display: flex;
     flex-direction: row;
     gap: 0;
-    padding: 8px max(4px, env(safe-area-inset-right))
-      calc(8px + env(safe-area-inset-bottom))
-      max(4px, env(safe-area-inset-left));
+    padding: 8px 5px;
     background: var(--panel);
-    border-top: 1px solid var(--line);
-    box-shadow: 0 -4px 24px #4233540c;
+    border: 1px solid var(--line);
+    border-radius: 23px;
+    box-shadow: 0 8px 30px #42335422;
   }
   .mobile-navigation button {
     flex: 1;

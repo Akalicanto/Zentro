@@ -25,7 +25,12 @@ export function planDebtInstallments(
   start: string,
   count: number,
 ): ExternalDebt {
-  const remaining = debt.total - sum(debt.installments.map((r) => r.amount));
+  const remaining =
+    debt.total -
+    sum([
+      ...debt.installments.map((r) => r.amount),
+      ...(debt.advances ?? []).map((r) => r.amount),
+    ]);
   if (
     !/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(start) ||
     !Number.isInteger(count) ||
@@ -57,7 +62,12 @@ export function planDebtInstallments(
   );
 }
 export function completeDebt(debt: ExternalDebt): ExternalDebt {
-  const missing = debt.total - sum(debt.installments.map((r) => r.amount));
+  const missing =
+    debt.total -
+    sum([
+      ...debt.installments.map((r) => r.amount),
+      ...(debt.advances ?? []).map((r) => r.amount),
+    ]);
   const installments = debt.installments.map((r) => ({
     ...r,
     status: "paid" as const,

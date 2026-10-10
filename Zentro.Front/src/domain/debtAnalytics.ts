@@ -19,6 +19,11 @@ export function debtAnalytics(debt: ExternalDebt) {
     installmentCount: calendar.length,
     next: outstanding[0],
     last: outstanding.at(-1),
-    unassigned: totals.total - sum(calendar.map((row) => row.amount)),
+    unassigned:
+      totals.total -
+      sum([
+        ...calendar.map((row) => row.amount),
+        ...(debt.advances ?? []).map((row) => row.amount),
+      ]),
   };
 }

@@ -218,14 +218,37 @@
   scrollbar-width: thin;
   padding-bottom: 4px;
 }
-.debt-navigation-group > button {
-  width: 100%;
+.debt-navigation-header {
+  display: flex;
+  border-radius: 10px;
+}
+.debt-navigation-header > button:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.debt-navigation-header .debt-navigation-disclosure {
+  width: 34px;
+  padding: 0;
+  flex-shrink: 0;
+  justify-content: center;
+  background: transparent;
+}
+.debt-navigation-header.active {
+  background: var(--accent-soft);
+}
+.debt-navigation-header.active .debt-navigation-disclosure {
+  color: var(--accent-text);
+}
+.sidebar-collapsed .debt-navigation-disclosure {
+  display: none;
 }
 .debt-navigation-chevron {
   margin-left: auto;
   transition: transform 220ms var(--motion-ease);
 }
-.debt-navigation-group > button[aria-expanded="true"] .debt-navigation-chevron {
+.debt-navigation-header
+  > button[aria-expanded="true"]
+  .debt-navigation-chevron {
   transform: rotate(180deg);
 }
 .sidebar-collapsed .debt-navigation-chevron {
@@ -369,5 +392,135 @@
   .debt-sidebar-tree,
   .debt-navigation-chevron {
     transition: none;
+  }
+}
+.debt-manager-actions .debt-edit-actions > button {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--line));
+  color: var(--accent-text);
+}
+.debt-manager-actions .debt-edit-actions > button:has(.lucide-calendar-days) {
+  background: color-mix(in srgb, #bfd5e8 26%, var(--panel));
+  color: var(--text);
+}
+.debt-manager-actions .debt-edit-actions .debt-simulate-action {
+  background: color-mix(in srgb, #ead18f 26%, var(--panel));
+  color: var(--text);
+  border-color: color-mix(in srgb, #d6b679 35%, var(--line));
+}
+.debt-manager-actions .debt-remove {
+  color: color-mix(in srgb, #bc6c87 78%, var(--text));
+  background: color-mix(in srgb, #efc7d4 15%, var(--panel));
+  border-color: color-mix(in srgb, #c58fa8 30%, var(--line));
+}
+.debt-manager-actions button:hover {
+  filter: brightness(0.97);
+  border-color: var(--accent);
+}
+.dark .debt-manager-actions button:hover {
+  filter: brightness(1.14);
+}
+.debt-advance-modal {
+  width: 820px;
+}
+#debt-advance-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.advance-intro,
+.advance-help {
+  color: var(--muted);
+}
+.advance-input {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+  font-weight: 600;
+}
+.advance-input input {
+  width: 100%;
+  font-size: 22px;
+  padding: 15px 18px;
+}
+.advance-help {
+  font-size: 14px;
+}
+.advance-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.advance-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 13px;
+  padding: 22px;
+  border-radius: 18px;
+  border: 2px solid var(--line);
+  background: color-mix(in srgb, #bfd5e8 14%, var(--panel));
+  color: var(--text);
+}
+.advance-option:nth-child(2) {
+  background: color-mix(in srgb, #b8d9c8 16%, var(--panel));
+}
+.advance-option.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.advance-option > strong {
+  font-size: 19px;
+}
+.advance-option > span,
+.advance-option small {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.advance-option:disabled {
+  opacity: 0.65;
+}
+.advance-option-results {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  width: 100%;
+}
+.advance-option-results b {
+  font-size: 24px;
+}
+.advance-review {
+  display: grid;
+  gap: 12px;
+  background: var(--soft);
+  padding: 22px;
+  border-radius: 16px;
+  margin-top: 24px;
+}
+.advance-review > strong {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 24px;
+}
+.advance-review small {
+  color: var(--muted);
+  line-height: 1.6;
+}
+@media (max-width: 650px) {
+  .debt-advance-modal {
+    width: 100%;
+  }
+  .advance-options {
+    grid-template-columns: 1fr;
+  }
+  .advance-option {
+    padding: 18px;
   }
 }

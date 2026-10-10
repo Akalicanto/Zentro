@@ -113,6 +113,21 @@ export function validateProfile(raw: unknown): Profile {
       throw Error("Deuda no válida o duplicada.");
     for (const debt of profile.debts) {
       if (
+        debt.advances !== undefined &&
+        (!collection(debt.advances) ||
+          !unique(debt.advances) ||
+          debt.advances.some(
+            (row) =>
+              !date(row.date) ||
+              !nonnegative(row.amount) ||
+              row.amount === 0 ||
+              !["term", "payment"].includes(row.strategy),
+          ))
+      )
+        throw Error(
+          "Revisa los adelantos de la deuda: fecha, importe y opción elegida.",
+        );
+      if (
         !text(debt.name) ||
         !nonnegative(debt.total) ||
         !collection(debt.installments) ||
@@ -125,7 +140,10 @@ export function validateProfile(raw: unknown): Profile {
             r.amount === 0 ||
             !["paid", "reserved", "pending"].includes(r.status),
         ) ||
-        sum(debt.installments.map((r) => r.amount)) > debt.total
+        sum([
+          ...debt.installments.map((r) => r.amount),
+          ...(debt.advances ?? []).map((row) => row.amount),
+        ]) > debt.total
       )
         throw Error(
           "Revisa la deuda y sus cuotas: no pueden superar el total ni repetir un mes.",
@@ -139,7 +157,9 @@ export function validateProfile(raw: unknown): Profile {
         (debt.completedOn !== undefined &&
           debt.installments
             .filter((r) => r.status === "paid")
-            .reduce((n, r) => n + r.amount, 0) !== debt.total) ||
+            .reduce((n, r) => n + r.amount, 0) +
+            sum((debt.advances ?? []).map((row) => row.amount)) !==
+            debt.total) ||
         (debt.activity !== undefined &&
           (!collection(debt.activity) ||
             !unique(debt.activity) ||
