@@ -7,8 +7,22 @@ export const euro = (n: number) => euroFormatter.format(n / 100);
 export function cents(value: string) {
   if (!/^-?\d+(?:[.,]\d{1,2})?$/.test(value.trim()))
     throw Error("Introduce un importe con un máximo de dos decimales.");
-  const amount = Math.round(Number(value.replace(",", ".")) * 100);
-  if (!Number.isSafeInteger(amount)) throw Error("Importe demasiado grande.");
-  return amount;
+  const normalized = value.trim().replace(",", ".");
+  const negative = normalized.startsWith("-");
+  const [whole, fraction = ""] = normalized.replace(/^-/, "").split(".");
+  const amount = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, "0"));
+  if (amount > BigInt(Number.MAX_SAFE_INTEGER))
+    throw Error("Importe demasiado grande.");
+  return Number(negative ? -amount : amount);
 }
-export const sum = (numbers: number[]) => numbers.reduce((a, b) => a + b, 0);
+export function sum(numbers: number[]) {
+  const total = numbers.reduce((value, amount) => value + BigInt(amount), 0n);
+  if (
+    total > BigInt(Number.MAX_SAFE_INTEGER) ||
+    total < BigInt(Number.MIN_SAFE_INTEGER)
+  )
+    throw Error(
+      "La suma de los importes supera el límite de precisión permitido.",
+    );
+  return Number(total);
+}

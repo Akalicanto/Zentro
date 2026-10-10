@@ -137,9 +137,6 @@
     min-height: 190px;
   }
 }
-.cash-panel table .actions {
-  display: flex;
-}
 .cash-panel p {
   margin-bottom: 0;
 }

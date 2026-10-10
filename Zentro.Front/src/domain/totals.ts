@@ -8,10 +8,11 @@ export function cashTotals(profile: Profile) {
         .filter((r) => r.status === "done" && !r.includedInOpening)
         .map((r) => r.amount),
     );
-  const current =
-    profile.daily.opening +
-    realizedChange(profile.daily.incomes) -
-    realizedChange(profile.daily.expenses);
+  const current = sum([
+    profile.daily.opening,
+    realizedChange(profile.daily.incomes),
+    -realizedChange(profile.daily.expenses),
+  ]);
   const pendingTotal = (rows: CashRow[]) =>
     sum(
       rows.filter((row) => row.status === "planned").map((row) => row.amount),
@@ -20,7 +21,7 @@ export function cashTotals(profile: Profile) {
   const incomes = pendingTotal(profile.daily.incomes);
   return {
     current,
-    forecast: current - expenses + incomes,
+    forecast: sum([current, -expenses, incomes]),
     expenses,
     incomes,
   };
@@ -56,17 +57,18 @@ export function debtItemPaid(profile: Profile, id: string) {
 }
 export function wealthTotals(profile: Profile) {
   const work = sum(
-    profile.savings.map((r) => (r.actual ?? 0) + r.repayment - r.withdrawal),
+    profile.savings.flatMap((r) => [r.actual ?? 0, r.repayment, -r.withdrawal]),
   );
-  const interest =
-    profile.interest.opening +
-    sum(profile.interest.entries.map((r) => r.amount));
+  const interest = sum([
+    profile.interest.opening,
+    ...profile.interest.entries.map((r) => r.amount),
+  ]);
   const invested = sum(profile.investment.map((r) => r.actual ?? 0));
   return {
     work,
     interest,
-    savings: work + interest,
+    savings: sum([work, interest]),
     invested,
-    net: work + interest + invested,
+    net: sum([work, interest, invested]),
   };
 }

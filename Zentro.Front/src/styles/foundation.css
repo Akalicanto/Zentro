@@ -19,8 +19,7 @@ input,
 select {
   font: inherit;
 }
-button,
-.button {
+button {
   cursor: pointer;
   border: 1px solid var(--line);
   background: var(--panel);
@@ -34,8 +33,7 @@ button,
   font-weight: 550;
   transition: 0.18s;
 }
-button:hover,
-.button:hover {
+button:hover {
   background: var(--soft);
   border-color: #94a3b8;
 }

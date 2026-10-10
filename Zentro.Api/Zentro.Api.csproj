@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Data\*.db*</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Data/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

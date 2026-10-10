@@ -41,24 +41,20 @@ export default function InternalDebtPage({ data, open }: Props) {
   return (
     <>
       <div className="cards two savings-secondary">
-        {
-          <MetricCard
-            label="Deuda interna pendiente"
-            amount={debt.pending}
-            note="Ahorro retirado que falta por reponer"
+        <MetricCard
+          label="Deuda interna pendiente"
+          amount={debt.pending}
+          note="Ahorro retirado que falta por reponer"
 
-            tone="rose"
-          />
-        }
-        {
-          <MetricCard
-            label="Reposición mensual"
-            amount={data.plan.repayment}
-            note="Además de la aportación base, hasta saldar la deuda"
+          tone="rose"
+        />
+        <MetricCard
+          label="Reposición mensual"
+          amount={data.plan.repayment}
+          note="Además de la aportación base, hasta saldar la deuda"
 
-            tone="sage"
-          />
-        }
+          tone="sage"
+        />
       </div>
       <div className="debt-actions">
         <button

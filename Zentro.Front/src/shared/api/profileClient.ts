@@ -7,8 +7,17 @@ export async function requestProfile(method: "GET" | "PUT", body?: string) {
     signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) {
+    let detail = "";
+    if (response.status === 400) {
+      const problem = await response.json().catch(() => null);
+      const messages = Object.values(problem?.errors ?? {}).flat();
+      detail = messages
+        .filter((message) => typeof message === "string")
+        .join(" ");
+    }
     throw Error(
-      `La API no pudo guardar o cargar los datos (${response.status}).`,
+      detail ||
+        `La API no pudo guardar o cargar los datos (${response.status}).`,
     );
   }
   return response;

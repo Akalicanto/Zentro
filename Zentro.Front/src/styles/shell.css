@@ -136,12 +136,6 @@
 .sidebar-collapsed .sidebar-edge-toggle svg {
   transform: rotate(180deg);
 }
-.eyebrow {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--muted);
-}
 nav {
   display: flex;
   flex-direction: column;

@@ -40,94 +40,80 @@ export default function OverviewPage({
   return (
     <>
       <div className="cards home-summary">
-        {
-          <MetricCard
-            label="Patrimonio neto"
-            amount={wealth.net}
-            note="Ahorro + intereses + inversión"
+        <MetricCard
+          label="Patrimonio neto"
+          amount={wealth.net}
+          note="Ahorro + intereses + inversión"
 
-            tone="lilac"
-            help="El patrimonio excluye el dinero del día a día y el efectivo. La deuda interna ya reduce el ahorro y no se resta una segunda vez. La hipoteca ofrecida es una referencia, no una deuda contratada."
-          />
-        }
-        {
-          <MetricCard
-            label="Disponibilidad · ING"
-            amount={daily.current}
-            note="Saldo actual del día a día"
+          tone="lilac"
+          help="El patrimonio excluye el dinero del día a día y el efectivo. La deuda interna ya reduce el ahorro y no se resta una segunda vez. La hipoteca ofrecida es una referencia, no una deuda contratada."
+        />
+        <MetricCard
+          label="Disponibilidad · ING"
+          amount={daily.current}
+          note="Saldo actual del día a día"
 
-            action={{
-              label: "Ver día a día",
-              onClick: () => navigate("Día a día"),
-            }}
-            tone="sage"
-          />
-        }
-        {
-          <MetricCard
-            label="Efectivo"
-            amount={data.cash ?? 0}
-            note="Dinero en mano"
+          action={{
+            label: "Ver día a día",
+            onClick: () => navigate("Día a día"),
+          }}
+          tone="sage"
+        />
+        <MetricCard
+          label="Efectivo"
+          amount={data.cash ?? 0}
+          note="Dinero en mano"
 
-            action={{
-              label: "Actualizar efectivo",
-              onClick: () => open({ type: "cashBalance" }),
-            }}
-            tone="peach"
-          />
-        }
-        {
-          <MetricCard
-            label="Ahorro por trabajo"
-            amount={wealth.work}
-            note="Aportaciones netas y reposiciones"
+          action={{
+            label: "Actualizar efectivo",
+            onClick: () => open({ type: "cashBalance" }),
+          }}
+          tone="peach"
+        />
+        <MetricCard
+          label="Ahorro por trabajo"
+          amount={wealth.work}
+          note="Aportaciones netas y reposiciones"
 
-            action={{
-              label: "Ver ahorros",
-              onClick: () => navigate("Ahorros"),
-            }}
-            tone="blue"
-          />
-        }
-        {
-          <MetricCard
-            label="Generado por intereses"
-            amount={wealth.interest}
-            note="Separado del ahorro por trabajo"
+          action={{
+            label: "Ver ahorros",
+            onClick: () => navigate("Ahorros"),
+          }}
+          tone="blue"
+        />
+        <MetricCard
+          label="Generado por intereses"
+          amount={wealth.interest}
+          note="Separado del ahorro por trabajo"
 
-            action={{
-              label: "Actualizar intereses",
-              onClick: () => open({ type: "interestBalance" }),
-            }}
-            tone="rose"
-          />
-        }
-        {
-          <MetricCard
-            label="Invertido en fondos"
-            amount={wealth.invested}
-            note="Capital aportado, sin rentabilidad variable"
+          action={{
+            label: "Actualizar intereses",
+            onClick: () => open({ type: "interestBalance" }),
+          }}
+          tone="rose"
+        />
+        <MetricCard
+          label="Invertido en fondos"
+          amount={wealth.invested}
+          note="Capital aportado, sin rentabilidad variable"
 
-            action={{
-              label: "Ver inversión",
-              onClick: () => navigate("Inversión"),
-            }}
-            tone="lilac"
-          />
-        }
-        {
-          <MetricCard
-            label="Hipoteca ofrecida"
-            amount={data.mortgageOffer ?? 0}
-            note="Referencia disponible"
+          action={{
+            label: "Ver inversión",
+            onClick: () => navigate("Inversión"),
+          }}
+          tone="lilac"
+        />
+        <MetricCard
+          label="Hipoteca ofrecida"
+          amount={data.mortgageOffer ?? 0}
+          note="Referencia disponible"
 
-            action={{
-              label: "Actualizar oferta",
-              onClick: () => open({ type: "mortgageBalance" }),
-            }}
-            tone="butter"
-          />
-        }
+          action={{
+            label: "Actualizar oferta",
+            onClick: () => open({ type: "mortgageBalance" }),
+          }}
+          tone="butter"
+        />
       </div>
       {!!allocation.rows.length && (
         <section className="panel overview-allocation">

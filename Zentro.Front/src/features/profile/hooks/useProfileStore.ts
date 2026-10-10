@@ -6,10 +6,10 @@ export function useProfileStore(initialData: Profile) {
   const [data, setData] = useState(initialData),
     [error, setError] = useState("");
   const save = (next: Profile) => {
-    validateProfile(next);
+    const validated = validateProfile(next);
     setError("");
-    saveData(next, setError);
-    setData(next);
+    void saveData(validated, setError);
+    setData(validated);
     return true;
   };
   return { data, error, save };

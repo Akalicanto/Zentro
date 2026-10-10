@@ -105,8 +105,7 @@
 .modal {
   animation: zentro-enter 180ms var(--motion-ease);
 }
-.app button,
-.app .button {
+.app button {
   transition:
     transform 180ms var(--motion-ease),
     background-color 180ms ease,
@@ -114,8 +113,7 @@
     color 180ms ease,
     box-shadow 180ms ease;
 }
-.app button:active:not(:disabled),
-.app .button:active {
+.app button:active:not(:disabled) {
   transform: scale(0.97);
 }
 .app button:disabled {

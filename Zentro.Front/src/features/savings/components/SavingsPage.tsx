@@ -26,37 +26,31 @@ export default function SavingsPage({
   return (
     <>
       <div className="cards three savings-primary">
-        {
-          <MetricCard
-            label="Ahorro por trabajo"
-            amount={wealth.work}
-            note="Historial de aportaciones netas"
+        <MetricCard
+          label="Ahorro por trabajo"
+          amount={wealth.work}
+          note="Historial de aportaciones netas"
 
-            tone="blue"
-          />
-        }
-        {
-          <MetricCard
-            label="Generado por intereses"
-            amount={wealth.interest}
-            note="Intereses acumulados registrados"
+          tone="blue"
+        />
+        <MetricCard
+          label="Generado por intereses"
+          amount={wealth.interest}
+          note="Intereses acumulados registrados"
 
-            action={{
-              label: "Actualizar intereses",
-              onClick: () => open({ type: "interestBalance" }),
-            }}
-            tone="rose"
-          />
-        }
-        {
-          <MetricCard
-            label="Ahorro total"
-            amount={wealth.savings}
-            note="Trabajo + intereses"
+          action={{
+            label: "Actualizar intereses",
+            onClick: () => open({ type: "interestBalance" }),
+          }}
+          tone="rose"
+        />
+        <MetricCard
+          label="Ahorro total"
+          amount={wealth.savings}
+          note="Trabajo + intereses"
 
-            tone="lilac"
-          />
-        }
+          tone="lilac"
+        />
       </div>
       <div
         className="account-detail-tabs"

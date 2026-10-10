@@ -1,3 +1,4 @@
+import MonthSelector from "../../../shared/components/MonthSelector.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { Fragment, useState } from "react";
 import { ArrowUpDown, Check, Pencil, Plus, X } from "lucide-react";
@@ -23,9 +24,6 @@ const statuses = [
   { value: "reserved", label: "Apartado" },
   { value: "pending", label: "Pendiente" },
 ] as const;
-const months = Array.from({ length: 12 }, (_, i) =>
-  new Date(2000, i, 1).toLocaleDateString("es-ES", { month: "long" }),
-);
 
 export default function DebtDetail({
   profile,
@@ -227,7 +225,7 @@ export default function DebtDetail({
           </p>
         )}
         <div className="table-wrap">
-          <table className="monthly-history dental-history">
+          <table className="monthly-history debt-payment-history">
             <thead>
               <tr>
                 <th>Mes</th>
@@ -340,10 +338,10 @@ export default function DebtDetail({
             className="modal"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="dental-modal-title"
+            aria-labelledby="debt-installment-title"
           >
             <div className="section-title">
-              <h3 id="dental-modal-title">
+              <h3 id="debt-installment-title">
                 {modal === "total"
                   ? `Total de ${debt.name}`
                   : selected
@@ -366,46 +364,15 @@ export default function DebtDetail({
               )}
               <div className="form-grid">
                 {modal === "installment" && (
-                  <fieldset className="month-selection">
-                    <legend>Mes de la cuota</legend>
-                    <div className="month-selection-grid">
-                      <label>
-                        Mes
-                        <select
-                          aria-label="Mes de la cuota"
-                          value={month.slice(5)}
-                          disabled={!!selected}
-                          onChange={(e) =>
-                            setMonth(`${month.slice(0, 4)}-${e.target.value}`)
-                          }
-                        >
-                          {months.map((name, i) => (
-                            <option
-                              key={name}
-                              value={String(i + 1).padStart(2, "0")}
-                            >
-                              {name.charAt(0).toUpperCase() + name.slice(1)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label>
-                        Año
-                        <select
-                          aria-label="Año de la cuota"
-                          value={month.slice(0, 4)}
-                          disabled={!!selected}
-                          onChange={(e) =>
-                            setMonth(`${e.target.value}-${month.slice(5)}`)
-                          }
-                        >
-                          {years.map((y) => (
-                            <option key={y}>{y}</option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                  </fieldset>
+                  <MonthSelector
+                    month={month}
+                    years={years}
+                    onChange={setMonth}
+                    disabled={!!selected}
+                    legend="Mes de la cuota"
+                    monthLabel="Mes de la cuota"
+                    yearLabel="Año de la cuota"
+                  />
                 )}
                 <label className="full">
                   {modal === "total"
@@ -450,7 +417,7 @@ export default function DebtDetail({
                   </fieldset>
                 )}
               </div>
-              <div className="modal-footer dental-modal-footer">
+              <div className="modal-footer debt-installment-footer">
                 {modal === "installment" && selected && (
                   <button
                     type="button"

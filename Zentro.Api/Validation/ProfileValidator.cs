@@ -64,7 +64,7 @@ public sealed class ProfileValidator : IProfileValidator
         Check(ContributionRules.IsValid(profile.Savings), "savings", "Revisa los meses, importes y objetivos de ahorro.");
         Check(ContributionRules.IsValid(profile.Investment, true), "investment", "Revisa los meses e importes de inversión.");
         Check(InterestRules.IsValid(profile.Interest), "interest", "Revisa el saldo y las anotaciones de intereses.");
-        Check(FinancialPlanRules.IsValid(profile.Plan), "plan", "Revisa el plan mensual.");
+        Check(FinancialPlanRules.IsValid(profile.Plan), "plan", "Revisa el plan mensual: el horizonte admite hasta 600 meses.");
         Check(SavingsPlacementRules.IsValid(profile.SavingsPlacements), "savingsPlacements", "Revisa los destinos, tipos de interés y plazos.");
         Check(ExternalDebtRules.IsValid(profile.Debts), "debts", "Revisa las deudas y sus cuotas.");
         Check(profile.PossibleExpenses is null ||
@@ -83,6 +83,10 @@ public sealed class ProfileValidator : IProfileValidator
 
         Check(InternalDebtRules.IsValid(profile.InternalDebt, profile.Savings, profile.Interest.Entries),
             "internalDebt", "Las retiradas, reposiciones y sus registros deben cuadrar.");
+        if (errors.Count > 0)
+        {
+            return new(errors);
+        }
 
         var work = profile.Savings.Sum(row => (decimal)(row.Actual ?? 0) + row.Repayment - row.Withdrawal);
         var interest = profile.Interest.Opening + profile.Interest.Entries.Sum(row => (decimal)row.Amount);
@@ -90,6 +94,10 @@ public sealed class ProfileValidator : IProfileValidator
         var balances = new[] { work, interest, invested, work + interest, work + interest + invested };
         Check(balances.All(value => value >= 0 && value <= MaximumSafeInteger),
             "totals", "Los saldos deben ser no negativos y representables de forma segura.");
+        Check((profile.PossibleExpenses ?? []).Sum(row => (decimal)row.Amount) <= MaximumSafeInteger &&
+            (profile.Debts ?? []).Sum(row => (decimal)row.Total) <= MaximumSafeInteger &&
+            profile.InternalDebt.Items.Sum(row => (decimal)row.Amount) <= MaximumSafeInteger,
+            "totals", "Los totales deben conservar la precisión de los céntimos.");
 
         return new(errors, errors.Count == 0 ? profile : null);
     }

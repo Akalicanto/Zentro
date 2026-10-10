@@ -1,10 +1,22 @@
 import type { Profile } from "./types.ts";
-import { debtItemPaid, wealthTotals } from "./totals.ts";
+import {
+  cashTotals,
+  debtItemPaid,
+  debtTotals,
+  wealthTotals,
+} from "./totals.ts";
 import { sum } from "../shared/utils/money.ts";
+import { monthDistance } from "../shared/utils/dates.ts";
 
 export function validateProfile(raw: unknown): Profile {
   const profile = raw as Profile;
   const integer = (n: unknown) => Number.isSafeInteger(n);
+  const text = (value: unknown) => typeof value === "string" && !!value.trim();
+  const collection = (value: unknown) =>
+    Array.isArray(value) &&
+    value.every(
+      (row) => row !== null && typeof row === "object" && !Array.isArray(row),
+    );
   const nonnegative = (n: unknown) => integer(n) && Number(n) >= 0;
   const month = (s: unknown) =>
     typeof s === "string" && /^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(s);
@@ -14,7 +26,7 @@ export function validateProfile(raw: unknown): Profile {
     !isNaN(Date.parse(s)) &&
     new Date(s).toISOString().slice(0, 10) === s;
   const unique = (rows: { id: string }[]) =>
-    rows.every((r) => typeof r.id === "string" && !!r.id) &&
+    rows.every((r) => r !== null && text(r.id)) &&
     new Set(rows.map((r) => r.id)).size === rows.length;
   if (
     !profile ||
@@ -23,15 +35,15 @@ export function validateProfile(raw: unknown): Profile {
     !profile.interest ||
     !profile.internalDebt ||
     !profile.plan ||
-    !Array.isArray(profile.savings) ||
-    !Array.isArray(profile.investment) ||
-    !Array.isArray(profile.daily.expenses) ||
-    !Array.isArray(profile.daily.incomes) ||
-    !Array.isArray(profile.interest.entries) ||
-    !Array.isArray(profile.internalDebt.items) ||
-    !Array.isArray(profile.internalDebt.payments) ||
-    !Array.isArray(profile.internalDebt.schedule) ||
-    !Array.isArray(profile.commitments)
+    !collection(profile.savings) ||
+    !collection(profile.investment) ||
+    !collection(profile.daily.expenses) ||
+    !collection(profile.daily.incomes) ||
+    !collection(profile.interest.entries) ||
+    !collection(profile.internalDebt.items) ||
+    !collection(profile.internalDebt.payments) ||
+    !collection(profile.internalDebt.schedule) ||
+    !collection(profile.commitments)
   )
     throw Error("Perfil no válido.");
   if (
@@ -39,10 +51,10 @@ export function validateProfile(raw: unknown): Profile {
     (profile.mortgageOffer !== undefined &&
       !nonnegative(profile.mortgageOffer)) ||
     (profile.possibleExpenses !== undefined &&
-      (!Array.isArray(profile.possibleExpenses) ||
+      (!collection(profile.possibleExpenses) ||
         !unique(profile.possibleExpenses) ||
         profile.possibleExpenses.some(
-          (r) => !r.concept?.trim() || !nonnegative(r.amount) || r.amount === 0,
+          (r) => !text(r.concept) || !nonnegative(r.amount) || r.amount === 0,
         )))
   )
     throw Error("Revisa el efectivo y los posibles gastos.");
@@ -54,6 +66,7 @@ export function validateProfile(raw: unknown): Profile {
     !month(profile.plan.start) ||
     !month(profile.plan.horizon) ||
     profile.plan.horizon < profile.plan.start ||
+    monthDistance(profile.plan.start, profile.plan.horizon) >= 600 ||
     ![
       profile.plan.saving,
       profile.plan.investment,
@@ -65,12 +78,12 @@ export function validateProfile(raw: unknown): Profile {
     throw Error("Revisa saldos y plan mensual.");
   if (profile.savingsPlacements !== undefined) {
     if (
-      !Array.isArray(profile.savingsPlacements) ||
+      !collection(profile.savingsPlacements) ||
       !unique(profile.savingsPlacements) ||
       profile.savingsPlacements.filter((r) => r.amount === null).length > 1 ||
       profile.savingsPlacements.some(
         (r) =>
-          !r.name?.trim() ||
+          !text(r.name) ||
           !["deposit", "remunerated"].includes(r.kind) ||
           (r.amount !== null && !nonnegative(r.amount)) ||
           !nonnegative(r.annualRateBps) ||
@@ -96,13 +109,13 @@ export function validateProfile(raw: unknown): Profile {
       );
   }
   if (profile.debts !== undefined) {
-    if (!Array.isArray(profile.debts) || !unique(profile.debts))
+    if (!collection(profile.debts) || !unique(profile.debts))
       throw Error("Deuda no válida o duplicada.");
     for (const debt of profile.debts) {
       if (
-        !debt.name?.trim() ||
+        !text(debt.name) ||
         !nonnegative(debt.total) ||
-        !Array.isArray(debt.installments) ||
+        !collection(debt.installments) ||
         new Set(debt.installments.map((r) => r.month)).size !==
           debt.installments.length ||
         debt.installments.some(
@@ -128,7 +141,7 @@ export function validateProfile(raw: unknown): Profile {
             .filter((r) => r.status === "paid")
             .reduce((n, r) => n + r.amount, 0) !== debt.total) ||
         (debt.activity !== undefined &&
-          (!Array.isArray(debt.activity) ||
+          (!collection(debt.activity) ||
             !unique(debt.activity) ||
             debt.activity.some(
               (r) =>
@@ -165,7 +178,7 @@ export function validateProfile(raw: unknown): Profile {
       !unique(rows) ||
       rows.some(
         (r) =>
-          !r.concept?.trim() ||
+          !text(r.concept) ||
           !integer(r.amount) ||
           r.amount <= 0 ||
           !["planned", "done"].includes(r.status) ||
@@ -180,7 +193,7 @@ export function validateProfile(raw: unknown): Profile {
       (r) =>
         !date(r.date) ||
         r.date < profile.interest.asOf ||
-        !r.concept?.trim() ||
+        !text(r.concept) ||
         !integer(r.amount),
     )
   )
@@ -190,7 +203,7 @@ export function validateProfile(raw: unknown): Profile {
     profile.internalDebt.items.some(
       (r) =>
         !date(r.date) ||
-        !r.concept?.trim() ||
+        !text(r.concept) ||
         !integer(r.amount) ||
         r.amount <= 0 ||
         !["work", "interest"].includes(r.source) ||
@@ -206,7 +219,7 @@ export function validateProfile(raw: unknown): Profile {
         !integer(r.amount) ||
         r.amount <= 0 ||
         typeof r.historical !== "boolean" ||
-        !Array.isArray(r.allocations) ||
+        !collection(r.allocations) ||
         sum(r.allocations.map((a) => a.amount)) !== r.amount ||
         r.allocations.some(
           (a) =>
@@ -297,12 +310,16 @@ export function validateProfile(raw: unknown): Profile {
   if (
     !unique(profile.commitments) ||
     profile.commitments.some(
-      (r) => !r.name?.trim() || (r.amount !== null && !nonnegative(r.amount)),
+      (r) => !text(r.name) || (r.amount !== null && !nonnegative(r.amount)),
     )
   )
     throw Error("Compromiso no válido.");
   if (!Object.values(wealthTotals(profile)).every(nonnegative))
     throw Error("Los importes acumulados deben ser válidos y no negativos.");
+  cashTotals(profile);
+  debtTotals(profile);
+  sum((profile.possibleExpenses ?? []).map((row) => row.amount));
+  sum((profile.debts ?? []).map((debt) => debt.total));
   // Las copias antiguas pueden traer mes; se descarta sin cambiar importes.
   return {
     ...profile,

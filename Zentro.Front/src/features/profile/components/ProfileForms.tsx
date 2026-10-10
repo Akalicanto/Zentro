@@ -1,3 +1,4 @@
+import MonthSelector from "../../../shared/components/MonthSelector.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import {
   type Profile,
@@ -47,13 +48,6 @@ export default function ProfileForms({
           (row) => row.month === monthSelection,
         )
       : undefined;
-  const monthNames = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, index) =>
-        new Date(2000, index, 1).toLocaleDateString("es-ES", { month: "long" }),
-      ),
-    [],
-  );
   const selectableYears = [
     ...new Set(
       [...data.savings, ...data.investment]
@@ -104,7 +98,9 @@ export default function ProfileForms({
         name={name}
         type={type}
         defaultValue={value}
-        inputMode={type === "text" ? "decimal" : undefined}
+        inputMode={
+          type === "text" && name !== "concept" ? "decimal" : undefined
+        }
       />
     </label>
   );
@@ -173,49 +169,15 @@ export default function ProfileForms({
               )}
             {modal.type === "month" && (
               <>
-                <fieldset className="month-selection">
-                  <legend>Mes del registro</legend>
-                  <div className="month-selection-grid">
-                    <label>
-                      Mes
-                      <select
-                        aria-label="Mes del registro"
-                        value={monthSelection.slice(5)}
-                        disabled={!!modal.item?.month}
-                        onChange={(event) =>
-                          setMonthSelection(
-                            `${monthSelection.slice(0, 4)}-${event.target.value}`,
-                          )
-                        }
-                      >
-                        {monthNames.map((name, index) => (
-                          <option
-                            value={String(index + 1).padStart(2, "0")}
-                            key={name}
-                          >
-                            {name.charAt(0).toUpperCase() + name.slice(1)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      Año
-                      <select
-                        aria-label="Año del registro"
-                        value={monthSelection.slice(0, 4)}
-                        disabled={!!modal.item?.month}
-                        onChange={(event) =>
-                          setMonthSelection(
-                            `${event.target.value}-${monthSelection.slice(5)}`,
-                          )
-                        }
-                      >
-                        {selectableYears.map((value) => (
-                          <option key={value}>{value}</option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
+                <MonthSelector
+                  month={monthSelection}
+                  years={selectableYears}
+                  onChange={setMonthSelection}
+                  disabled={!!modal.item?.month}
+                  legend="Mes del registro"
+                  monthLabel="Mes del registro"
+                  yearLabel="Año del registro"
+                >
                   <p>
                     {monthName(monthSelection)}
                     {selectedMonthly?.actual !== null &&
@@ -223,7 +185,7 @@ export default function ProfileForms({
                       ? " · Actualizarás un mes ya registrado"
                       : " · Nuevo importe o previsión"}
                   </p>
-                </fieldset>
+                </MonthSelector>
                 <div className="month-value-fields" key={monthSelection}>
                   {field(
                     "Objetivo base (€)",

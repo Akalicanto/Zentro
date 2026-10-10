@@ -75,28 +75,24 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
             tone="lilac"
           />
         )}
-        {
-          <MetricCard
-            label="Aportación mensual"
-            amount={saving ? data.plan.saving : data.plan.investment}
-            note="Aportación base del plan"
+        <MetricCard
+          label="Aportación mensual"
+          amount={saving ? data.plan.saving : data.plan.investment}
+          note="Aportación base del plan"
 
-            tone="peach"
-          />
-        }
-        {
-          <MetricCard
-            label="Acumulado previsto"
-            amount={future}
-            note={
-              closingMonth
-                ? `Hasta ${monthName(closingMonth.month)}`
-                : "Sin importes registrados en este período"
-            }
+          tone="peach"
+        />
+        <MetricCard
+          label="Acumulado previsto"
+          amount={future}
+          note={
+            closingMonth
+              ? `Hasta ${monthName(closingMonth.month)}`
+              : "Sin importes registrados en este período"
+          }
 
-            tone="blue"
-          />
-        }
+          tone="blue"
+        />
       </div>
       <section className="panel">
         <div className="section-title">

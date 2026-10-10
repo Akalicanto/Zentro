@@ -17,9 +17,6 @@
   align-items: center;
   margin-bottom: 20px;
 }
-.page-heading .eyebrow {
-  margin-bottom: 11px;
-}
 .page-heading p {
   margin-bottom: 0;
   font-size: 17px;
@@ -110,28 +107,6 @@
   font-size: 16px;
   margin: 7px 0 0;
 }
-.section-title .eyebrow {
-  display: block;
-  margin-bottom: 10px;
-}
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 9px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 5px;
-  white-space: nowrap;
-  gap: 3px;
-}
-.green {
-  background: #edf5eb;
-  color: #5f8958;
-}
-.amber {
-  background: #fbf3e3;
-  color: #a48950;
-}
 .chart {
   height: 265px;
   margin: 22px 0 0;
@@ -144,26 +119,6 @@
   background: transparent;
   padding: 8px 0;
 }
-.progress {
-  height: 7px;
-  background: var(--soft);
-  border-radius: 9px;
-  margin: 20px 0 12px;
-  overflow: hidden;
-}
-.progress i {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-  border-radius: 9px;
-}
-.goal {
-  margin: 20px 0 24px;
-}
-.goal .section-title {
-  font-size: 16px;
-  margin-bottom: 0;
-}
 .spread {
   display: flex;
   justify-content: space-between;
@@ -173,11 +128,6 @@
   margin: 12px 0;
 }
 .spread small {
-  font-size: 13px;
-}
-.goal > small {
-  display: block;
-  margin-top: 12px;
   font-size: 13px;
 }
 .table-wrap {
@@ -229,28 +179,11 @@ td small {
 .amount {
   font-weight: 600;
 }
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.actions .icon {
-  color: var(--muted);
-  opacity: 0.6;
-}
-.actions .icon:hover {
-  opacity: 1;
-}
 .danger {
   color: #b9665a;
 }
 .negative {
   color: #c77765;
-}
-.muted {
-  color: var(--muted);
-  font-size: 16px;
-  margin-top: 16px;
 }
 .button-row {
   display: flex;
@@ -258,8 +191,7 @@ td small {
   gap: 10px;
   margin: 20px 0;
 }
-.button-row button,
-.button-row .button {
+.button-row button {
   font-size: 16px;
 }
 .error {
@@ -335,13 +267,6 @@ td small {
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--line);
-}
-footer {
-  display: flex;
-  justify-content: space-between;
-  color: var(--muted);
-  font-size: 13px;
-  padding: 12px 0 4px;
 }
 .recharts-default-tooltip {
   color: #1e293b !important;
@@ -461,12 +386,6 @@ footer {
     height: 235px;
     margin-left: -15px;
   }
-  footer span {
-    display: none;
-  }
-  footer {
-    font-size: 13px;
-  }
   .button-row button {
     flex: 1;
   }
@@ -477,9 +396,6 @@ footer {
 button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
-}
-.account-detail > .panel {
-  margin-bottom: 24px;
 }
 .account-detail-tabs {
   display: flex;
@@ -505,7 +421,4 @@ button:disabled {
 }
 .account-history-chart {
   height: 340px;
-}
-.account-detail .metric h2 {
-  white-space: normal;
 }

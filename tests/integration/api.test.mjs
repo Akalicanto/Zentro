@@ -239,6 +239,32 @@ try {
     },
     { ...state, savings: [{ month: "bad" }] },
     { ...state, daily: { ...state.daily, opening: 0.5 } },
+    {
+      ...state,
+      daily: {
+        ...state.daily,
+        opening: Number.MAX_SAFE_INTEGER,
+        incomes: [
+          {
+            id: "overflow",
+            concept: "Ingreso",
+            amount: 1,
+            status: "planned",
+            includedInOpening: false,
+          },
+        ],
+        expenses: [],
+      },
+    },
+    {
+      ...state,
+      possibleExpenses: [
+        { id: "large", concept: "Grande", amount: Number.MAX_SAFE_INTEGER },
+        { id: "extra", concept: "Extra", amount: 1 },
+      ],
+    },
+    { ...state, plan: { ...state.plan, start: "2026-01", horizon: "2076-01" } },
+    { ...state, plan: { ...state.plan, start: "0026-01" } },
   ]) {
     assert.equal((await put(invalid)).status, 400);
     assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);

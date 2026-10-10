@@ -95,4 +95,3 @@ export type Profile = {
   commitments: { id: string; name: string; amount: number | null }[];
 };
 export type PossibleExpense = NonNullable<Profile["possibleExpenses"]>[number];
-export type ContributionKind = "savings" | "investment";

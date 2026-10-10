@@ -133,59 +133,49 @@ export default function DailyPage({ data, open, save }: Props) {
   return (
     <>
       <div className="cards daily-primary">
-        {
-          <MetricCard
-            label="Saldo actual · ING"
-            amount={daily.current}
-            note="Dinero disponible en este momento"
-            accent={true}
-            action={{
-              label: "Actualizar saldo",
-              onClick: () => open({ type: "balance" }),
-            }}
-            tone="sage"
-          />
-        }
-        {
-          <MetricCard
-            label="Efectivo"
-            amount={data.cash ?? 0}
-            note="Importe independiente"
+        <MetricCard
+          label="Saldo actual · ING"
+          amount={daily.current}
+          note="Dinero disponible en este momento"
+          accent={true}
+          action={{
+            label: "Actualizar saldo",
+            onClick: () => open({ type: "balance" }),
+          }}
+          tone="sage"
+        />
+        <MetricCard
+          label="Efectivo"
+          amount={data.cash ?? 0}
+          note="Importe independiente"
 
-            action={{
-              label: "Actualizar efectivo",
-              onClick: () => open({ type: "cashBalance" }),
-            }}
-            tone="peach"
-          />
-        }
-        {
-          <MetricCard
-            label="Gastos previstos"
-            amount={daily.expenses}
-            note="Pendientes de realizar"
+          action={{
+            label: "Actualizar efectivo",
+            onClick: () => open({ type: "cashBalance" }),
+          }}
+          tone="peach"
+        />
+        <MetricCard
+          label="Gastos previstos"
+          amount={daily.expenses}
+          note="Pendientes de realizar"
 
-            tone="rose"
-          />
-        }
-        {
-          <MetricCard
-            label="Ingresos previstos"
-            amount={daily.incomes}
-            note="Pendientes de recibir"
+          tone="rose"
+        />
+        <MetricCard
+          label="Ingresos previstos"
+          amount={daily.incomes}
+          note="Pendientes de recibir"
 
-            tone="sage"
-          />
-        }
-        {
-          <MetricCard
-            label="Saldo después de pendientes"
-            amount={daily.forecast}
-            note="Previsión calculada sobre la marcha"
+          tone="sage"
+        />
+        <MetricCard
+          label="Saldo después de pendientes"
+          amount={daily.forecast}
+          note="Previsión calculada sobre la marcha"
 
-            tone="blue"
-          />
-        }
+          tone="blue"
+        />
       </div>
       <div className="daily-current-month">
         <span className="month-marker">{dailyMonth.slice(5)}</span>

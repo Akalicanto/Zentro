@@ -265,20 +265,3 @@
     flex-wrap: wrap;
   }
 }
-.debt-page-title {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 4px 0 20px;
-}
-.debt-page-title h2 {
-  margin: 0;
-}
-.debt-page-title > span {
-  color: var(--muted);
-  font-size: 14px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  padding: 6px 12px;
-  border-radius: 999px;
-}

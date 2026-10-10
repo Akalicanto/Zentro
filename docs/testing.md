@@ -12,6 +12,8 @@ npm.cmd run format:check
 
 ## Qué verifica cada suite
 
+Las pruebas de `money.test.ts` y `validationLimits.test.ts` cubren conversión y suma exacta de céntimos, límites de precisión diarios, horizonte de 600 meses, fechas límite e importaciones mal formadas. `profileStorage.test.ts` comprueba recuperación normalizada, fallos de conexión, escrituras posteriores y almacenamiento no disponible; `profileClient.test.ts` verifica los errores de validación de la API.
+
 | Ubicación                                          | Cobertura                                                                                                                                                    |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Zentro.Front/tests/unit/financialProfile.test.ts` | Importes, saldos, meses, objetivos, previsiones, retiradas, reposiciones, distribución e intereses estimados.                                                |

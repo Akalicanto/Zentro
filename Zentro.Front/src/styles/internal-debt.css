@@ -91,13 +91,6 @@
   font-size: 14px;
   border-color: transparent;
 }
-.table-action.edit {
-  color: var(--accent-text);
-  background: var(--accent-soft);
-}
-.table-action.edit:hover {
-  border-color: var(--accent);
-}
 .table-action.delete {
   color: #c55252;
   background: color-mix(in srgb, #ef4444 8%, var(--panel));
@@ -212,10 +205,6 @@
   }
 }
 @media (max-width: 700px) {
-  .account-detail > .section-title {
-    align-items: stretch;
-    flex-direction: column;
-  }
   .account-history-chart {
     height: 250px;
   }

@@ -178,13 +178,13 @@
 .external-debt-primary .metric-action {
   color: inherit;
 }
-.dental-history thead th:not(:first-child),
-.dental-history tfoot td:not(:first-child),
-.dental-history td:not(:first-child) {
+.debt-payment-history thead th:not(:first-child),
+.debt-payment-history tfoot td:not(:first-child),
+.debt-payment-history td:not(:first-child) {
   text-align: center;
   width: 24%;
 }
-.dental-history .history-year th {
+.debt-payment-history .history-year th {
   width: auto;
   text-align: left;
 }
@@ -200,7 +200,7 @@
   color: var(--muted);
   opacity: 0.5;
 }
-.dental-history tfoot {
+.debt-payment-history tfoot {
   background: var(--soft);
   font-weight: 650;
 }
@@ -248,23 +248,23 @@
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
-.dental-modal-footer .remove-installment {
+.debt-installment-footer .remove-installment {
   margin-right: auto;
   border-color: transparent;
   background: transparent;
   color: #a24458;
 }
-.dark .dental-modal-footer .remove-installment {
+.dark .debt-installment-footer .remove-installment {
   color: #efb6c4;
 }
 @media (max-width: 650px) {
   .external-debt-primary .metric h2 {
     font-size: 30px;
   }
-  .dental-modal-footer {
+  .debt-installment-footer {
     flex-wrap: wrap;
   }
-  .dental-modal-footer .remove-installment {
+  .debt-installment-footer .remove-installment {
     width: 100%;
   }
   .installment-status-options {

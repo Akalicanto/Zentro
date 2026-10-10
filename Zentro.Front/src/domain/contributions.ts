@@ -11,8 +11,10 @@ export function monthSeries(profile: Profile, kind: "savings" | "investment") {
     let month = profile.plan.start, count = 0;
     month <= profile.plan.horizon && count < 600;
     month = addMonth(month, 1), count++
-  )
+  ) {
     months.add(month);
+    if (month === profile.plan.horizon) break;
+  }
   let actual = 0,
     ideal = 0,
     forecast = 0,

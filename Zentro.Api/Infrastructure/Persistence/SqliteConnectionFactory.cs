@@ -20,7 +20,15 @@ public sealed class SqliteConnectionFactory
     public SqliteConnection Open()
     {
         var connection = new SqliteConnection(connectionString);
-        connection.Open();
-        return connection;
+        try
+        {
+            connection.Open();
+            return connection;
+        }
+        catch
+        {
+            connection.Dispose();
+            throw;
+        }
     }
 }

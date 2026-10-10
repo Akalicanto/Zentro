@@ -1,6 +1,6 @@
 # Zentro.Front
 
-React, TypeScript y Vite. Requisitos y arranque conjunto en el [README principal](../README.md).
+React, TypeScript y Vite. Requisitos y arranque conjunto en la [guía de inicio](../docs/getting-started.md).
 
 ## Organización
 

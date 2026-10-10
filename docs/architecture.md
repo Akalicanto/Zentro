@@ -37,6 +37,7 @@ app/ → features/ → domain/
 - `features/profile/services/profileStorage.ts` ordena las escrituras y conserva la última pendiente en el navegador si falla la API. Una recarga intenta guardarla antes de cargar la base.
 - `domain/` define tipos, cálculos, validación y operaciones financieras. No importa React, no hace llamadas HTTP y no lee almacenamiento.
 - `shared/api/` contiene el transporte HTTP; `shared/utils/`, las funciones de fechas, importes e identificadores; `shared/components/`, elementos visuales compartidos.
+- `shared/components/MonthSelector.tsx` comparte selección de mes/año entre aportaciones y cuotas. La conversión y suma de céntimos usan enteros exactos y comprueban su rango antes de devolver números al resto de la aplicación.
 - `styles/` separa base, navegación, componentes y áreas. `index.css` fija el orden de la cascada; cambiar ese orden puede modificar la apariencia.
 
 Los gráficos se memoizan para evitar redibujarlos al abrir formularios. Las clases visuales y la paleta se conservan durante esta reorganización. Los formularios usan una unión discriminada (`ProfileModal`), de modo que cada acción recibe el tipo correcto de registro.
@@ -60,6 +61,8 @@ Los gráficos se memoizan para evitar redibujarlos al abrir formularios. Las cla
 5. Verificar la regla financiera con datos ficticios y, si cambia un flujo, añadir una comprobación de navegador. Nunca convertir datos personales en fixtures.
 
 Las rutas siguen siendo `GET /api/state`, `PUT /api/state` y `GET /api/health`. El contrato guarda el perfil completo: dos pestañas que editan simultáneamente pueden sobrescribirse; prevalece la última escritura.
+
+La [revisión del repositorio](repository-review.md) recoge la limpieza, correcciones y decisiones de estructura. El plan admite hasta 600 meses: un rango mayor se rechaza para evitar calendarios recortados silenciosamente. Los guardados pendientes omiten copias sustituidas antes de enviarse y conservan el último cambio hasta recibir una respuesta correcta.
 
 ## Modales y Android
 
