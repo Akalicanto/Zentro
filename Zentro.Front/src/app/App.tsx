@@ -76,6 +76,7 @@ export default function App({ initialData }: { initialData: Profile }) {
           open={open}
           navigate={navigate}
           setSavingsTab={setSavingsTab}
+          selectDebt={selectDebt}
         />
       )}
       {page === "Día a día" && (

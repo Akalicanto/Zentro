@@ -1,3 +1,4 @@
+import { Surface } from "../../../shared/ui/index.tsx";
 import { memo, useMemo, useState } from "react";
 import { CalendarDays, CircleCheck, Clock3 } from "lucide-react";
 import {
@@ -121,7 +122,7 @@ const DebtAnalytics = memo(function DebtAnalytics({
         </section>
       </div>
       <div className="cards two debt-charts">
-        <section className="panel debt-progress-panel">
+        <Surface component="section" className="panel debt-progress-panel">
           <span className="table-eyebrow">PASO A PASO</span>
           <h3>Así va tu deuda</h3>
           <div
@@ -186,8 +187,11 @@ const DebtAnalytics = memo(function DebtAnalytics({
             cualquier importe sin mes asignado. El porcentaje preparado suma
             pagado y apartado.
           </PanelInfo>
-        </section>
-        <section className="panel debt-calendar-chart-panel">
+        </Surface>
+        <Surface
+          component="section"
+          className="panel debt-calendar-chart-panel"
+        >
           <div className="section-title debt-chart-heading">
             <div>
               <span className="table-eyebrow">TU CALENDARIO</span>
@@ -279,7 +283,7 @@ const DebtAnalytics = memo(function DebtAnalytics({
             aún no hay una fecha completa de liquidación. Estos gráficos no
             modifican tus datos.
           </PanelInfo>
-        </section>
+        </Surface>
       </div>
     </div>
   );

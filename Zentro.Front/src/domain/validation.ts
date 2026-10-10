@@ -129,6 +129,10 @@ export function validateProfile(raw: unknown): Profile {
         );
       if (
         !text(debt.name) ||
+        (debt.dueDay !== undefined &&
+          (!Number.isInteger(debt.dueDay) ||
+            debt.dueDay < 1 ||
+            debt.dueDay > 31)) ||
         !nonnegative(debt.total) ||
         !collection(debt.installments) ||
         new Set(debt.installments.map((r) => r.month)).size !==

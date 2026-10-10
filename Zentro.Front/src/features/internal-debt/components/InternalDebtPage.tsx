@@ -1,3 +1,4 @@
+import { Button, Surface } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
   currentMonth,
@@ -57,7 +58,7 @@ export default function InternalDebtPage({ data, open }: Props) {
         />
       </div>
       <div className="debt-actions">
-        <button
+        <Button
           className="debt-action"
           aria-label="Añadir deuda"
           onClick={() => open({ type: "withdraw" })}
@@ -67,8 +68,8 @@ export default function InternalDebtPage({ data, open }: Props) {
             <strong>Añadir deuda</strong>
             <small>Sube la deuda · Baja el ahorro del mes</small>
           </span>
-        </button>
-        <button
+        </Button>
+        <Button
           className="debt-action repay"
           aria-label="Devolver deuda"
           disabled={debt.pending === 0}
@@ -79,9 +80,9 @@ export default function InternalDebtPage({ data, open }: Props) {
             <strong>Devolver deuda</strong>
             <small>Baja la deuda · Sube el ahorro del mes</small>
           </span>
-        </button>
+        </Button>
       </div>
-      <section className="panel debt-table-panel">
+      <Surface component="section" className="panel debt-table-panel">
         <div className="section-title table-heading">
           <div>
             <span className="table-eyebrow">TU AHORRO, DE VUELTA</span>
@@ -92,7 +93,7 @@ export default function InternalDebtPage({ data, open }: Props) {
               {data.internalDebt.items.length}{" "}
               {data.internalDebt.items.length === 1 ? "concepto" : "conceptos"}
             </span>
-            <button
+            <Button
               className={`history-edit-toggle${editingDebt ? " active" : ""}`}
               aria-label={
                 editingDebt ? "Terminar edición de deuda" : "Editar deuda"
@@ -103,7 +104,7 @@ export default function InternalDebtPage({ data, open }: Props) {
             >
               {editingDebt ? <Check size={16} /> : <Pencil size={16} />}
               {editingDebt ? "Terminar edición" : "Editar"}
-            </button>
+            </Button>
           </div>
         </div>
         {editingDebt && (
@@ -130,13 +131,13 @@ export default function InternalDebtPage({ data, open }: Props) {
                   <tr key={item.id}>
                     <td>
                       {editingDebt ? (
-                        <button
+                        <Button
                           className="history-month-edit"
                           aria-label={`Editar ${item.concept}`}
                           onClick={() => open({ type: "editDebt", item })}
                         >
                           {item.concept}
-                        </button>
+                        </Button>
                       ) : (
                         <strong>{item.concept}</strong>
                       )}
@@ -175,13 +176,13 @@ export default function InternalDebtPage({ data, open }: Props) {
                     {editingDebt && (
                       <td>
                         <div className="table-row-actions">
-                          <button
+                          <Button
                             className="table-action delete"
                             aria-label={`Borrar ${item.concept}`}
                             onClick={() => open({ type: "deleteDebt", item })}
                           >
                             <Trash2 size={15} />
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     )}
@@ -200,8 +201,8 @@ export default function InternalDebtPage({ data, open }: Props) {
           Pendiente es lo que falta recuperar. Las reposiciones históricas ya
           incluidas en el ahorro no se suman otra vez.
         </PanelInfo>
-      </section>
-      <section className="panel distribution-panel">
+      </Surface>
+      <Surface component="section" className="panel distribution-panel">
         <div className="section-title table-heading">
           <div>
             <span className="table-eyebrow">PASO A PASO</span>
@@ -212,7 +213,7 @@ export default function InternalDebtPage({ data, open }: Props) {
               {plan.length}{" "}
               {plan.length === 1 ? "mes previsto" : "meses previstos"}
             </span>
-            <button
+            <Button
               className={`history-edit-toggle${editingSchedule ? " active" : ""}`}
               aria-label={
                 editingSchedule
@@ -225,7 +226,7 @@ export default function InternalDebtPage({ data, open }: Props) {
             >
               {editingSchedule ? <Check size={16} /> : <Pencil size={16} />}
               {editingSchedule ? "Terminar edición" : "Editar"}
-            </button>
+            </Button>
           </div>
         </div>
         {editingSchedule && (
@@ -256,7 +257,7 @@ export default function InternalDebtPage({ data, open }: Props) {
                     <span className="distribution-month">
                       <span className="month-marker">{row.month.slice(5)}</span>
                       {editingSchedule ? (
-                        <button
+                        <Button
                           className="history-month-edit"
                           aria-label={`Editar distribución ${row.month}`}
                           onClick={() =>
@@ -270,7 +271,7 @@ export default function InternalDebtPage({ data, open }: Props) {
                           }
                         >
                           {monthName(row.month)}
-                        </button>
+                        </Button>
                       ) : (
                         monthName(row.month)
                       )}
@@ -297,7 +298,7 @@ export default function InternalDebtPage({ data, open }: Props) {
           devuelto. Editar permite ajustar cada mes, incluido indicar cero para
           saltarlo; las previsiones no cuentan como ahorro realizado.
         </PanelInfo>
-      </section>
+      </Surface>
     </>
   );
 }

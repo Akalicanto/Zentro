@@ -1,3 +1,4 @@
+import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
   wealthTotals,
@@ -15,18 +16,21 @@ import { ArrowUpRight } from "lucide-react";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
 import Chart from "../../history/components/ContributionChart.tsx";
 import MonthlyPlanning from "../../planning/components/MonthlyPlanning.tsx";
+import DebtPaymentWatch from "../../debts/components/DebtPaymentWatch.tsx";
 
 type Props = {
   data: Profile;
   open: OpenProfileForm;
   navigate: (page: Page) => void;
   setSavingsTab: (tab: string) => void;
+  selectDebt: (id: string) => void;
 };
 export default function OverviewPage({
   data,
   open,
   navigate,
   setSavingsTab,
+  selectDebt,
 }: Props) {
   const { wealth, daily, debt, allocation } = useMemo(
     () => ({
@@ -116,10 +120,10 @@ export default function OverviewPage({
         />
       </div>
       {!!allocation.rows.length && (
-        <section className="panel overview-allocation">
+        <Surface component="section" className="panel overview-allocation">
           <div className="section-title">
             <h3>Tu ahorro, distribuido</h3>
-            <button
+            <Button
               className="history-edit-toggle"
               onClick={() => {
                 navigate("Ahorros");
@@ -127,7 +131,7 @@ export default function OverviewPage({
               }}
             >
               Ver distribución <ArrowUpRight size={16} />
-            </button>
+            </Button>
           </div>
           <div className="overview-allocation-items">
             {allocation.rows.map((row) => (
@@ -148,15 +152,15 @@ export default function OverviewPage({
             separado de tu patrimonio hasta que registres los intereses
             cobrados.
           </PanelInfo>
-        </section>
+        </Surface>
       )}
       <div className="cards two home-detail-grid">
-        <section className="panel">
+        <Surface component="section" className="panel">
           <div className="section-title">
             <h3>Día a día · ING</h3>
-            <button className="subtle" onClick={() => navigate("Día a día")}>
+            <Button className="subtle" onClick={() => navigate("Día a día")}>
               Ver detalle
-            </button>
+            </Button>
           </div>
           <div className="spread">
             <span>Saldo actual</span>
@@ -174,16 +178,16 @@ export default function OverviewPage({
             <span>Saldo previsto</span>
             <b>{euro(daily.forecast)}</b>
           </div>
-        </section>
-        <section className="panel">
+        </Surface>
+        <Surface component="section" className="panel">
           <div className="section-title">
             <h3>Plan mensual</h3>
-            <button
+            <Button
               className="subtle"
               onClick={() => open({ type: "settings" })}
             >
               Editar plan
-            </button>
+            </Button>
           </div>
           <div className="spread">
             <span>Ahorro base</span>
@@ -197,7 +201,7 @@ export default function OverviewPage({
             <span>Deuda interna pendiente</span>
             <b>{euro(debt.pending)}</b>
           </div>
-          <button
+          <Button
             className="text-link"
             onClick={() => {
               navigate("Ahorros");
@@ -205,12 +209,13 @@ export default function OverviewPage({
             }}
           >
             Ver reposiciones
-          </button>
-        </section>
+          </Button>
+        </Surface>
       </div>
+      <DebtPaymentWatch debts={data.debts ?? []} onSelect={selectDebt} />
       <MonthlyPlanning data={data} />
       <div className="cards two">
-        <section className="panel">
+        <Surface component="section" className="panel">
           <h3>Ahorro por trabajo</h3>
           <Chart
             profile={data}
@@ -224,8 +229,8 @@ export default function OverviewPage({
             se muestran por separado y las previsiones siguen la deuda interna
             pendiente.
           </PanelInfo>
-        </section>
-        <section className="panel">
+        </Surface>
+        <Surface component="section" className="panel">
           <h3>Inversión en fondos</h3>
           <Chart
             profile={data}
@@ -239,7 +244,7 @@ export default function OverviewPage({
             objetivo ideal acumula los objetivos mensuales y la previsión aplica
             el plan a los meses pendientes.
           </PanelInfo>
-        </section>
+        </Surface>
       </div>
     </>
   );

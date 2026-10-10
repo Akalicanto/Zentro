@@ -420,6 +420,7 @@ try {
   await page.getByLabel("Concepto", { exact: true }).fill("Ingreso de prueba");
   await page.getByLabel("Importe (€)", { exact: true }).fill("50");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  await page.waitForFunction(() => document.body.style.position === "");
   assert.equal(await page.evaluate(() => document.body.style.position), "");
   assert.ok(
     (await metric("Saldo actual · ING").innerText()).includes("300,00"),

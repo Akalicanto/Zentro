@@ -1,0 +1,43 @@
+/* Colores y ajustes de Zentro. Cambiar aquí afecta a todas las páginas y componentes MUI. */
+:root {
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+.app {
+  --text: #302a3b;
+  --muted: #706878;
+  --panel: #fffdf8;
+  --bg: #f8f4ee;
+  --line: #e5ddea;
+  --soft: #f3edf8;
+  --accent: #70529e;
+  --accent-hover: #5a3e85;
+  --accent-soft: #eee3fa;
+  --accent-text: #62428e;
+  --highlight: #423354;
+  --navigation-gradient-stops: #eee3fa 0%, #fff8ed 50%, #eee3fa 100%;
+  --sidebar-tab-bg: #eee3fa;
+  --sidebar-tab-hover: #e7d7f6;
+  --sidebar-tab-top: 104px;
+  --sidebar-tab-height: 76px;
+  --chart-primary: #8060b4;
+  --chart-secondary: #a198aa;
+}
+.app.dark {
+  --text: #f1edf5;
+  --muted: #b5abbf;
+  --panel: #24212a;
+  --bg: #18151d;
+  --line: #3d3546;
+  --soft: #302a38;
+  --accent: #c2a5ee;
+  --accent-hover: #d5bdf8;
+  --accent-soft: #3b2d50;
+  --accent-text: #dbc6f5;
+  --highlight: #463553;
+  --navigation-gradient-stops: #352b43 0%, #302c28 50%, #352b43 100%;
+  --sidebar-tab-bg: #352b43;
+  --sidebar-tab-hover: #443454;
+  --chart-primary: #c2a5ee;
+  --chart-secondary: #a198aa;
+}

@@ -42,6 +42,7 @@ export type DebtInstallment = {
 export type ExternalDebt = {
   id: string;
   name: string;
+  dueDay?: number;
   total: number;
   installments: DebtInstallment[];
   createdOn?: string;

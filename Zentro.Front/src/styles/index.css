@@ -1,3 +1,4 @@
+@import "../shared/ui/tokens.css";
 @import "./foundation.css";
 @import "./shell.css";
 @import "./components.css";

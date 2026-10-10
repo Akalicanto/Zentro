@@ -13,11 +13,11 @@
 @keyframes zentro-card {
   0% {
     opacity: 0;
-    transform: translateY(22px) scale(0.975);
+    transform: translateY(12px);
   }
   70% {
     opacity: 1;
-    transform: translateY(-2px) scale(1.002);
+    transform: translateY(2px);
   }
   100% {
     opacity: 1;
@@ -27,11 +27,11 @@
 @keyframes zentro-chart-reveal {
   from {
     opacity: 0.25;
-    clip-path: inset(0 100% 0 0);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    clip-path: inset(0 0 0 0);
+    transform: translateY(0);
   }
 }
 @keyframes zentro-tab-line {
@@ -54,9 +54,6 @@
 }
 .app {
   --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
-}
-.content {
-  animation: zentro-enter 360ms var(--motion-ease);
 }
 .savings-tab-content {
   animation: zentro-enter 300ms var(--motion-ease);
@@ -99,9 +96,6 @@
   border-radius: 2px;
   animation: zentro-tab-line 320ms var(--motion-ease);
 }
-.modal-backdrop {
-  animation: zentro-fade 120ms ease-out;
-}
 .modal {
   animation: zentro-enter 180ms var(--motion-ease);
 }
@@ -135,6 +129,24 @@
   transition:
     box-shadow 240ms ease,
     border-color 240ms ease;
+}
+.payment-watch-card,
+.debt-summary-card {
+  animation: zentro-enter 320ms var(--motion-ease) backwards;
+  transition:
+    border-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 220ms var(--motion-ease);
+}
+tbody tr {
+  transition: background-color 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .payment-watch-card:hover,
+  .debt-summary-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px #4233540d;
+  }
 }
 .account-detail-tabs button.active {
   box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 12%, transparent);

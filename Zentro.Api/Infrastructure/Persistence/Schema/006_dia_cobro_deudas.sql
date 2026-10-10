@@ -1,0 +1,1 @@
+ALTER TABLE deudas ADD COLUMN dia_cobro INTEGER CHECK(dia_cobro BETWEEN 1 AND 31);

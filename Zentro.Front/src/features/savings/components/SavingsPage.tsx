@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui/index.tsx";
 import { type Profile, wealthTotals } from "../../../domain/index.ts";
 import { type OpenProfileForm, type SaveProfile } from "../../profile/types.ts";
 import { type HistoryControls } from "../../history/hooks/useHistoryView.ts";
@@ -59,7 +60,7 @@ export default function SavingsPage({
       >
         {["Historial", "Distribución de ahorros", "Deuda interna"].map(
           (label) => (
-            <button
+            <Button
               role="tab"
               aria-selected={savingsTab === label}
               className={savingsTab === label ? "active" : ""}
@@ -67,7 +68,7 @@ export default function SavingsPage({
               onClick={() => setSavingsTab(label)}
             >
               {label}
-            </button>
+            </Button>
           ),
         )}
       </div>

@@ -1,3 +1,4 @@
+import { Button, Surface } from "../ui/index.tsx";
 import { euro } from "../utils/money.ts";
 import { ArrowUpRight, Pencil } from "lucide-react";
 import PanelInfo from "./PanelInfo.tsx";
@@ -8,7 +9,7 @@ type Props = {
   amount: number;
   note: string;
   accent?: boolean;
-  action?: { label: string; onClick: () => void };
+  action?: { label: string; onClick: () => void; disabled?: boolean };
   tone?: string;
   help?: ReactNode;
 };
@@ -22,23 +23,27 @@ export default function MetricCard({
   help,
 }: Props) {
   return (
-    <div
+    <Surface
       className={`metric ${accent ? "accent" : ""} ${tone ? `tone-${tone}` : ""}`}
     >
       <span>{label}</span>
       <h2>{euro(amount)}</h2>
       <small>{note}</small>
       {action && (
-        <button className="metric-action" onClick={action.onClick}>
+        <Button
+          className="metric-action"
+          onClick={action.onClick}
+          disabled={action.disabled}
+        >
           {action.label.startsWith("Ver") ? (
             <ArrowUpRight size={14} />
           ) : (
             <Pencil size={13} />
           )}
           {action.label}
-        </button>
+        </Button>
       )}
       {help && <PanelInfo title={label}>{help}</PanelInfo>}
-    </div>
+    </Surface>
   );
 }

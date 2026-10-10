@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui/index.tsx";
 import MonthSelector from "../../../shared/components/MonthSelector.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import {
@@ -114,13 +115,13 @@ export default function ProfileForms({
       >
         <div className="section-title">
           <h3 id="profile-modal-title">{modalTitles[modal.type]}</h3>
-          <button
+          <Button
             className="icon"
             aria-label="Cerrar formulario"
             onClick={() => close()}
           >
             <X />
-          </button>
+          </Button>
         </div>
         <form onSubmit={(event) => submit(event, monthSelection)}>
           {formError && (
@@ -337,17 +338,17 @@ export default function ProfileForms({
             </p>
           )}
           <div className="modal-footer">
-            <button type="button" onClick={() => close()}>
+            <Button type="button" onClick={() => close()}>
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               className={
                 modal.type === "deleteDebt" ? "delete-confirm" : "primary"
               }
               type="submit"
             >
               {modal.type === "deleteDebt" ? "Borrar deuda" : "Guardar"}
-            </button>
+            </Button>
           </div>
         </form>
       </section>

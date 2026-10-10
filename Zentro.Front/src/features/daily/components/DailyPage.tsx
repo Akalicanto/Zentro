@@ -1,3 +1,4 @@
+import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
   cashTotals,
@@ -36,7 +37,7 @@ export default function DailyPage({ data, open, save }: Props) {
     const expense = kind === "expenses";
     const editing = editingCash[kind];
     return (
-      <section className="panel cash-panel">
+      <Surface component="section" className="panel cash-panel">
         <div className="section-title">
           <div>
             <h3>{expense ? "Gastos" : "Ingresos"}</h3>
@@ -45,7 +46,7 @@ export default function DailyPage({ data, open, save }: Props) {
             </p>
           </div>
           <div className="history-actions">
-            <button
+            <Button
               className={`history-edit-toggle${editing ? " active" : ""}`}
               aria-label={
                 editing
@@ -59,14 +60,14 @@ export default function DailyPage({ data, open, save }: Props) {
             >
               {editing ? <Check size={16} /> : <Pencil size={16} />}
               {editing ? "Terminar edición" : "Editar"}
-            </button>
-            <button
+            </Button>
+            <Button
               className="history-edit-toggle"
               onClick={() => open({ type: "cash", kind })}
             >
               <Plus size={16} />
               {expense ? "Añadir gasto" : "Añadir ingreso"}
-            </button>
+            </Button>
           </div>
         </div>
         {editing && (
@@ -88,13 +89,13 @@ export default function DailyPage({ data, open, save }: Props) {
                 <tr key={row.id}>
                   <td>
                     {editing ? (
-                      <button
+                      <Button
                         className="history-month-edit"
                         aria-label={`Editar ${row.concept}`}
                         onClick={() => open({ type: "cash", kind, item: row })}
                       >
                         {row.concept}
-                      </button>
+                      </Button>
                     ) : (
                       row.concept
                     )}
@@ -102,13 +103,13 @@ export default function DailyPage({ data, open, save }: Props) {
                   <td>{euro(row.amount)}</td>
                   {editing && (
                     <td>
-                      <button
+                      <Button
                         className="icon danger"
                         aria-label={`Eliminar ${row.concept}`}
                         onClick={() => removeCash(kind, row.id)}
                       >
                         <Trash2 size={15} />
-                      </button>
+                      </Button>
                     </td>
                   )}
                 </tr>
@@ -127,7 +128,7 @@ export default function DailyPage({ data, open, save }: Props) {
           editar o borrar un registro solo cambia esa previsión; el saldo actual
           lo actualizas tú.
         </PanelInfo>
-      </section>
+      </Surface>
     );
   }
   return (
@@ -189,7 +190,7 @@ export default function DailyPage({ data, open, save }: Props) {
         {cashTable("expenses")}
         {cashTable("incomes")}
       </div>
-      <section className="panel possible-expenses-panel">
+      <Surface component="section" className="panel possible-expenses-panel">
         <div className="section-title">
           <div>
             <h3>Posibles gastos</h3>
@@ -201,7 +202,7 @@ export default function DailyPage({ data, open, save }: Props) {
             </p>
           </div>
           <div className="history-actions">
-            <button
+            <Button
               className={`history-edit-toggle${editingPossible ? " active" : ""}`}
               aria-label={
                 editingPossible
@@ -213,14 +214,14 @@ export default function DailyPage({ data, open, save }: Props) {
             >
               {editingPossible ? <Check size={16} /> : <Pencil size={16} />}
               {editingPossible ? "Terminar edición" : "Editar"}
-            </button>
-            <button
+            </Button>
+            <Button
               className="history-edit-toggle"
               onClick={() => open({ type: "possibleExpense" })}
             >
               <Plus size={16} />
               Añadir posible gasto
-            </button>
+            </Button>
           </div>
         </div>
         {editingPossible && (
@@ -242,7 +243,7 @@ export default function DailyPage({ data, open, save }: Props) {
                 <tr key={row.id}>
                   <td>
                     {editingPossible ? (
-                      <button
+                      <Button
                         className="history-month-edit"
                         aria-label={`Editar posible gasto ${row.concept}`}
                         onClick={() =>
@@ -250,7 +251,7 @@ export default function DailyPage({ data, open, save }: Props) {
                         }
                       >
                         {row.concept}
-                      </button>
+                      </Button>
                     ) : (
                       row.concept
                     )}
@@ -258,7 +259,7 @@ export default function DailyPage({ data, open, save }: Props) {
                   <td>{euro(row.amount)}</td>
                   {editingPossible && (
                     <td>
-                      <button
+                      <Button
                         className="icon danger"
                         aria-label={`Eliminar posible gasto ${row.concept}`}
                         onClick={() => {
@@ -272,7 +273,7 @@ export default function DailyPage({ data, open, save }: Props) {
                         }}
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </Button>
                     </td>
                   )}
                 </tr>
@@ -288,7 +289,7 @@ export default function DailyPage({ data, open, save }: Props) {
           ni cuenta y no modifica el saldo actual, el saldo previsto, el
           efectivo ni el patrimonio.
         </PanelInfo>
-      </section>
+      </Surface>
     </>
   );
 }

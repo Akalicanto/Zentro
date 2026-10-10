@@ -57,7 +57,14 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: { charts: ["recharts"] },
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("/recharts/")) return "charts";
+          if (id.includes("/@mui/") || id.includes("/@emotion/")) return "ui";
+          if (/\/(?:motion|motion-dom|motion-utils|framer-motion)\//.test(id))
+            return "motion";
+          return "vendor";
+        },
       },
     },
   },

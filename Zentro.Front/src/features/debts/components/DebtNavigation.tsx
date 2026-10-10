@@ -1,4 +1,7 @@
-﻿import { useState } from "react";
+import { Button } from "../../../shared/ui/index.tsx";
+import { m, useReducedMotion } from "motion/react";
+import { motionSettings } from "../../../shared/ui/index.tsx";
+import { useState } from "react";
 import { ChevronDown, CreditCard } from "lucide-react";
 import type { ExternalDebt } from "../../../domain/types.ts";
 
@@ -16,11 +19,12 @@ export default function DebtNavigation({
   onSelect: (id: string | null) => void;
 }) {
   const [expanded, setExpanded] = useState(active);
+  const reducedMotion = useReducedMotion();
   const visible = debts.filter((d) => !d.archivedOn && !d.completedOn);
   return (
     <div className="debt-navigation-group">
       <div className={`debt-navigation-header${active ? " active" : ""}`}>
-        <button
+        <Button
           aria-label="Deudas"
           aria-current={active ? "page" : undefined}
           className={active ? "active" : ""}
@@ -32,8 +36,8 @@ export default function DebtNavigation({
         >
           <CreditCard size={18} />
           <span className="nav-item-label">Deudas</span>
-        </button>
-        <button
+        </Button>
+        <Button
           className="debt-navigation-disclosure"
           aria-label={
             expanded ? "Ocultar deudas activas" : "Mostrar deudas activas"
@@ -43,15 +47,21 @@ export default function DebtNavigation({
           onClick={() => setExpanded(!expanded)}
         >
           <ChevronDown size={17} className="debt-navigation-chevron" />
-        </button>
+        </Button>
       </div>
-      <div
+      <m.div
+        animate={{
+          height: expanded && !collapsed ? "auto" : 0,
+          opacity: expanded && !collapsed ? 1 : 0,
+        }}
+        initial={false}
+        transition={reducedMotion ? { duration: 0 } : motionSettings.disclosure}
         id="active-debt-navigation"
         className={`debt-sidebar-tree${expanded && !collapsed ? " is-open" : ""}`}
       >
         <div className="debt-sidebar-list" inert={!expanded || collapsed}>
           {visible.map((debt) => (
-            <button
+            <Button
               key={debt.id}
               title={debt.name}
               aria-current={selectedId === debt.id ? "page" : undefined}
@@ -59,14 +69,14 @@ export default function DebtNavigation({
               onClick={() => onSelect(debt.id)}
             >
               <span className="debt-navigation-dot" />
-              <span>{debt.name}</span>
-            </button>
+              <span className="debt-navigation-name">{debt.name}</span>
+            </Button>
           ))}
           {!visible.length && (
             <span className="debt-sidebar-empty">Sin deudas activas</span>
           )}
         </div>
-      </div>
+      </m.div>
     </div>
   );
 }

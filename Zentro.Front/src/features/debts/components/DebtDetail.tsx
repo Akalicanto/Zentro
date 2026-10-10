@@ -1,3 +1,7 @@
+import { AnimatePresence } from "motion/react";
+import DebtPaymentWatch from "./DebtPaymentWatch.tsx";
+import MetricCard from "../../../shared/components/MetricCard.tsx";
+import { Button, Surface } from "../../../shared/ui/index.tsx";
 import MonthSelector from "../../../shared/components/MonthSelector.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { Fragment, useState } from "react";
@@ -163,35 +167,31 @@ export default function DebtDetail({
   return (
     <>
       <div className="cards three external-debt-primary">
-        <div className="metric tone-lilac">
-          <span>Deuda total</span>
-          <h2>{euro(totals.total)}</h2>
-          <small>Importe acordado</small>
-          <button
-            className="metric-action"
-            onClick={openTotal}
-            disabled={!editable}
-          >
-            <Pencil size={13} />
-            Actualizar total
-          </button>
-        </div>
-        <div className="metric tone-sage">
-          <span>Ya pagado</span>
-          <h2>{euro(totals.paid)}</h2>
-          <small>
-            {euro(totals.paid + totals.reserved)} pagados o preparados
-          </small>
-        </div>
-        <div className="metric tone-rose">
-          <span>Falta por pagar</span>
-          <h2>{euro(totals.remaining)}</h2>
-          <small>
-            {euro(totals.reserved)} apartados · {euro(totals.pending)} por
-            preparar
-          </small>
-        </div>
+        <MetricCard
+          label="Deuda total"
+          amount={totals.total}
+          note="Importe acordado"
+          tone="lilac"
+          action={{
+            label: "Actualizar total",
+            onClick: openTotal,
+            disabled: !editable,
+          }}
+        />
+        <MetricCard
+          label="Ya pagado"
+          amount={totals.paid}
+          note={`${euro(totals.paid + totals.reserved)} pagados o preparados`}
+          tone="sage"
+        />
+        <MetricCard
+          label="Falta por pagar"
+          amount={totals.remaining}
+          note={`${euro(totals.reserved)} apartados · ${euro(totals.pending)} por preparar`}
+          tone="rose"
+        />
       </div>
+      <DebtPaymentWatch debts={[debt]} />
       <DebtAnalytics debt={debt} />
       <section
         className={`panel history-panel external-debt-panel${editing ? " is-editing" : ""}`}
@@ -203,15 +203,15 @@ export default function DebtDetail({
           </div>
           <div className="history-actions">
             <div className="history-order">
-              <button
+              <Button
                 onClick={() => setDescending(!descending)}
                 aria-label="Cambiar orden de las cuotas"
               >
                 <ArrowUpDown size={16} />
                 {descending ? "Recientes primero" : "Antiguos primero"}
-              </button>
+              </Button>
             </div>
-            <button
+            <Button
               className={`history-edit-toggle${editing ? " active" : ""}`}
               aria-label={
                 editing ? "Terminar edición de cuotas" : "Editar cuotas"
@@ -222,15 +222,15 @@ export default function DebtDetail({
             >
               {editing ? <Check size={16} /> : <Pencil size={16} />}{" "}
               {editing ? "Terminar edición" : "Editar"}
-            </button>
-            <button
+            </Button>
+            <Button
               className="history-edit-toggle"
               disabled={!editable}
               onClick={() => openInstallment()}
             >
               <Plus size={16} />
               Añadir mes
-            </button>
+            </Button>
           </div>
         </div>
         {editing && (
@@ -277,13 +277,13 @@ export default function DebtDetail({
                     <td>
                       <span className="history-month-cell">
                         {editing ? (
-                          <button
+                          <Button
                             className="history-month-edit"
                             aria-label={`Editar cuota ${row.month}`}
                             onClick={() => openInstallment(row)}
                           >
                             {monthName(row.month).replace(/ de \d{4}$/, "")}
-                          </button>
+                          </Button>
                         ) : (
                           monthName(row.month).replace(/ de \d{4}$/, "")
                         )}
@@ -355,7 +355,7 @@ export default function DebtDetail({
         </PanelInfo>
       </section>
       {!!debt.advances?.length && (
-        <section className="panel debt-advances-panel">
+        <Surface component="section" className="panel debt-advances-panel">
           <div className="section-title">
             <h3>Adelantos realizados</h3>
             <strong>{euro(sum(debt.advances.map((row) => row.amount)))}</strong>
@@ -393,114 +393,116 @@ export default function DebtDetail({
             abonadas. Cada adelanto conserva su fecha y la opción aceptada en el
             simulador.
           </PanelInfo>
-        </section>
+        </Surface>
       )}
-      {modal && (
-        <ModalFrame onClose={() => setModal(null)}>
-          <section
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="debt-installment-title"
-          >
-            <div className="section-title">
-              <h3 id="debt-installment-title">
-                {modal === "total"
-                  ? `Total de ${debt.name}`
-                  : selected
-                    ? "Editar cuota"
-                    : "Añadir cuota"}
-              </h3>
-              <button
-                className="icon"
-                aria-label="Cerrar formulario"
-                onClick={() => setModal(null)}
-              >
-                <X />
-              </button>
-            </div>
-            <form onSubmit={submit}>
-              {error && (
-                <p className="error" role="alert">
-                  {error}
-                </p>
-              )}
-              <div className="form-grid">
-                {modal === "installment" && (
-                  <MonthSelector
-                    month={month}
-                    years={years}
-                    onChange={setMonth}
-                    disabled={!!selected}
-                    legend="Mes de la cuota"
-                    monthLabel="Mes de la cuota"
-                    yearLabel="Año de la cuota"
-                  />
-                )}
-                <label className="full">
+      <AnimatePresence>
+        {modal && (
+          <ModalFrame onClose={() => setModal(null)}>
+            <section
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="debt-installment-title"
+            >
+              <div className="section-title">
+                <h3 id="debt-installment-title">
                   {modal === "total"
-                    ? "Deuda total (€)"
-                    : "Importe de la cuota (€)"}
-                  <input
-                    name="amount"
-                    required
-                    inputMode="decimal"
-                    defaultValue={
-                      modal === "total"
-                        ? debt
-                          ? debt.total / 100
-                          : ""
-                        : selected
-                          ? selected.amount / 100
-                          : ""
-                    }
-                  />
-                </label>
-                {modal === "installment" && (
-                  <fieldset className="installment-status full">
-                    <legend>Estado de la cuota</legend>
-                    <div className="installment-status-options">
-                      {statuses.map((s) => (
-                        <label
-                          key={s.value}
-                          className={`installment-status-choice debt-${s.value}`}
-                        >
-                          <input
-                            type="radio"
-                            name="status"
-                            value={s.value}
-                            defaultChecked={
-                              (selected?.status ?? "pending") === s.value
-                            }
-                          />
-                          <span>{s.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                )}
+                    ? `Total de ${debt.name}`
+                    : selected
+                      ? "Editar cuota"
+                      : "Añadir cuota"}
+                </h3>
+                <Button
+                  className="icon"
+                  aria-label="Cerrar formulario"
+                  onClick={() => setModal(null)}
+                >
+                  <X />
+                </Button>
               </div>
-              <div className="modal-footer debt-installment-footer">
-                {modal === "installment" && selected && (
-                  <button
-                    type="button"
-                    className="remove-installment"
-                    onClick={removeInstallment}
-                  >
-                    Eliminar cuota
-                  </button>
+              <form onSubmit={submit}>
+                {error && (
+                  <p className="error" role="alert">
+                    {error}
+                  </p>
                 )}
-                <button type="button" onClick={() => setModal(null)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="primary">
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </section>
-        </ModalFrame>
-      )}
+                <div className="form-grid">
+                  {modal === "installment" && (
+                    <MonthSelector
+                      month={month}
+                      years={years}
+                      onChange={setMonth}
+                      disabled={!!selected}
+                      legend="Mes de la cuota"
+                      monthLabel="Mes de la cuota"
+                      yearLabel="Año de la cuota"
+                    />
+                  )}
+                  <label className="full">
+                    {modal === "total"
+                      ? "Deuda total (€)"
+                      : "Importe de la cuota (€)"}
+                    <input
+                      name="amount"
+                      required
+                      inputMode="decimal"
+                      defaultValue={
+                        modal === "total"
+                          ? debt
+                            ? debt.total / 100
+                            : ""
+                          : selected
+                            ? selected.amount / 100
+                            : ""
+                      }
+                    />
+                  </label>
+                  {modal === "installment" && (
+                    <fieldset className="installment-status full">
+                      <legend>Estado de la cuota</legend>
+                      <div className="installment-status-options">
+                        {statuses.map((s) => (
+                          <label
+                            key={s.value}
+                            className={`installment-status-choice debt-${s.value}`}
+                          >
+                            <input
+                              type="radio"
+                              name="status"
+                              value={s.value}
+                              defaultChecked={
+                                (selected?.status ?? "pending") === s.value
+                              }
+                            />
+                            <span>{s.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                </div>
+                <div className="modal-footer debt-installment-footer">
+                  {modal === "installment" && selected && (
+                    <Button
+                      type="button"
+                      className="remove-installment"
+                      onClick={removeInstallment}
+                    >
+                      Eliminar cuota
+                    </Button>
+                  )}
+                  <Button type="button" onClick={() => setModal(null)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="primary">
+                    Guardar
+                  </Button>
+                </div>
+              </form>
+            </section>
+          </ModalFrame>
+        )}
+      </AnimatePresence>
     </>
   );
 }

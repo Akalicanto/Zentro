@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui/index.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { useRef } from "react";
 import {
@@ -94,13 +95,13 @@ export default function SettingsPanel({
             <h2 id="settings-title">Configuración</h2>
             <p>Tus cifras y preferencias, en un solo lugar.</p>
           </div>
-          <button
+          <Button
             className="icon"
             aria-label="Cerrar configuración"
             onClick={close}
           >
             <X />
-          </button>
+          </Button>
         </div>
         {formError && (
           <p className="error" role="alert">
@@ -120,14 +121,14 @@ export default function SettingsPanel({
               >
                 <div className="settings-balance-top">
                   <Icon size={22} />
-                  <button
+                  <Button
                     className="history-edit-toggle"
                     aria-label={`Editar ${title}`}
                     onClick={() => open({ type })}
                   >
                     <Pencil size={15} />
                     Editar
-                  </button>
+                  </Button>
                 </div>
                 <h4>{title}</h4>
                 <strong>{value == null ? "Sin indicar" : euro(value)}</strong>
@@ -145,14 +146,14 @@ export default function SettingsPanel({
               <h3 id="settings-plan-title">Tu plan mensual</h3>
               <p>Lo que te propones aportar cada mes.</p>
             </div>
-            <button
+            <Button
               className="history-edit-toggle"
               aria-label="Editar plan mensual"
               onClick={() => open({ type: "plan" })}
             >
               <Pencil size={15} />
               Editar
-            </button>
+            </Button>
           </div>
           <dl className="settings-plan-values">
             <div>
@@ -198,14 +199,14 @@ export default function SettingsPanel({
                       : euro(row.amount)}
                   </p>
                 </div>
-                <button
+                <Button
                   className="history-edit-toggle"
                   aria-label={`Configurar ${row.name}`}
                   onClick={() => open({ type: "placement", item: row })}
                 >
                   <Pencil size={15} />
                   Editar
-                </button>
+                </Button>
               </article>
             ))}
             {!data.savingsPlacements?.length && (
@@ -222,14 +223,14 @@ export default function SettingsPanel({
           </summary>
           <p>Exporta tus datos o recupera una copia anterior.</p>
           <div className="button-row">
-            <button onClick={exportBackup}>
+            <Button onClick={exportBackup}>
               <Download size={17} />
               Exportar copia
-            </button>
-            <button onClick={() => importInput.current?.click()}>
+            </Button>
+            <Button onClick={() => importInput.current?.click()}>
               <Upload size={17} />
               Importar copia
-            </button>
+            </Button>
             <input
               ref={importInput}
               aria-label="Importar copia de seguridad"

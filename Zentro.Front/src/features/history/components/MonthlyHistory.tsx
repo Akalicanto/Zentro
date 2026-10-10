@@ -1,3 +1,4 @@
+import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
   currentMonth,
@@ -94,7 +95,7 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
           tone="blue"
         />
       </div>
-      <section className="panel">
+      <Surface component="section" className="panel">
         <div className="section-title">
           <div>
             <h3>
@@ -111,7 +112,7 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
             aria-label="Gráfica"
           >
             {["Acumulado", "Mensual"].map((label) => (
-              <button
+              <Button
                 role="tab"
                 aria-selected={view === label}
                 className={view === label ? "active" : ""}
@@ -119,7 +120,7 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
                 onClick={() => setView(label)}
               >
                 {label}
-              </button>
+              </Button>
             ))}
           </div>
           <label>
@@ -151,7 +152,7 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
             ? "El objetivo ideal sigue la aportación base de cada mes. El ahorro real incluye retiradas y reposiciones; los intereses se muestran por separado."
             : "El objetivo ideal sigue los objetivos mensuales de inversión. Registrado refleja las aportaciones reales, sin rentabilidad de los fondos. Previsto aplica el plan a los meses pendientes. Los acumulados conservan las aportaciones de los años anteriores."}
         </PanelInfo>
-      </section>
+      </Surface>
       <section
         className={`panel history-panel${editingHistory ? " is-editing" : ""}`}
       >
@@ -160,7 +161,7 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
             <h3>Historial mensual</h3>
           </div>
           <div className="history-actions">
-            <button
+            <Button
               className="history-edit-toggle history-sort"
               aria-label="Cambiar orden del historial"
               title={
@@ -174,23 +175,23 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
             >
               <ArrowUpDown size={16} />
               {tableOrder === "desc" ? "Recientes primero" : "Antiguos primero"}
-            </button>
-            <button
+            </Button>
+            <Button
               className={`history-edit-toggle${editingHistory ? " active" : ""}`}
               aria-pressed={editingHistory}
               onClick={() => setEditingHistory(!editingHistory)}
             >
               {editingHistory ? <Check size={16} /> : <Pencil size={16} />}
               {editingHistory ? "Terminar edición" : "Editar historial"}
-            </button>
-            <button
+            </Button>
+            <Button
               className="history-edit-toggle history-add"
               title="Registrar una aportación en un mes"
               onClick={() => open({ type: "month", kind })}
             >
               <Plus size={16} />
               Añadir mes
-            </button>
+            </Button>
           </div>
         </div>
         {editingHistory && (
@@ -248,7 +249,7 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
                           title={row.real === null ? "Previsión" : "Registrado"}
                         />
                         {editingHistory ? (
-                          <button
+                          <Button
                             className="history-month-edit"
                             aria-label={`Editar ${row.month}`}
                             onClick={() =>
@@ -256,7 +257,7 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
                             }
                           >
                             {monthName(row.month).replace(/ de \d{4}$/, "")}
-                          </button>
+                          </Button>
                         ) : (
                           monthName(row.month).replace(/ de \d{4}$/, "")
                         )}

@@ -1,3 +1,4 @@
+import { Surface } from "../../../shared/ui/index.tsx";
 import { memo } from "react";
 import {
   PieChart,
@@ -59,7 +60,7 @@ const DistributionCharts = memo(function DistributionCharts({
   });
   return (
     <div className="cards two allocation-charts">
-      <section className="panel">
+      <Surface component="section" className="panel">
         <h3>Dónde está tu ahorro</h3>
         <div
           className="allocation-donut"
@@ -118,8 +119,8 @@ const DistributionCharts = memo(function DistributionCharts({
           resto del ahorro. Cambiar esta distribución no registra aportaciones
           ni altera tu patrimonio.
         </PanelInfo>
-      </section>
-      <section className="panel">
+      </Surface>
+      <Surface component="section" className="panel">
         <h3>Generación neta estimada</h3>
         <p className="allocation-chart-caption">
           Doce meses, manteniendo el saldo actual
@@ -194,7 +195,7 @@ const DistributionCharts = memo(function DistributionCharts({
           </a>
           .
         </PanelInfo>
-      </section>
+      </Surface>
     </div>
   );
 });

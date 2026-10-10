@@ -1,5 +1,7 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { m } from "motion/react";
+import { motionSettings } from "../ui/index.tsx";
 
 let locks = 0;
 let restorePage = () => {};
@@ -75,9 +77,16 @@ export default function ModalFrame({
   }, []);
   const dark = document.querySelector(".app")?.classList.contains("dark");
   return createPortal(
-    <div ref={frame} className={`app modal-backdrop${dark ? " dark" : ""}`}>
+    <m.div
+      ref={frame}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={motionSettings.modal}
+      className={`app modal-backdrop${dark ? " dark" : ""}`}
+    >
       {children}
-    </div>,
+    </m.div>,
     document.body,
   );
 }

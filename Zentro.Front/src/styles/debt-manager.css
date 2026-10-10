@@ -220,14 +220,15 @@
 }
 .debt-navigation-header {
   display: flex;
-  border-radius: 10px;
+  border-radius: 14px;
+  overflow: hidden;
 }
 .debt-navigation-header > button:first-child {
   flex: 1;
   min-width: 0;
 }
 .debt-navigation-header .debt-navigation-disclosure {
-  width: 34px;
+  width: 44px;
   padding: 0;
   flex-shrink: 0;
   justify-content: center;
@@ -235,6 +236,11 @@
 }
 .debt-navigation-header.active {
   background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.app .debt-navigation-header > button.active {
+  background: transparent;
+  box-shadow: none;
 }
 .debt-navigation-header.active .debt-navigation-disclosure {
   color: var(--accent-text);
@@ -243,7 +249,7 @@
   display: none;
 }
 .debt-navigation-chevron {
-  margin-left: auto;
+  margin-left: 0;
   transition: transform 220ms var(--motion-ease);
 }
 .debt-navigation-header
@@ -255,16 +261,7 @@
   display: none;
 }
 .debt-sidebar-tree {
-  display: grid;
-  grid-template-rows: 0fr;
-  visibility: hidden;
-  transition:
-    grid-template-rows 240ms var(--motion-ease),
-    visibility 240ms;
-}
-.debt-sidebar-tree.is-open {
-  grid-template-rows: 1fr;
-  visibility: visible;
+  overflow: hidden;
 }
 .debt-sidebar-list {
   min-height: 0;
@@ -278,10 +275,35 @@
   font-size: 15px;
   gap: 10px;
 }
-.debt-sidebar-list > button > span:last-child {
+.debt-navigation-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.payment-watch .section-title h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.payment-watch-day {
+  font-size: 14px;
+  margin: 8px 0 16px;
+}
+.payment-watch-row span {
+  font-size: 14px;
+}
+.payment-watch-row strong {
+  white-space: nowrap;
+}
+.payment-watch-overdue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+.payment-watch-overdue svg {
+  flex-shrink: 0;
 }
 .debt-sidebar-list > button.selected {
   color: var(--accent-text);

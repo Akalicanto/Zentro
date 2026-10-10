@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui/index.tsx";
 import { useState } from "react";
 import { X } from "lucide-react";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
@@ -62,6 +63,7 @@ export default function DebtEditor({
             id: debt?.id ?? uid(),
             name,
             total,
+            dueDay: form.get("dueDay") ? Number(form.get("dueDay")) : undefined,
             installments: debt?.installments ?? [],
             notes: String(form.get("notes") ?? "").trim(),
             createdOn:
@@ -69,7 +71,7 @@ export default function DebtEditor({
           },
           mode === "create"
             ? "Deuda creada."
-            : "Nombre, total o notas actualizados.",
+            : "Nombre, total, día de cobro o notas actualizados.",
         );
         if (mode === "create" && plan)
           next = planDebtInstallments(
@@ -93,13 +95,13 @@ export default function DebtEditor({
       >
         <div className="section-title">
           <h3 id="debt-editor-title">{title}</h3>
-          <button
+          <Button
             className="icon"
             aria-label="Cerrar formulario"
             onClick={onClose}
           >
             <X />
-          </button>
+          </Button>
         </div>
         <form onSubmit={submit}>
           {error && (
@@ -128,6 +130,29 @@ export default function DebtEditor({
                   defaultValue={debt ? debt.total / 100 : ""}
                 />
               </label>
+              <label className="full">
+                Día de cobro de cada mes
+                <select
+                  name="dueDay"
+                  aria-label="Día de cobro de cada mes"
+                  aria-describedby="debt-due-day-help"
+                  defaultValue={debt?.dueDay ?? (mode === "create" ? 1 : "")}
+                >
+                  <option value="">Sin día definido</option>
+                  {Array.from({ length: 31 }, (_, index) => index + 1).map(
+                    (day) => (
+                      <option key={day} value={day}>
+                        {day === 31
+                          ? "31 · último día si el mes es más corto"
+                          : day}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+              <p className="form-note full" id="debt-due-day-help">
+                Si el mes no tiene ese día, vence el último día del mes.
+              </p>
               <label className="full">
                 Notas
                 <textarea
@@ -208,10 +233,10 @@ export default function DebtEditor({
             </p>
           )}
           <div className="modal-footer debt-editor-footer">
-            <button type="button" onClick={onClose}>
+            <Button type="button" onClick={onClose}>
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className={mode === "archive" ? "delete-confirm" : "primary"}
             >
@@ -220,7 +245,7 @@ export default function DebtEditor({
                 : mode === "complete"
                   ? "Confirmar deuda completada"
                   : "Guardar"}
-            </button>
+            </Button>
           </div>
         </form>
       </section>

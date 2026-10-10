@@ -1,3 +1,4 @@
+import { Button } from "../ui/index.tsx";
 import { useEffect, useState } from "react";
 import { Download, RefreshCw, WifiOff } from "lucide-react";
 import { registerSW } from "virtual:pwa-register";
@@ -44,7 +45,7 @@ export default function PwaStatus() {
         </span>
       )}
       {install && (
-        <button
+        <Button
           className="pwa-action"
           aria-label="Instalar Zentro"
           onClick={async () => {
@@ -55,17 +56,17 @@ export default function PwaStatus() {
         >
           <Download size={16} />
           <span>Instalar Zentro</span>
-        </button>
+        </Button>
       )}
       {update && (
-        <button
+        <Button
           className="pwa-action"
           aria-label="Actualizar app"
           onClick={() => void update()}
         >
           <RefreshCw size={16} />
           <span>Actualizar app</span>
-        </button>
+        </Button>
       )}
     </>
   );

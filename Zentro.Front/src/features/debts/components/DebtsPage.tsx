@@ -1,3 +1,5 @@
+import { AnimatePresence } from "motion/react";
+import { Button, Surface } from "../../../shared/ui/index.tsx";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -7,8 +9,8 @@ import {
   Trash2,
   RotateCcw,
   CalendarDays,
-  ChevronRight,
   Calculator,
+  ChevronRight,
 } from "lucide-react";
 import {
   debtStatus,
@@ -16,7 +18,6 @@ import {
   externalDebtTotals,
   euro,
   monthName,
-  currentMonth,
   sum,
   validateProfile,
   reopenDebt,
@@ -29,6 +30,7 @@ import PanelInfo from "../../../shared/components/PanelInfo.tsx";
 import DebtDetail from "./DebtDetail.tsx";
 import DebtEditor, { type DebtEditorMode } from "./DebtEditor.tsx";
 import DebtAdvanceSimulator from "./DebtAdvanceSimulator.tsx";
+import DebtPaymentWatch from "./DebtPaymentWatch.tsx";
 
 export default function DebtsPage({
   profile,
@@ -66,11 +68,6 @@ export default function DebtsPage({
         a.completedOn ?? a.createdOn ?? "",
       ),
     );
-  const outstanding = active
-    .flatMap((d) => d.installments.map((r) => ({ ...r, debt: d })))
-    .filter((r) => r.status !== "paid")
-    .sort((a, b) => a.month.localeCompare(b.month));
-  const overdue = outstanding.filter((r) => r.month < currentMonth());
   function saveDebt(next: ExternalDebt) {
     const nextProfile = {
       ...profile,
@@ -108,10 +105,10 @@ export default function DebtsPage({
         <div>
           {debt ? (
             <>
-              <button className="debt-back" onClick={() => onSelect(null)}>
+              <Button className="debt-back" onClick={() => onSelect(null)}>
                 <ArrowLeft size={16} />
                 Todas las deudas
-              </button>
+              </Button>
               <h2>
                 {debt.name}
                 <span className={`debt-state debt-state-${debtStatus(debt)}`}>
@@ -134,10 +131,10 @@ export default function DebtsPage({
           )}
         </div>
         {!debt && (
-          <button className="primary" onClick={() => open("create", undefined)}>
+          <Button className="primary" onClick={() => open("create", undefined)}>
             <Plus size={17} />
             Añadir deuda
-          </button>
+          </Button>
         )}
       </div>
       {debt ? (
@@ -149,58 +146,58 @@ export default function DebtsPage({
             <div className="debt-edit-actions">
               {!debt.archivedOn && !debt.completedOn && (
                 <>
-                  <button onClick={() => open("edit")}>
+                  <Button onClick={() => open("edit")}>
                     <Pencil size={16} />
                     Editar deuda
-                  </button>
+                  </Button>
                   {debtAnalytics(debt).unassigned > 0 && (
-                    <button onClick={() => open("plan")}>
+                    <Button onClick={() => open("plan")}>
                       <CalendarDays size={16} />
                       Planificar cuotas
-                    </button>
+                    </Button>
                   )}
                   {externalDebtTotals(debt).remaining > 0 && (
-                    <button
+                    <Button
                       className="debt-simulate-action"
                       onClick={() => setAdvanceOpen(true)}
                     >
                       <Calculator size={17} />
                       Valorar adelanto
-                    </button>
+                    </Button>
                   )}
                 </>
               )}
               {debt.completedOn && !debt.archivedOn && (
-                <button onClick={() => action(reopenDebt(debt))}>
+                <Button onClick={() => action(reopenDebt(debt))}>
                   <RotateCcw size={16} />
                   Reabrir deuda
-                </button>
+                </Button>
               )}
             </div>
             <div className="debt-close-actions">
               {!debt.archivedOn && !debt.completedOn && (
-                <button
+                <Button
                   className="debt-complete-action"
                   onClick={() => open("complete")}
                 >
                   <CheckCheck size={16} />
                   Completar deuda
-                </button>
+                </Button>
               )}
               {debt.archivedOn ? (
-                <button onClick={() => action(restoreDebt(debt))}>
+                <Button onClick={() => action(restoreDebt(debt))}>
                   <RotateCcw size={16} />
                   Recuperar deuda
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
                   className="debt-remove"
                   aria-label="Eliminar deuda"
                   title="Eliminar deuda"
                   onClick={() => open("archive")}
                 >
                   <Trash2 size={16} />
-                </button>
+                </Button>
               )}
             </div>
           </section>
@@ -260,35 +257,8 @@ export default function DebtsPage({
               tone="sage"
             />
           </div>
-          {outstanding[0] && (
-            <section className="panel debt-next-payment">
-              <CalendarDays size={24} />
-              <div>
-                <span>Próxima cuota por pagar</span>
-                <strong>
-                  {outstanding[0].debt.name} · {euro(outstanding[0].amount)}
-                </strong>
-                <small>
-                  {monthName(outstanding[0].month)}
-                  {outstanding[0].status === "reserved"
-                    ? " · Dinero apartado"
-                    : ""}
-                </small>
-              </div>
-              <button onClick={() => onSelect(outstanding[0].debt.id)}>
-                Ver deuda
-                <ChevronRight size={16} />
-              </button>
-            </section>
-          )}
-          {overdue.length > 0 && (
-            <p className="debt-overdue" role="status">
-              Hay {overdue.length} cuotas de meses anteriores sin marcar como
-              pagadas: {euro(sum(overdue.map((r) => r.amount)))}. Revisa si
-              falta actualizar su estado.
-            </p>
-          )}
-          <section className="panel debts-list-panel">
+          <DebtPaymentWatch debts={debts} onSelect={onSelect} />
+          <Surface component="section" className="panel debts-list-panel">
             <div className="section-title">
               <h3>
                 {filter === "completed"
@@ -313,7 +283,7 @@ export default function DebtsPage({
               aria-label="Estado de las deudas"
             >
               {(["active", "completed", "archived"] as const).map((status) => (
-                <button
+                <Button
                   key={status}
                   role="tab"
                   aria-selected={filter === status}
@@ -329,14 +299,14 @@ export default function DebtsPage({
                   <span>
                     {debts.filter((d) => debtStatus(d) === status).length}
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
             <div className="debt-summary-grid">
               {visible.map((item) => {
                 const a = debtAnalytics(item);
                 return (
-                  <button
+                  <Button
                     className={`debt-summary-card debt-state-${debtStatus(item)}`}
                     key={item.id}
                     onClick={() => onSelect(item.id)}
@@ -376,7 +346,7 @@ export default function DebtsPage({
                     {a.unassigned > 0 && (
                       <small>{euro(a.unassigned)} sin calendario</small>
                     )}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -398,29 +368,33 @@ export default function DebtsPage({
               restante como pagado tras confirmarlo. Estas operaciones no
               modifican tus otros saldos.
             </PanelInfo>
-          </section>
+          </Surface>
         </>
       )}
-      {modal && (
-        <DebtEditor
-          mode={modal.mode}
-          debt={modal.debt}
-          onSave={saveDebt}
-          onClose={() => setModal(null)}
-        />
-      )}
-      {advanceOpen && debt && (
-        <DebtAdvanceSimulator
-          debt={debt}
-          onClose={() => setAdvanceOpen(false)}
-          onApply={(next) => {
-            const saved = saveDebt(next);
-            if (saved && externalDebtTotals(next).remaining === 0)
-              setModal({ mode: "complete", debt: next });
-            return saved;
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {modal && (
+          <DebtEditor
+            mode={modal.mode}
+            debt={modal.debt}
+            onSave={saveDebt}
+            onClose={() => setModal(null)}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {advanceOpen && debt && (
+          <DebtAdvanceSimulator
+            debt={debt}
+            onClose={() => setAdvanceOpen(false)}
+            onApply={(next) => {
+              const saved = saveDebt(next);
+              if (saved && externalDebtTotals(next).remaining === 0)
+                setModal({ mode: "complete", debt: next });
+              return saved;
+            }}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

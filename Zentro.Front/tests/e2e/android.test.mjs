@@ -123,6 +123,7 @@ try {
     true,
   );
   await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "detached" });
   assert.equal(await page.getByRole("dialog").count(), 0);
   assert.equal(await page.evaluate(() => document.body.style.position), "");
   assert.deepEqual(state, snapshot);

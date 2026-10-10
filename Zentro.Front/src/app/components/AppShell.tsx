@@ -1,3 +1,4 @@
+import { Button } from "../../shared/ui/index.tsx";
 import { type Page, pages } from "../navigation.ts";
 import { type OpenProfileForm } from "../../features/profile/types.ts";
 import { useState } from "react";
@@ -17,6 +18,8 @@ import type { ReactNode } from "react";
 import PwaStatus from "../../shared/components/PwaStatus.tsx";
 import type { ExternalDebt } from "../../domain/types.ts";
 import DebtNavigation from "../../features/debts/components/DebtNavigation.tsx";
+import { m, useReducedMotion, AnimatePresence } from "motion/react";
+import { motionSettings, Tooltip } from "../../shared/ui/index.tsx";
 type Props = {
   page: Page;
   error: string;
@@ -40,6 +43,7 @@ export default function AppShell({
   selectDebt,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
+  const reducedMotion = useReducedMotion();
   const [dark, setDark] = useState(
     () => localStorage.getItem("zentro.theme") === "dark",
   );
@@ -67,7 +71,7 @@ export default function AppShell({
             <img src="/brand/logo-full.png" alt="" />
           </span>
         </a>
-        <button
+        <Button
           className="sidebar-edge-toggle"
           aria-label={collapsed ? "Expandir navegación" : "Contraer navegación"}
           aria-expanded={!collapsed}
@@ -75,7 +79,7 @@ export default function AppShell({
           onClick={() => setCollapsed(!collapsed)}
         >
           <ChevronLeft size={18} />
-        </button>
+        </Button>
         <nav id="zentro-navigation" aria-label="Navegación principal">
           {pages.map((label, index) => {
             const Icon = [
@@ -97,7 +101,7 @@ export default function AppShell({
                 />
               );
             return (
-              <button
+              <Button
                 key={label}
                 aria-label={label}
                 aria-current={page === label ? "page" : undefined}
@@ -107,7 +111,7 @@ export default function AppShell({
               >
                 <Icon size={18} />
                 <span className="nav-item-label">{label}</span>
-              </button>
+              </Button>
             );
           })}
         </nav>
@@ -121,7 +125,7 @@ export default function AppShell({
           </div>
           <div className="header-right">
             <PwaStatus />
-            <button
+            <Button
               className="theme-toggle"
               aria-label={dark ? "Modo claro" : "Modo oscuro"}
               onClick={() => {
@@ -131,18 +135,24 @@ export default function AppShell({
             >
               {dark ? <Sun size={17} /> : <Moon size={17} />}
               <span>{dark ? "Modo claro" : "Modo oscuro"}</span>
-            </button>
-            <button
+            </Button>
+            <Button
               className="icon"
               aria-label="Configuración"
               title="Configuración"
               onClick={() => open({ type: "settings" })}
             >
               <Settings size={20} />
-            </button>
+            </Button>
           </div>
         </header>
-        <div className="content" key={page}>
+        <m.div
+          className="content"
+          key={page}
+          initial={{ opacity: 0, y: reducedMotion ? 0 : 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={motionSettings.page}
+        >
           <div className="page-heading savings-page-bar">
             <div>
               <h1>
@@ -169,7 +179,7 @@ export default function AppShell({
             </p>
           )}
           {children}
-        </div>
+        </m.div>
       </main>
       <nav className="mobile-navigation" aria-label="Navegación móvil">
         {pages.map((label, index) => {
@@ -181,25 +191,19 @@ export default function AppShell({
             CreditCard,
           ][index];
           return (
-            <button
-              key={label}
-              aria-label={label}
-              aria-current={page === label ? "page" : undefined}
-              onClick={() => navigate(label)}
-            >
-              <Icon aria-hidden="true" />
-              <span>
-                {
-                  ["Mi espacio", "Día a día", "Ahorros", "Inversión", "Deudas"][
-                    index
-                  ]
-                }
-              </span>
-            </button>
+            <Tooltip key={label} title={label}>
+              <Button
+                aria-label={label}
+                aria-current={page === label ? "page" : undefined}
+                onClick={() => navigate(label)}
+              >
+                <Icon aria-hidden="true" />
+              </Button>
+            </Tooltip>
           );
         })}
       </nav>
-      {overlay}
+      <AnimatePresence>{overlay}</AnimatePresence>
     </div>
   );
 }

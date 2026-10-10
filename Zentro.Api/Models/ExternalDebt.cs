@@ -10,6 +10,9 @@ public sealed record ExternalDebt
     [JsonRequired]
     public string Name { get; init; } = null!;
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DueDay { get; init; }
+
     [JsonRequired]
     public long Total { get; init; }
 

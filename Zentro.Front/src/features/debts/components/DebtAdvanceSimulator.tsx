@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui/index.tsx";
 import { useState } from "react";
 import { X, CalendarMinus, Coins, ArrowRight, Calculator } from "lucide-react";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
@@ -81,13 +82,13 @@ export default function DebtAdvanceSimulator({
             <Calculator size={23} />
             Valorar un adelanto
           </h3>
-          <button
+          <Button
             className="icon"
             aria-label="Cerrar simulador"
             onClick={onClose}
           >
             <X />
-          </button>
+          </Button>
         </div>
         <p className="advance-intro">
           {debt.name} · <strong>{euro(totals.remaining)}</strong> por pagar
@@ -119,7 +120,7 @@ export default function DebtAdvanceSimulator({
           aria-label="Opciones de adelanto"
         >
           {options.map(({ option, simulation, error: optionError }) => (
-            <button
+            <Button
               key={option}
               className={`advance-option${strategy === option ? " selected" : ""}`}
               aria-pressed={strategy === option}
@@ -167,7 +168,7 @@ export default function DebtAdvanceSimulator({
                   {optionError || "Introduce un importe para comparar."}
                 </small>
               )}
-            </button>
+            </Button>
           ))}
         </div>
         {selected && (
@@ -187,14 +188,14 @@ export default function DebtAdvanceSimulator({
           </div>
         )}
         <div className="modal-footer debt-editor-footer">
-          <button onClick={onClose}>Cancelar</button>
-          <button
+          <Button onClick={onClose}>Cancelar</Button>
+          <Button
             className="primary"
             disabled={!selected || !!inputError}
             onClick={apply}
           >
             Aceptar y registrar adelanto
-          </button>
+          </Button>
         </div>
       </section>
     </ModalFrame>

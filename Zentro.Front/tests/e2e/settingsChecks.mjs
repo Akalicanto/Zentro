@@ -131,6 +131,7 @@ export async function verifySettings({ page, state, root, original }) {
   );
   assert.deepEqual(await state(), original);
   await page.keyboard.press("Escape");
+  await page.getByRole("dialog").waitFor({ state: "detached" });
   assert.equal(await page.getByRole("dialog").count(), 0);
   await page.getByRole("button", { name: "Modo oscuro", exact: true }).click();
   await page

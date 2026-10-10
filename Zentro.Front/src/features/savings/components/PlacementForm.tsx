@@ -1,3 +1,4 @@
+import { Button } from "../../../shared/ui/index.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -80,13 +81,13 @@ export default function PlacementForm({
               ? "Editar destino del ahorro"
               : "Nuevo destino del ahorro"}
           </h3>
-          <button
+          <Button
             className="icon"
             aria-label="Cerrar formulario"
             onClick={() => onClose()}
           >
             <X />
-          </button>
+          </Button>
         </div>
         <form onSubmit={submit}>
           {error && (
@@ -216,12 +217,12 @@ export default function PlacementForm({
             )}
           </div>
           <div className="modal-footer">
-            <button type="button" onClick={() => onClose()}>
+            <Button type="button" onClick={() => onClose()}>
               Cancelar
-            </button>
-            <button type="submit" className="primary">
+            </Button>
+            <Button type="submit" className="primary">
               Guardar
-            </button>
+            </Button>
           </div>
         </form>
       </section>

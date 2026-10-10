@@ -22,6 +22,9 @@ export async function verifyDebtManagement({ page, state, root }) {
     .getByLabel("Nombre de la deuda", { exact: true })
     .fill("Préstamo de prueba");
   await page.getByLabel("Deuda total (€)", { exact: true }).fill("100,01");
+  await page
+    .getByLabel("Día de cobro de cada mes", { exact: true })
+    .selectOption("31");
   await page.getByLabel("Crear un calendario de cuotas").check();
   await page.getByLabel("Primer mes", { exact: true }).fill("2027-02");
   await page.getByLabel("Número de cuotas", { exact: true }).fill("3");
@@ -38,6 +41,7 @@ export async function verifyDebtManagement({ page, state, root }) {
   let data = await state();
   let loan = data.debts.find((d) => d.name === "Préstamo de prueba");
   assert.equal(data.debts.length, original.debts.length + 1);
+  assert.equal(loan.dueDay, 31);
   assert.deepEqual(
     loan.installments.map((r) => r.amount),
     [3333, 3333, 3335],
@@ -62,6 +66,12 @@ export async function verifyDebtManagement({ page, state, root }) {
     .filter({ hasText: "Préstamo de prueba" })
     .click();
   await page.getByRole("button", { name: "Editar deuda", exact: true }).click();
+  assert.equal(
+    await page
+      .getByLabel("Día de cobro de cada mes", { exact: true })
+      .inputValue(),
+    "31",
+  );
   await page.getByLabel("Deuda total (€)", { exact: true }).fill("130,01");
   await page.getByLabel("Notas", { exact: true }).fill("Condiciones de prueba");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
@@ -177,6 +187,7 @@ export async function verifyDebtManagement({ page, state, root }) {
   await page.getByLabel("Importe de la cuota (€)", { exact: true }).fill("50");
   await page.getByRole("dialog").getByText("Apartado", { exact: true }).click();
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  await page.getByRole("dialog").waitFor({ state: "detached" });
   assert.equal(await page.getByRole("dialog").count(), 0);
   await page
     .getByRole("button", { name: "Editar cuotas", exact: true })

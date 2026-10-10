@@ -1,3 +1,4 @@
+import { Button, Surface } from "../../../shared/ui/index.tsx";
 import { useMemo, useState } from "react";
 import { Check, Pencil, Plus, Trash2, Landmark } from "lucide-react";
 import {
@@ -68,7 +69,7 @@ export default function SavingsDistribution({
           <h3>Destinos del ahorro</h3>
         </div>
         <div className="history-actions">
-          <button
+          <Button
             className={`history-edit-toggle${editing ? " active" : ""}`}
             aria-pressed={editing}
             aria-label={
@@ -80,16 +81,20 @@ export default function SavingsDistribution({
           >
             {editing ? <Check size={16} /> : <Pencil size={16} />}{" "}
             {editing ? "Terminar edición" : "Editar"}
-          </button>
-          <button className="history-edit-toggle" onClick={() => open()}>
+          </Button>
+          <Button className="history-edit-toggle" onClick={() => open()}>
             <Plus size={16} />
             Añadir destino
-          </button>
+          </Button>
         </div>
       </div>
       <div className="cards two allocation-destinations">
         {distribution.rows.map((row) => (
-          <section className="panel placement-card" key={row.id}>
+          <Surface
+            component="section"
+            className="panel placement-card"
+            key={row.id}
+          >
             <div className="placement-heading">
               <div className="placement-provider">
                 {row.name.toLowerCase().includes("myinvestor") ? (
@@ -107,14 +112,14 @@ export default function SavingsDistribution({
                 <h3>{row.name}</h3>
               </div>
               {editing && (
-                <button
+                <Button
                   className="history-edit-toggle"
                   aria-label={`Editar destino ${row.name}`}
                   onClick={() => open(row)}
                 >
                   <Pencil size={16} />
                   Editar
-                </button>
+                </Button>
               )}
             </div>
             <div className="placement-balance">
@@ -176,10 +181,10 @@ export default function SavingsDistribution({
               </small>
             </div>
             {editing && (
-              <button className="placement-remove" onClick={() => remove(row)}>
+              <Button className="placement-remove" onClick={() => remove(row)}>
                 <Trash2 size={14} />
                 Quitar destino
-              </button>
+              </Button>
             )}
             <PanelInfo title={row.name}>
               {row.kind === "deposit"
@@ -204,13 +209,13 @@ export default function SavingsDistribution({
               {row.amount === null &&
                 "El saldo toma automáticamente el ahorro que no esté asignado a otros destinos."}
             </PanelInfo>
-          </section>
+          </Surface>
         ))}
       </div>
       {!distribution.rows.length && (
-        <section className="panel empty">
+        <Surface component="section" className="panel empty">
           Añade tu depósito o una cuenta remunerada para distribuir el ahorro.
-        </section>
+        </Surface>
       )}
       {modal && (
         <PlacementForm

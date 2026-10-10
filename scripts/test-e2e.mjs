@@ -55,9 +55,16 @@ try {
     }
   }
   // Each suite redirects API calls to synthetic data and an independent database.
-  await run("tests/e2e/profile.test.mjs");
-  await run("tests/e2e/internalDebt.test.mjs");
-  await run("tests/e2e/android.test.mjs");
+  const selected = process.argv.slice(2);
+  const suites = selected.length
+    ? selected
+    : [
+        "tests/e2e/profile.test.mjs",
+        "tests/e2e/internalDebt.test.mjs",
+        "tests/e2e/debtDueDates.test.mjs",
+        "tests/e2e/android.test.mjs",
+      ];
+  for (const suite of suites) await run(suite);
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;

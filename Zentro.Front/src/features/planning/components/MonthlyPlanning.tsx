@@ -1,3 +1,4 @@
+import { Surface, Button } from "../../../shared/ui/index.tsx";
 import { memo, useMemo, useState } from "react";
 import { CalendarRange } from "lucide-react";
 import {
@@ -38,7 +39,7 @@ export default memo(function MonthlyPlanning({ data }: { data: Profile }) {
   );
   const total = rows.reduce((amount, row) => amount + row.total, 0);
   return (
-    <section className="panel monthly-planning">
+    <Surface component="section" className="panel monthly-planning">
       <div className="section-title">
         <div>
           <span className="planning-eyebrow">
@@ -52,13 +53,13 @@ export default memo(function MonthlyPlanning({ data }: { data: Profile }) {
           aria-label="Horizonte del calendario"
         >
           {[6, 12].map((value) => (
-            <button
+            <Button
               key={value}
               aria-pressed={count === value}
               onClick={() => setCount(value)}
             >
               {value} meses
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -198,6 +199,6 @@ export default memo(function MonthlyPlanning({ data }: { data: Profile }) {
         estimados. Es una planificación, no un descuento automático del saldo ni
         una previsión de patrimonio.
       </PanelInfo>
-    </section>
+    </Surface>
   );
 });

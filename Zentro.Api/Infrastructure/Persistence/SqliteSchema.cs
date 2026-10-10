@@ -8,7 +8,7 @@ namespace Zentro.Api.Infrastructure.Persistence;
 /// <summary>Migraciones de estructura, independientes de la versión del contrato HTTP.</summary>
 public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileValidator validator)
 {
-    private const int CurrentVersion = 5;
+    private const int CurrentVersion = 6;
     private static readonly JsonSerializerOptions ComparisonOptions = new(JsonSerializerDefaults.Web);
 
     public void Initialize()
@@ -41,7 +41,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
             Backup(connection);
         }
 
-        if (version is 1 or 2 or 3 or 4)
+        if (version is >= 1 and <= 5)
         {
             using var upgrade = connection.BeginTransaction();
             var upgradeSession = new SqliteSession(connection, upgrade);
@@ -60,7 +60,12 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
                 ApplyDebtAdvances(upgradeSession);
             }
 
-            ApplyAdvanceTotals(upgradeSession);
+            if (version < 5)
+            {
+                ApplyAdvanceTotals(upgradeSession);
+            }
+
+            ApplyDueDays(upgradeSession);
             upgradeSession.Execute($"PRAGMA user_version={CurrentVersion}");
             upgrade.Commit();
             return;
@@ -87,6 +92,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         ApplyDebtManagement(session);
         ApplyDebtAdvances(session);
         ApplyAdvanceTotals(session);
+        ApplyDueDays(session);
         if (profile is not null)
         {
             ProfileRepository.WriteSnapshot(session, profile);
@@ -100,6 +106,14 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         LegacyProfileReader.DropTables(session, tables);
         session.Execute($"PRAGMA user_version={CurrentVersion}");
         transaction.Commit();
+    }
+
+    private static void ApplyDueDays(SqliteSession session)
+    {
+        using var resource = typeof(SqliteSchema).Assembly.GetManifestResourceStream("Zentro.Api.Infrastructure.Persistence.Schema.006_dia_cobro_deudas.sql")
+            ?? throw new InvalidOperationException("No se encuentra la migración del día de cobro.");
+        using var sql = new StreamReader(resource);
+        session.Execute(sql.ReadToEnd());
     }
 
     private static void ApplyUndatedForecasts(SqliteSession session)

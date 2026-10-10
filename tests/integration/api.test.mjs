@@ -337,7 +337,7 @@ try {
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
   sql = new DatabaseSync(path.join(folder, "test.db"));
-  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 5);
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 6);
   assert.equal(
     sql
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -451,6 +451,7 @@ try {
   const advanced = structuredClone(interestWithdrawal);
   advanced.debts.push({
     id: "advance-test",
+    dueDay: 4,
     name: "Adelanto sintético",
     total: 10000,
     installments: [{ month: "2026-11", amount: 7000, status: "pending" }],
@@ -473,6 +474,12 @@ try {
   });
   assert.equal(
     advanceDb
+      .prepare("SELECT dia_cobro FROM deudas WHERE id='advance-test'")
+      .get().dia_cobro,
+    4,
+  );
+  assert.equal(
+    advanceDb
       .prepare(
         "SELECT importe_centimos FROM adelantos_deudas WHERE deuda_id='advance-test'",
       )
@@ -486,6 +493,12 @@ try {
     30,
   );
   advanceDb.close();
+  for (const dueDay of [0, 32, 1.5]) {
+    const invalid = structuredClone(advanced);
+    invalid.debts.at(-1).dueDay = dueDay;
+    assert.equal((await put(invalid)).status, 400);
+    assert.deepEqual(await (await fetch(base + "/api/state")).json(), advanced);
+  }
   for (const row of [
     { id: "bad", date: "2026-02-30", amount: 3000, strategy: "payment" },
     { id: "bad", date: "2026-10-10", amount: 3000, strategy: "other" },
