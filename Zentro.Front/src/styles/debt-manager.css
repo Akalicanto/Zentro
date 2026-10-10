@@ -100,7 +100,7 @@
   background: var(--accent-soft);
   color: var(--accent-text);
 }
-.debt-filters span {
+.debt-filters .debt-filter-count {
   padding: 1px 6px;
   background: var(--panel);
   border-radius: 10px;
@@ -113,6 +113,7 @@
 .debt-summary-card {
   display: flex;
   align-items: stretch;
+  justify-content: flex-start;
   flex-direction: column;
   gap: 10px;
   text-align: left;

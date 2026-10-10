@@ -296,7 +296,7 @@ export default function DebtsPage({
                       archived: "Eliminadas",
                     }[status]
                   }
-                  <span>
+                  <span className="debt-filter-count">
                     {debts.filter((d) => debtStatus(d) === status).length}
                   </span>
                 </Button>

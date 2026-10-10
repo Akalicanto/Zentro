@@ -75,6 +75,21 @@ try {
     .getByRole("button", { name: "Deudas", exact: true })
     .click();
   await watch.getByText("Pagada por adelantado", { exact: true }).waitFor();
+  const activeFilter = page.getByRole("tab", { name: /^Activas/ });
+  await activeFilter.click();
+  await page
+    .locator(".debt-filters .MuiTouchRipple-root")
+    .waitFor({ state: "attached" });
+  await page
+    .locator(".debts-list-panel")
+    .screenshot({ path: "../checks/active-debts.png" });
+  assert.equal(
+    await activeFilter
+      .locator(".MuiTouchRipple-root")
+      .evaluate((el) => getComputedStyle(el).backgroundColor),
+    "rgba(0, 0, 0, 0)",
+    "El contador no debe aplicar su fondo a la capa de animación del botón",
+  );
   await watch
     .getByRole("button", {
       name: "Ver deuda Pago adelantado de prueba",
