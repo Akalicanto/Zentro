@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/brand/wordmark.png" alt="Zentro" width="340" />
+  <img src="docs/brand/wordmark.png" alt="Zentro" width="420" />
 </p>
 
 <p align="center">

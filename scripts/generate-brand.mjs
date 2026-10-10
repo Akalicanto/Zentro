@@ -1,4 +1,4 @@
-// Exporta el logo original sin cambiar su diseño y compone la marca Z + entro.
+// Exporta las dos marcas originales sin cambiar su diseño.
 import { chromium } from "../Zentro.Front/node_modules/@playwright/test/index.mjs";
 import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -30,14 +30,24 @@ try {
     await page.screenshot({ path: folder + name, omitBackground: !maskable });
     await page.close();
   }
+  const fullLogo = await fs.readFile(
+    new URL("../docs/brand/wordmark-source.png", import.meta.url),
+  );
   const wordmark = await browser.newPage({
-    viewport: { width: 680, height: 200 },
-    deviceScaleFactor: 2,
+    viewport: { width: 720, height: 240 },
+    deviceScaleFactor: 1,
   });
   await wordmark.setContent(
-    `<style>body{margin:0;width:680px;height:200px;background:#fff8ed;display:flex;align-items:center;justify-content:center;border-radius:32px;gap:0}img{width:138px;height:138px;margin-right:-6px}span{font:750 96px/1 system-ui,sans-serif;letter-spacing:-5px;color:#62428e}</style><img src="${symbol}" alt=""><span>entro</span>`,
+    `<style>body{margin:0;background:transparent}img{display:block;width:720px;height:240px;object-fit:contain}</style><img src="data:image/png;base64,${fullLogo.toString("base64")}" alt="Zentro">`,
   );
   await wordmark.locator("img").evaluate((img) => img.decode());
+  await wordmark.screenshot({
+    path: folder + "logo-full.png",
+    omitBackground: true,
+  });
+  await wordmark.evaluate(() => {
+    document.body.style.background = "#fff8ed";
+  });
   await wordmark.screenshot({
     path: fileURLToPath(new URL("../docs/brand/wordmark.png", import.meta.url)),
   });
