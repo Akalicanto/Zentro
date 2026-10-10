@@ -13,7 +13,7 @@ internal static class DailyBudgetRules
         }
 
         return new[] { budget.Expenses, budget.Incomes }.All(rows => Unique(rows, row => row.Id) && rows.All(row =>
-            Month(row.Month) && NotEmpty(row.Concept) && Money(row.Amount, true) && row.Amount > 0 &&
+            NotEmpty(row.Concept) && Money(row.Amount, true) && row.Amount > 0 &&
             row.Status is "planned" or "done" && (!row.IncludedInOpening || row.Status == "done")));
     }
 }

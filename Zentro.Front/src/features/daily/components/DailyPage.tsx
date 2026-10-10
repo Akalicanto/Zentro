@@ -32,9 +32,7 @@ export default function DailyPage({ data, open, save }: Props) {
       });
   }
   function cashTable(kind: "expenses" | "incomes") {
-    const rows = data.daily[kind].filter(
-      (row) => row.month === dailyMonth && row.status === "planned",
-    );
+    const rows = data.daily[kind].filter((row) => row.status === "planned");
     const expense = kind === "expenses";
     const editing = editingCash[kind];
     return (
@@ -43,7 +41,7 @@ export default function DailyPage({ data, open, save }: Props) {
           <div>
             <h3>{expense ? "Gastos" : "Ingresos"}</h3>
             <p>
-              Total del mes: <b>{euro(sum(rows.map((r) => r.amount)))}</b>
+              Total previsto: <b>{euro(sum(rows.map((r) => r.amount)))}</b>
             </p>
           </div>
           <div className="history-actions">
@@ -120,8 +118,7 @@ export default function DailyPage({ data, open, save }: Props) {
         </div>
         {!rows.length && (
           <p className="empty">
-            Todavía no hay {expense ? "gastos" : "ingresos"} registrados para
-            este mes.
+            Todavía no hay {expense ? "gastos" : "ingresos"} previstos.
           </p>
         )}
         <PanelInfo title={expense ? "Gastos" : "Ingresos"}>

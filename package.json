@@ -13,7 +13,7 @@
     "setup": "npm --prefix Zentro.Front ci && dotnet restore Zentro.slnx",
     "build": "npm --prefix Zentro.Front run build && dotnet build Zentro.slnx",
     "test": "npm --prefix Zentro.Front test && dotnet build Zentro.slnx && node tests/integration/api.test.mjs",
-    "test:e2e": "dotnet build Zentro.slnx && node scripts/test-e2e.mjs",
+    "test:e2e": "npm --prefix Zentro.Front run build && dotnet build Zentro.slnx && node scripts/test-e2e.mjs",
     "format": "npm --prefix Zentro.Front run format && npm run format:repo && dotnet format Zentro.slnx --no-restore",
     "format:check": "npm --prefix Zentro.Front run format:check && npm run format:repo:check && dotnet format Zentro.slnx --no-restore --verify-no-changes",
     "format:repo": "node Zentro.Front/node_modules/prettier/bin/prettier.cjs --write \".vscode/**/*.json\" \"scripts/**/*.mjs\" \"tests/**/*.mjs\" \"docs/**/*.md\" \"*.md\" \"*.json\" \"Zentro.Api/*.md\" \"Zentro.Front/*.md\"",

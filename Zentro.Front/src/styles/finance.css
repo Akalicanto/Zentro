@@ -45,13 +45,6 @@
 .daily-current-month h3 {
   margin: 0;
 }
-.cash-form-month {
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: var(--soft);
-  text-transform: capitalize;
-}
 .investment-primary .metric {
   padding-bottom: 24px;
 }

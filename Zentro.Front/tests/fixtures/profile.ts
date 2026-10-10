@@ -7,7 +7,6 @@ export function testProfile(): Profile {
     expenses: [
       {
         id: "expense",
-        month: "2026-10",
         concept: "Gasto de prueba",
         amount: 4000,
         status: "planned",

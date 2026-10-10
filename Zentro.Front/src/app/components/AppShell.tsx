@@ -8,13 +8,13 @@ import {
   Sprout,
   TrendingUp,
   CreditCard,
-  Menu,
   Sun,
   Moon,
   Settings,
 } from "lucide-react";
 
 import type { ReactNode } from "react";
+import PwaStatus from "../../shared/components/PwaStatus.tsx";
 type Props = {
   page: Page;
   error: string;
@@ -31,20 +31,18 @@ export default function AppShell({
   children,
   overlay,
 }: Props) {
-  const [mobile, setMobile] = useState(false),
-    [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(
     () => localStorage.getItem("zentro.theme") === "dark",
   );
   const navigate = (next: Page) => {
     onNavigate(next);
-    setMobile(false);
   };
   return (
     <div
       className={`app ${dark ? "dark" : ""} ${collapsed ? "sidebar-collapsed" : ""}`}
     >
-      <aside className={mobile ? "open" : ""}>
+      <aside>
         <a
           className="brand"
           href="#pagina=Mi%20espacio"
@@ -55,11 +53,9 @@ export default function AppShell({
           }}
         >
           <span className="brand-mark">
-            <img src="/brand/symbol-mini.png" alt="" />
+            <img src="/brand/symbol.svg" alt="" />
           </span>
-          <span className="brand-name">
-            <img src="/brand/logo-ui.png" alt="Zentro" />
-          </span>
+          <span className="brand-name">Zentro</span>
         </a>
         <button
           className="sidebar-edge-toggle"
@@ -98,15 +94,13 @@ export default function AppShell({
       <main>
         <header>
           <div className="header-left">
-            <button
-              className="icon mobile-menu"
-              aria-label="Abrir menú"
-              onClick={() => setMobile(!mobile)}
-            >
-              <Menu />
-            </button>
+            <span className="mobile-brand">
+              <img src="/brand/symbol.svg" alt="" />
+              Zentro
+            </span>
           </div>
           <div className="header-right">
+            <PwaStatus />
             <button
               className="theme-toggle"
               aria-label={dark ? "Modo claro" : "Modo oscuro"}
@@ -157,6 +151,34 @@ export default function AppShell({
           {children}
         </div>
       </main>
+      <nav className="mobile-navigation" aria-label="Navegación móvil">
+        {pages.map((label, index) => {
+          const Icon = [
+            LayoutDashboard,
+            Wallet,
+            Sprout,
+            TrendingUp,
+            CreditCard,
+          ][index];
+          return (
+            <button
+              key={label}
+              aria-label={label}
+              aria-current={page === label ? "page" : undefined}
+              onClick={() => navigate(label)}
+            >
+              <Icon aria-hidden="true" />
+              <span>
+                {
+                  ["Mi espacio", "Día a día", "Ahorros", "Inversión", "Deudas"][
+                    index
+                  ]
+                }
+              </span>
+            </button>
+          );
+        })}
+      </nav>
       {overlay}
     </div>
   );

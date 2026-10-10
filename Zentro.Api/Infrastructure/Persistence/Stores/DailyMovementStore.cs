@@ -10,7 +10,6 @@ internal static class DailyMovementStore
             row => new DailyMovement
             {
                 Id = row.Text("id"),
-                Month = row.Text("mes"),
                 Concept = row.Text("concepto"),
                 Amount = row.Number("importe_centimos"),
                 Status = row.Text("estado") switch
@@ -32,7 +31,6 @@ internal static class DailyMovementStore
                 ("orden", index),
                 ("tipo", parent),
                 ("id", row.Id),
-                ("mes", row.Month),
                 ("concepto", row.Concept),
                 ("importe_centimos", row.Amount),
                 ("estado", row.Status switch

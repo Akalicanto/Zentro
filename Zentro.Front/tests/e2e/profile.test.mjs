@@ -70,13 +70,10 @@ try {
   await page.goto("http://127.0.0.1:5187");
   await page.getByRole("heading", { name: "Mi espacio", level: 1 }).waitFor();
   assert.equal((await fetch(`${api}/api/state`)).status, 204);
-  assert.deepEqual(await page.locator("nav button").allTextContents(), [
-    "Mi espacio",
-    "Día a día",
-    "Ahorros",
-    "Inversión",
-    "Deudas",
-  ]);
+  assert.deepEqual(
+    await page.locator("#zentro-navigation button").allTextContents(),
+    ["Mi espacio", "Día a día", "Ahorros", "Inversión", "Deudas"],
+  );
   assert.equal(await page.getByText("Cuentas", { exact: true }).count(), 0);
   assert.equal(
     (
@@ -390,10 +387,35 @@ try {
     ),
   );
   await page.getByRole("button", { name: "Añadir ingreso" }).click();
+  const backgroundBefore = await page
+    .locator(".app > main")
+    .first()
+    .boundingBox();
+  await page.mouse.move(10, 500);
+  await page.mouse.wheel(0, 1000);
+  await page.waitForTimeout(150);
+  const backgroundAfter = await page
+    .locator(".app > main")
+    .first()
+    .boundingBox();
+  assert.equal(backgroundAfter.y, backgroundBefore.y);
+  assert.equal(
+    await page.evaluate(() => document.body.style.position),
+    "fixed",
+  );
+  await page.getByRole("button", { name: "Guardar", exact: true }).focus();
+  await page.keyboard.press("Tab");
+  assert.equal(
+    await page
+      .getByRole("dialog")
+      .evaluate((el) => el.contains(document.activeElement)),
+    true,
+  );
   assert.equal(await page.getByLabel("Estado", { exact: true }).count(), 0);
   await page.getByLabel("Concepto", { exact: true }).fill("Ingreso de prueba");
   await page.getByLabel("Importe (€)", { exact: true }).fill("50");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  assert.equal(await page.evaluate(() => document.body.style.position), "");
   assert.ok(
     (await metric("Saldo actual · ING").innerText()).includes("300,00"),
   );
@@ -593,7 +615,6 @@ try {
   await page.waitForFunction(
     () => document.documentElement.scrollWidth <= innerWidth,
   );
-  await page.getByRole("button", { name: "Abrir menú" }).click();
   await page
     .locator("nav")
     .getByRole("button", { name: "Día a día", exact: true })
@@ -603,7 +624,6 @@ try {
   );
   assert.deepEqual(errors, []);
   assert.deepEqual(await state(), saved);
-  await page.getByRole("button", { name: "Abrir menú", exact: true }).click();
   await page
     .locator("nav")
     .getByRole("button", { name: "Deudas", exact: true })
@@ -632,7 +652,6 @@ try {
   );
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   assert.deepEqual(await state(), saved);
-  await page.getByRole("button", { name: "Abrir menú", exact: true }).click();
   await page
     .locator("nav")
     .getByRole("button", { name: "Ahorros", exact: true })

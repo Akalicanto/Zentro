@@ -1,3 +1,4 @@
+import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import {
   type Profile,
   currentMonth,
@@ -27,7 +28,6 @@ export default function ProfileForms({
   close,
   submit,
 }: Props) {
-  const dailyMonth = currentMonth();
   const [monthSelection, setMonthSelection] = useState(
     modal.type === "month"
       ? (modal.item?.month ?? currentMonth())
@@ -109,7 +109,7 @@ export default function ProfileForms({
     </label>
   );
   return (
-    <div className="modal-backdrop">
+    <ModalFrame onClose={close}>
       <section
         className="modal"
         role="dialog"
@@ -143,17 +143,6 @@ export default function ProfileForms({
                     ? modal.item.amount / 100
                     : "",
                 )}
-                <label>
-                  Mes
-                  <span className="cash-form-month">
-                    {monthName(modal.item?.month || dailyMonth)}
-                  </span>
-                  <input
-                    type="hidden"
-                    name="month"
-                    value={modal.item?.month || dailyMonth}
-                  />
-                </label>
               </>
             )}
             {modal.type === "balance" &&
@@ -400,6 +389,6 @@ export default function ProfileForms({
           </div>
         </form>
       </section>
-    </div>
+    </ModalFrame>
   );
 }

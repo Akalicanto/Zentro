@@ -1,3 +1,4 @@
+import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { Fragment, useState } from "react";
 import { ArrowUpDown, Check, Pencil, Plus, X } from "lucide-react";
 import {
@@ -322,7 +323,7 @@ export default function DebtsPage({
         </PanelInfo>
       </section>
       {modal && (
-        <div className="modal-backdrop">
+        <ModalFrame onClose={() => setModal(null)}>
           <section
             className="modal"
             role="dialog"
@@ -456,7 +457,7 @@ export default function DebtsPage({
               </div>
             </form>
           </section>
-        </div>
+        </ModalFrame>
       )}
     </>
   );

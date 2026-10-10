@@ -57,6 +57,7 @@ try {
   // Each suite redirects API calls to synthetic data and an independent database.
   await run("tests/e2e/profile.test.mjs");
   await run("tests/e2e/internalDebt.test.mjs");
+  await run("tests/e2e/android.test.mjs");
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;

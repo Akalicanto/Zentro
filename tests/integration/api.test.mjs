@@ -90,6 +90,13 @@ try {
   await start();
   assert.equal((await fetch(`${base}/api/state`)).status, 204);
   assert.equal((await fetch(`${base}/swagger/index.html`)).status, 200);
+  assert.equal((await fetch(base)).status, 200);
+  const manifest = await (await fetch(`${base}/manifest.webmanifest`)).json();
+  assert.equal(manifest.name, "Zentro");
+  assert.equal(
+    (await fetch(`${base}/sw.js`)).headers.get("cache-control"),
+    "no-cache",
+  );
   const specification = await (
     await fetch(`${base}/swagger/v1/swagger.json`)
   ).json();
@@ -145,6 +152,10 @@ try {
     { id: "possible-test", concept: "Posible gasto de prueba", amount: 8000 },
   ];
   assert.equal((await put(state)).status, 204);
+  const oldDaily = structuredClone(state);
+  oldDaily.daily.expenses[0].month = "2024-08";
+  assert.equal((await put(oldDaily)).status, 204);
+  assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), state);
   assert.equal(
     (await put({ ...state, customMetadata: { label: "no admitido" } })).status,
     400,
@@ -278,7 +289,14 @@ try {
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
   sql = new DatabaseSync(path.join(folder, "test.db"));
-  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 1);
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(
+    sql
+      .prepare("PRAGMA table_info(movimientos_diarios)")
+      .all()
+      .some((column) => column.name === "mes"),
+    false,
+  );
   assert.deepEqual(sql.prepare("PRAGMA foreign_key_check").all(), []);
   assert.equal(
     sql.prepare("PRAGMA integrity_check").get().integrity_check,

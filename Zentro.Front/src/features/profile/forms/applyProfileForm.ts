@@ -31,7 +31,6 @@ export function applyProfileForm(
       id: old?.id || uid(),
       concept: text("concept"),
       amount: money("amount"),
-      month: text("month"),
       status: "planned",
       includedInOpening: false,
     };

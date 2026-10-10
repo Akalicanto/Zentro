@@ -1,3 +1,4 @@
+import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { useState } from "react";
 import { X } from "lucide-react";
 import {
@@ -66,7 +67,7 @@ export default function PlacementForm({
   }
 
   return (
-    <div className="modal-backdrop">
+    <ModalFrame onClose={onClose}>
       <section
         className="modal"
         role="dialog"
@@ -224,6 +225,6 @@ export default function PlacementForm({
           </div>
         </form>
       </section>
-    </div>
+    </ModalFrame>
   );
 }

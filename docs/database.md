@@ -4,6 +4,8 @@ Zentro utiliza **SQLite relacional** en `Zentro.Api/Data/zentro.db`. Las tablas 
 
 El [esquema SQL](../Zentro.Api/Infrastructure/Persistence/Schema/001_relacional.sql) define las 17 tablas, sus claves, restricciones, índices y vistas. Se incluye en el ensamblado de la API, también al publicar. `PRAGMA user_version` identifica la versión de estructura; es independiente de la versión del contrato HTTP.
 
+La versión de estructura actual es **2**. La [migración 002](../Zentro.Api/Infrastructure/Persistence/Schema/002_previsiones_sin_mes.sql) elimina `mes` de `movimientos_diarios`: las previsiones diarias no caducan al cambiar de mes. Se conserva cada registro y su importe. La API crea un respaldo privado antes de actualizar una base de versión 1. Los historiales de ahorro, inversión y cuotas siguen teniendo meses.
+
 ## Consultar desde VS Code
 
 Abre `Zentro.Api/Data/zentro.db` con **SQLite Viewer** (extensión recomendada). Si lo tienes abierto desde antes de la migración, vuelve a abrirlo o recarga el visor. Selecciona una tabla para ver sus columnas y registros. Las vistas `vista_resumen`, `vista_ahorros_mensuales`, `vista_inversiones_mensuales`, `vista_deudas` y `vista_deuda_interna` presentan los importes en euros y los saldos calculados.
@@ -27,7 +29,7 @@ Usa la aplicación para modificar los datos: además de las restricciones SQL, l
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `perfil`                     | Perfil local único, `version`, `efectivo_centimos`, `oferta_hipoteca_centimos`, `actualizado_el`.                                                                  |
 | `saldo_diario`               | `saldo_inicial_centimos` y `fecha_saldo`; punto de partida del día a día.                                                                                          |
-| `movimientos_diarios`        | `tipo` (`gasto`/`ingreso`), `mes`, `concepto`, `importe_centimos`, `estado` (`previsto`/`realizado`), `incluido_en_saldo_inicial`.                                 |
+| `movimientos_diarios`        | `tipo` (`gasto`/`ingreso`), `concepto`, `importe_centimos`, `estado` (`previsto`/`realizado`), `incluido_en_saldo_inicial`.                                        |
 | `ahorros_mensuales`          | `mes`, `objetivo_centimos`, `aportacion_centimos`, `repuesto_centimos`, `retirado_centimos`, `aproximado_centimos`.                                                |
 | `inversiones_mensuales`      | `mes`, `objetivo_centimos`, `aportacion_centimos`, `aproximado_centimos`.                                                                                          |
 | `saldo_intereses`            | Saldo inicial de intereses y fecha.                                                                                                                                |

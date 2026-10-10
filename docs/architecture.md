@@ -46,7 +46,7 @@ Los gráficos se memoizan para evitar redibujarlos al abrir formularios. Las cla
 - Patrimonio = ahorro por trabajo + intereses registrados + capital invertido. El saldo diario, el efectivo y la oferta hipotecaria quedan fuera de esta suma.
 - El ahorro neto de un mes incluye su aportación, reposiciones nuevas y retiradas nuevas. Los pagos históricos ya incluidos no se suman otra vez.
 - Vacío, cero y valores negativos son situaciones distintas. Las previsiones no forman parte del patrimonio actual.
-- Los gastos e ingresos diarios son siempre previsiones: crean, editan o eliminan importes pendientes sin modificar el saldo actual manual. Los estados antiguos se conservan únicamente por compatibilidad con perfiles anteriores.
+- Los gastos e ingresos diarios no tienen mes asociado y son siempre previsiones: crean, editan o eliminan importes pendientes sin modificar el saldo actual manual. Los estados antiguos se conservan únicamente por compatibilidad con perfiles anteriores.
 - La distribución indica dónde está el ahorro, sin crear aportaciones ni cobrar intereses estimados.
 - Las cuotas apartadas del dentista siguen pendientes de pago. Las deudas externas no modifican automáticamente otras áreas.
 - Efectivo y posibles gastos se conservan como datos independientes.
@@ -60,3 +60,11 @@ Los gráficos se memoizan para evitar redibujarlos al abrir formularios. Las cla
 5. Verificar la regla financiera con datos ficticios y, si cambia un flujo, añadir una comprobación de navegador. Nunca convertir datos personales en fixtures.
 
 Las rutas siguen siendo `GET /api/state`, `PUT /api/state` y `GET /api/health`. El contrato guarda el perfil completo: dos pestañas que editan simultáneamente pueden sobrescribirse; prevalece la última escritura.
+
+## Modales y Android
+
+`shared/components/ModalFrame.tsx` centraliza el portal del modal, bloqueo del scroll de fondo, foco, teclado y restauración al cerrar. Todos los editores lo reutilizan. El modal hereda el tema y permite desplazar solo su contenido.
+
+`shared/components/PwaStatus.tsx` ofrece instalación, estado de conexión y actualización voluntaria. Vite genera el manifiesto y el service worker. Solo se precargan archivos estáticos; las respuestas `/api` no se almacenan en esa caché. `styles/mobile.css` reúne navegación inferior, áreas seguras y ajustes táctiles.
+
+La API sirve `wwwroot` desde el directorio de salida, donde MSBuild copia la compilación React. Los activos se sirven mediante `UseStaticFiles`; el manifiesto de activos estáticos del SDK se desactiva porque los archivos proceden de Vite. Ejecuta la compilación del front antes de publicar .NET. Más detalles en [Android](android.md).

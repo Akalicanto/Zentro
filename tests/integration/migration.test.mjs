@@ -105,7 +105,7 @@ export async function runMigrationChecks({
       const migrated = new DatabaseSync(file, { readOnly: true });
       assert.equal(
         migrated.prepare("PRAGMA user_version").get().user_version,
-        1,
+        2,
       );
       assert.deepEqual(migrated.prepare("PRAGMA foreign_key_check").all(), []);
       assert.equal(
@@ -160,6 +160,28 @@ export async function runMigrationChecks({
       legacy.close();
     }
   }
+  // Actualiza una base relacional v1 con previsiones de meses distintos sin perder importes.
+  const versionOneFile = path.join(folder, "legacy-document.db");
+  const versionOne = new DatabaseSync(versionOneFile);
+  versionOne.exec(
+    "ALTER TABLE movimientos_diarios ADD COLUMN mes TEXT NOT NULL DEFAULT '2025-01'; DROP INDEX movimientos_por_tipo; CREATE INDEX movimientos_por_mes ON movimientos_diarios(perfil_id,mes,tipo); PRAGMA user_version=1;",
+  );
+  versionOne.close();
+  const backupCount = readdirSync(snapshots).length;
+  await start(versionOneFile);
+  assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), original);
+  await stop();
+  const upgraded = new DatabaseSync(versionOneFile, { readOnly: true });
+  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 2);
+  assert.equal(
+    upgraded
+      .prepare("PRAGMA table_info(movimientos_diarios)")
+      .all()
+      .some((column) => column.name === "mes"),
+    false,
+  );
+  assert.equal(readdirSync(snapshots).length, backupCount + 1);
+  upgraded.close();
   const invalid = structuredClone(original);
   delete invalid.savings[0].actual;
   const file = path.join(folder, "invalid-legacy.db");

@@ -343,9 +343,6 @@ footer {
   font-size: 13px;
   padding: 12px 0 4px;
 }
-.mobile-menu {
-  display: none;
-}
 .recharts-default-tooltip {
   color: #1e293b !important;
   border-radius: 8px;
@@ -412,9 +409,6 @@ footer {
     box-shadow: 10px 0 50px #0003;
     top: 66px;
   }
-  .app aside.open {
-    display: flex;
-  }
   main {
     margin: 0;
     transition: none;
@@ -422,9 +416,6 @@ footer {
   header {
     height: 66px;
     padding: 0 18px;
-  }
-  .mobile-menu {
-    display: flex;
   }
   .theme-toggle span {
     display: none;

@@ -141,7 +141,6 @@ export function validateProfile(raw: unknown): Profile {
       !unique(rows) ||
       rows.some(
         (r) =>
-          !month(r.month) ||
           !r.concept?.trim() ||
           !integer(r.amount) ||
           r.amount <= 0 ||
@@ -280,5 +279,29 @@ export function validateProfile(raw: unknown): Profile {
     throw Error("Compromiso no válido.");
   if (!Object.values(wealthTotals(profile)).every(nonnegative))
     throw Error("Los importes acumulados deben ser válidos y no negativos.");
-  return profile;
+  // Las copias antiguas pueden traer mes; se descarta sin cambiar importes.
+  return {
+    ...profile,
+    daily: {
+      ...profile.daily,
+      expenses: profile.daily.expenses.map(
+        ({ id, concept, amount, status, includedInOpening }) => ({
+          id,
+          concept,
+          amount,
+          status,
+          includedInOpening,
+        }),
+      ),
+      incomes: profile.daily.incomes.map(
+        ({ id, concept, amount, status, includedInOpening }) => ({
+          id,
+          concept,
+          amount,
+          status,
+          includedInOpening,
+        }),
+      ),
+    },
+  };
 }

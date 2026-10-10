@@ -8,7 +8,6 @@ export type MonthRow = {
 };
 export type CashRow = {
   id: string;
-  month: string;
   concept: string;
   amount: number;
   status: "planned" | "done";

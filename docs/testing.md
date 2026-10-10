@@ -34,3 +34,7 @@ El ejecutor de navegador arranca Vite si no está disponible en el puerto 5187 y
 Las estadísticas de deuda tienen pruebas en `Zentro.Front/tests/unit/debtAnalytics.test.ts`: porcentajes, cuotas apartadas aún pendientes, importes sin calendario, orden de meses y deuda vacía o saldada. La suite de navegador comprueba gráficos, filtro, actualización al cambiar una cuota y diseño sin desbordamiento en móvil.
 
 `Zentro.Front/tests/unit/monthlyPlanning.test.ts` comprueba que el calendario financiero no repite aportaciones cerradas ni cuotas apartadas o pagadas, respeta objetivos por mes, limita reposiciones y no extiende el horizonte del plan. La suite de navegador verifica las vistas de 6 y 12 meses, las barras y la ausencia de desbordamiento en móvil; guarda capturas de claro, oscuro y móvil en `checks/`.
+
+`Zentro.Front/tests/unit/dailyForecast.test.ts` verifica previsiones sin mes y normalización de copias anteriores. La integración comprueba la migración relacional 1 → 2, conservación de importes, ausencia de la columna `mes` y respuesta de interfaz/manifiesto desde la API.
+
+`Zentro.Front/tests/e2e/android.test.mjs` usa Chromium con emulación Pixel y la compilación de producción en un puerto libre: manifiesto, iconos, service worker, navegación de las cinco páginas, ausencia de desbordamiento, tema oscuro, modal con fondo inmóvil y caché sin respuestas financieras. Comprueba el error de conexión sin sobrescribir datos. No sustituye una comprobación en el Pixel físico.

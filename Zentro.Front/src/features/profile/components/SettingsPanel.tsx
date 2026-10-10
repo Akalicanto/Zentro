@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import ModalFrame from "../../../shared/components/ModalFrame.tsx";
+import { useRef } from "react";
 import {
   X,
   Wallet,
@@ -40,35 +41,7 @@ export default function SettingsPanel({
   exportBackup,
   importBackup,
 }: Props) {
-  const panel = useRef<HTMLElement>(null);
   const importInput = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    panel.current?.querySelector<HTMLButtonElement>("button")?.focus();
-    const keydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
-      if (event.key !== "Tab") return;
-      const elements = Array.from(
-        panel.current?.querySelectorAll<HTMLElement>(
-          "button, summary, a[href], input:not([hidden])",
-        ) ?? [],
-      ).filter((element) => element.getClientRects().length > 0);
-      const first = elements[0],
-        last = elements.at(-1);
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first?.focus();
-      }
-    };
-    document.addEventListener("keydown", keydown);
-    return () => {
-      document.removeEventListener("keydown", keydown);
-      previous?.focus();
-    };
-  }, [close]);
 
   const balances = [
     {
@@ -106,9 +79,8 @@ export default function SettingsPanel({
   ];
 
   return (
-    <div className="modal-backdrop">
+    <ModalFrame onClose={close}>
       <section
-        ref={panel}
         className="modal settings-panel"
         role="dialog"
         aria-modal="true"
@@ -269,6 +241,6 @@ export default function SettingsPanel({
           </div>
         </details>
       </section>
-    </div>
+    </ModalFrame>
   );
 }

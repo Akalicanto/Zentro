@@ -7,8 +7,9 @@ public sealed record DailyMovement
     [JsonRequired]
     public string Id { get; init; } = null!;
 
-    [JsonRequired]
-    public string Month { get; init; } = null!;
+    // Reconoce el campo de clientes antiguos; no se lee, devuelve ni persiste.
+    [JsonIgnore]
+    public string? Month { get; init; }
 
     [JsonRequired]
     public string Concept { get; init; } = null!;

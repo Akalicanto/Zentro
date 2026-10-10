@@ -8,7 +8,7 @@ namespace Zentro.Api.Infrastructure.Persistence;
 /// <summary>Migraciones de estructura, independientes de la versión del contrato HTTP.</summary>
 public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileValidator validator)
 {
-    private const int CurrentVersion = 1;
+    private const int CurrentVersion = 2;
     private static readonly JsonSerializerOptions ComparisonOptions = new(JsonSerializerDefaults.Web);
 
     public void Initialize()
@@ -41,6 +41,16 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
             Backup(connection);
         }
 
+        if (version == 1)
+        {
+            using var upgrade = connection.BeginTransaction();
+            var upgradeSession = new SqliteSession(connection, upgrade);
+            ApplyUndatedForecasts(upgradeSession);
+            upgradeSession.Execute($"PRAGMA user_version={CurrentVersion}");
+            upgrade.Commit();
+            return;
+        }
+
         using var transaction = connection.BeginTransaction();
         var session = new SqliteSession(connection, transaction);
         var document = LegacyProfileReader.Read(session, tables);
@@ -58,6 +68,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
             ?? throw new InvalidOperationException("No se encuentra el esquema relacional.");
         using var sql = new StreamReader(schema);
         session.Execute(sql.ReadToEnd());
+        ApplyUndatedForecasts(session);
         if (profile is not null)
         {
             ProfileRepository.WriteSnapshot(session, profile);
@@ -71,6 +82,14 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         LegacyProfileReader.DropTables(session, tables);
         session.Execute($"PRAGMA user_version={CurrentVersion}");
         transaction.Commit();
+    }
+
+    private static void ApplyUndatedForecasts(SqliteSession session)
+    {
+        using var resource = typeof(SqliteSchema).Assembly.GetManifestResourceStream("Zentro.Api.Infrastructure.Persistence.Schema.002_previsiones_sin_mes.sql")
+            ?? throw new InvalidOperationException("No se encuentra la migración de previsiones.");
+        using var sql = new StreamReader(resource);
+        session.Execute(sql.ReadToEnd());
     }
 
     private void Backup(SqliteConnection source)

@@ -1,7 +1,13 @@
 using Zentro.Api.Extensions;
 using Zentro.Api.Infrastructure.Persistence;
 using Zentro.Api.OpenApi;
-var builder = WebApplication.CreateBuilder(args);
+var webRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    WebRootPath = Directory.Exists(webRoot) ? webRoot : null
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -15,6 +21,20 @@ builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 
 var app = builder.Build();
 app.UseExceptionHandler();
 app.Services.GetRequiredService<SqliteSchema>().Initialize();
+if (Directory.Exists(webRoot))
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        OnPrepareResponse = context =>
+        {
+            if (context.File.Name is "sw.js" or "index.html" or "manifest.webmanifest")
+            {
+                context.Context.Response.Headers.CacheControl = "no-cache";
+            }
+        }
+    });
+}
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
