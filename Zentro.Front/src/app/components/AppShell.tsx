@@ -26,7 +26,7 @@ type Props = {
   overlay: ReactNode;
   debts: ExternalDebt[];
   selectedDebtId: string | null;
-  selectDebt: (id: string | null, section?: "payments" | "activity") => void;
+  selectDebt: (id: string | null) => void;
 };
 export default function AppShell({
   page,
@@ -85,6 +85,17 @@ export default function AppShell({
               TrendingUp,
               CreditCard,
             ][index];
+            if (label === "Deudas")
+              return (
+                <DebtNavigation
+                  key={label}
+                  debts={debts}
+                  selectedId={page === "Deudas" ? selectedDebtId : null}
+                  collapsed={collapsed}
+                  active={page === "Deudas"}
+                  onSelect={selectDebt}
+                />
+              );
             return (
               <button
                 key={label}
@@ -100,12 +111,6 @@ export default function AppShell({
             );
           })}
         </nav>
-        <DebtNavigation
-          debts={debts}
-          selectedId={page === "Deudas" ? selectedDebtId : null}
-          collapsed={collapsed}
-          onSelect={selectDebt}
-        />
       </aside>
       <main>
         <header>

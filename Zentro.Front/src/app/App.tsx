@@ -26,22 +26,14 @@ export default function App({ initialData }: { initialData: Profile }) {
   const [debtId, setDebtId] = useState<string | null>(() =>
     new URLSearchParams(location.hash.slice(1)).get("deuda"),
   );
-  const [debtSection, setDebtSection] = useState<"payments" | "activity">(() =>
-    new URLSearchParams(location.hash.slice(1)).get("seccion") === "activity"
-      ? "activity"
-      : "payments",
-  );
-  function selectDebt(
-    id: string | null,
-    section: "payments" | "activity" = "payments",
-  ) {
+  function selectDebt(id: string | null) {
+    if (page !== "Deudas" || debtId !== id)
+      window.scrollTo({ top: 0, behavior: "instant" });
     setPage("Deudas");
     setDebtId(id);
-    setDebtSection(section);
     const params = new URLSearchParams({ pagina: "Deudas" });
     if (id) {
       params.set("deuda", id);
-      params.set("seccion", section);
     }
     history.replaceState(null, "", `#${params}`);
   }
@@ -107,7 +99,6 @@ export default function App({ initialData }: { initialData: Profile }) {
           profile={data}
           onSave={save}
           selectedId={debtId}
-          section={debtSection}
           onSelect={selectDebt}
         />
       )}

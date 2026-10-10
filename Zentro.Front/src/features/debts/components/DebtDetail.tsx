@@ -29,10 +29,12 @@ export default function DebtDetail({
   profile,
   onSave,
   debt,
+  onFullyPaid,
 }: {
   profile: Profile;
   onSave: (profile: Profile) => boolean;
   debt: ExternalDebt;
+  onFullyPaid: (debt: ExternalDebt) => void;
 }) {
   const editable = !debt.completedOn && !debt.archivedOn;
   const [editing, setEditing] = useState(false);
@@ -78,7 +80,16 @@ export default function DebtDetail({
       ),
     };
     validateProfile(next);
-    return onSave(next);
+    const saved = onSave(next);
+    if (
+      saved &&
+      modal === "installment" &&
+      debt.total > 0 &&
+      externalDebtTotals(debt).remaining > 0 &&
+      externalDebtTotals(nextDebt).remaining === 0
+    )
+      onFullyPaid(nextDebt);
+    return saved;
   }
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

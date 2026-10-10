@@ -44,16 +44,7 @@
   background: var(--soft);
   color: var(--muted);
 }
-.debt-manager-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 0 0 24px;
-}
-.debt-remove {
-  color: var(--muted);
-  margin-left: auto;
-}
+
 .debt-notes {
   max-width: 720px;
   white-space: pre-wrap;
@@ -161,22 +152,6 @@
   background: #82b39f;
   border-radius: 10px;
 }
-.debt-activity {
-  list-style: none;
-  padding: 0;
-  margin: 24px 0;
-}
-.debt-activity li {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 18px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--line);
-}
-.debt-activity time {
-  color: var(--muted);
-  font-size: 14px;
-}
 .debt-confirm-copy {
   line-height: 1.8;
 }
@@ -201,76 +176,6 @@
   border-radius: 10px;
   padding: 12px;
   resize: vertical;
-}
-.debt-sidebar-tree {
-  margin-top: 18px !important;
-  border-top: 1px solid var(--line);
-  padding-top: 16px;
-  overflow-y: auto;
-  min-height: 0;
-}
-.debt-sidebar-label {
-  font-size: 10px;
-  letter-spacing: 1px;
-  color: var(--muted);
-  padding: 0 12px;
-}
-.debt-sidebar-tree details {
-  margin-top: 8px;
-}
-.debt-sidebar-tree summary {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  cursor: pointer;
-  list-style: none;
-  padding: 12px;
-  border-radius: 10px;
-  color: var(--muted);
-  font-size: 14px;
-}
-.debt-sidebar-tree summary::-webkit-details-marker {
-  display: none;
-}
-.debt-sidebar-tree summary span {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.debt-sidebar-tree summary > svg {
-  flex-shrink: 0;
-}
-.debt-sidebar-tree details[open] summary > svg:last-child {
-  transform: rotate(180deg);
-}
-.debt-sidebar-tree details.selected summary {
-  background: var(--accent-soft);
-  color: var(--accent-text);
-}
-.debt-sidebar-tree details > div {
-  padding: 4px 0 4px 16px;
-  display: grid;
-  gap: 3px;
-}
-.debt-sidebar-tree details button {
-  background: transparent;
-  border: 0;
-  font-size: 12px;
-  justify-content: flex-start;
-  padding: 9px;
-  color: var(--muted);
-  white-space: normal;
-}
-.debt-sidebar-tree.collapsed .debt-sidebar-label,
-.debt-sidebar-tree.collapsed summary span,
-.debt-sidebar-tree.collapsed summary > svg:last-child,
-.debt-sidebar-tree.collapsed details > div {
-  display: none;
-}
-.debt-sidebar-tree.collapsed summary {
-  justify-content: center;
-  padding: 12px;
 }
 @media (max-width: 650px) {
   .debt-manager-heading {
@@ -301,19 +206,168 @@
   .debt-summary-grid {
     grid-template-columns: 1fr;
   }
-  .debt-activity li {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-  .debt-sidebar-tree {
-    display: none;
-  }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .debt-sidebar-tree summary > svg:last-child {
-    transition: transform 180ms ease;
-  }
   .debt-summary-card:hover {
     transform: translateY(-2px);
+  }
+}
+.app aside #zentro-navigation {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+.debt-navigation-group > button {
+  width: 100%;
+}
+.debt-navigation-chevron {
+  margin-left: auto;
+  transition: transform 220ms var(--motion-ease);
+}
+.debt-navigation-group > button[aria-expanded="true"] .debt-navigation-chevron {
+  transform: rotate(180deg);
+}
+.sidebar-collapsed .debt-navigation-chevron {
+  display: none;
+}
+.debt-sidebar-tree {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 240ms var(--motion-ease),
+    visibility 240ms;
+}
+.debt-sidebar-tree.is-open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+.debt-sidebar-list {
+  min-height: 0;
+  overflow: hidden;
+}
+.debt-sidebar-list > button {
+  width: calc(100% - 22px);
+  margin: 5px 0 0 22px;
+  border-radius: 10px;
+  padding: 11px 10px;
+  font-size: 15px;
+  gap: 10px;
+}
+.debt-sidebar-list > button > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.debt-sidebar-list > button.selected {
+  color: var(--accent-text);
+  background: color-mix(in srgb, var(--accent-soft) 65%, transparent);
+}
+.debt-navigation-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.debt-sidebar-empty {
+  display: block;
+  margin: 12px 0 8px 34px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.debt-manager-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 18px;
+  margin-bottom: 24px;
+}
+.debt-edit-actions,
+.debt-close-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+.debt-manager-actions button {
+  border-radius: 12px;
+}
+.debt-manager-actions .debt-complete-action {
+  background: color-mix(in srgb, #a8c2ad 24%, var(--panel));
+  border-color: color-mix(in srgb, #a8c2ad 55%, var(--line));
+}
+.debt-manager-actions .debt-remove {
+  padding: 12px;
+  margin: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.debt-completed-note,
+.debt-ready-note {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin-bottom: 24px;
+  background: color-mix(in srgb, #a8c2ad 18%, var(--panel));
+}
+.debt-completed-note svg,
+.debt-ready-note svg {
+  flex-shrink: 0;
+}
+.debt-confirm-summary {
+  border: 1px solid var(--line);
+  background: var(--soft);
+  padding: 22px;
+  border-radius: 16px;
+  line-height: 1.7;
+}
+.debt-confirm-summary > strong {
+  font-size: 22px;
+}
+.debt-confirm-summary small {
+  color: var(--muted);
+  display: block;
+}
+@media (max-width: 650px) {
+  .debt-editor-footer {
+    flex-wrap: wrap;
+  }
+  .debt-editor-footer button {
+    flex: 1 1 100%;
+  }
+  .debt-manager-actions {
+    gap: 12px;
+    padding: 12px;
+  }
+  .debt-edit-actions {
+    width: 100%;
+  }
+  .debt-close-actions {
+    width: 100%;
+  }
+  .debt-close-actions .debt-complete-action {
+    flex: 1;
+  }
+  .debt-close-actions .debt-remove {
+    flex: 0 0 auto;
+  }
+  .debt-manager-actions .debt-remove::after {
+    content: "Eliminar";
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .debt-sidebar-tree,
+  .debt-navigation-chevron {
+    transition: none;
   }
 }

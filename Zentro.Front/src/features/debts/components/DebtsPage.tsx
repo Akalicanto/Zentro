@@ -32,14 +32,12 @@ export default function DebtsPage({
   profile,
   onSave,
   selectedId,
-  section,
   onSelect,
 }: {
   profile: Profile;
   onSave: (profile: Profile) => boolean;
   selectedId: string | null;
-  section: "payments" | "activity";
-  onSelect: (id: string | null, section?: "payments" | "activity") => void;
+  onSelect: (id: string | null) => void;
 }) {
   const debts = profile.debts ?? [];
   const debt = debts.find((d) => d.id === selectedId);
@@ -54,11 +52,17 @@ export default function DebtsPage({
   const [error, setError] = useState("");
   const active = debts.filter((d) => debtStatus(d) === "active");
   const live = debts.filter((d) => !d.archivedOn);
-  const visible = debts.filter(
-    (d) =>
-      debtStatus(d) === filter &&
-      d.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
-  );
+  const visible = debts
+    .filter(
+      (d) =>
+        debtStatus(d) === filter &&
+        d.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
+    )
+    .sort((a, b) =>
+      (b.completedOn ?? b.createdOn ?? "").localeCompare(
+        a.completedOn ?? a.createdOn ?? "",
+      ),
+    );
   const outstanding = active
     .flatMap((d) => d.installments.map((r) => ({ ...r, debt: d })))
     .filter((r) => r.status !== "paid")
@@ -126,115 +130,101 @@ export default function DebtsPage({
             </>
           )}
         </div>
-        <button className="primary" onClick={() => open("create", undefined)}>
-          <Plus size={17} />
-          Añadir deuda
-        </button>
+        {!debt && (
+          <button className="primary" onClick={() => open("create", undefined)}>
+            <Plus size={17} />
+            Añadir deuda
+          </button>
+        )}
       </div>
       {debt ? (
         <>
-          <div className="debt-manager-actions">
-            {!debt.archivedOn && !debt.completedOn && (
-              <>
-                <button onClick={() => open("edit")}>
-                  <Pencil size={16} />
-                  Editar deuda
+          <section
+            className="debt-manager-actions"
+            aria-label="Gestionar deuda"
+          >
+            <div className="debt-edit-actions">
+              {!debt.archivedOn && !debt.completedOn && (
+                <>
+                  <button onClick={() => open("edit")}>
+                    <Pencil size={16} />
+                    Editar deuda
+                  </button>
+                  {debt.total > sum(debt.installments.map((r) => r.amount)) && (
+                    <button onClick={() => open("plan")}>
+                      <CalendarDays size={16} />
+                      Planificar cuotas
+                    </button>
+                  )}
+                </>
+              )}
+              {debt.completedOn && !debt.archivedOn && (
+                <button onClick={() => action(reopenDebt(debt))}>
+                  <RotateCcw size={16} />
+                  Reabrir deuda
                 </button>
+              )}
+            </div>
+            <div className="debt-close-actions">
+              {!debt.archivedOn && !debt.completedOn && (
                 <button
-                  disabled={
-                    debt.total <= sum(debt.installments.map((r) => r.amount))
-                  }
-                  onClick={() => open("plan")}
+                  className="debt-complete-action"
+                  onClick={() => open("complete")}
                 >
-                  <CalendarDays size={16} />
-                  Planificar cuotas
-                </button>
-                <button onClick={() => open("complete")}>
                   <CheckCheck size={16} />
                   Completar deuda
                 </button>
-              </>
-            )}
-            {debt.completedOn && !debt.archivedOn && (
-              <button onClick={() => action(reopenDebt(debt))}>
-                <RotateCcw size={16} />
-                Reabrir deuda
-              </button>
-            )}
-            {debt.archivedOn ? (
-              <button onClick={() => action(restoreDebt(debt))}>
-                <RotateCcw size={16} />
-                Recuperar deuda
-              </button>
-            ) : (
-              <button className="debt-remove" onClick={() => open("archive")}>
-                <Trash2 size={16} />
-                Eliminar deuda
-              </button>
-            )}
-          </div>
-          <div className="tabs" role="tablist" aria-label="Detalle de deuda">
-            <button
-              role="tab"
-              aria-selected={section === "payments"}
-              className={section === "payments" ? "active" : ""}
-              onClick={() => onSelect(debt.id, "payments")}
-            >
-              Plan de pagos
-            </button>
-            <button
-              role="tab"
-              aria-selected={section === "activity"}
-              className={section === "activity" ? "active" : ""}
-              onClick={() => onSelect(debt.id, "activity")}
-            >
-              Historial de cambios
-            </button>
-          </div>
-          {section === "payments" ? (
-            <DebtDetail
-              key={debt.id}
-              debt={debt}
-              profile={profile}
-              onSave={onSave}
-            />
-          ) : (
-            <section className="panel debt-activity-panel">
-              <h3>Historial de {debt.name}</h3>
-              {debt.completedOn && (
-                <p>
-                  Cerrada el{" "}
-                  {new Date(debt.completedOn + "T12:00:00").toLocaleDateString(
-                    "es-ES",
-                  )}
-                  .
-                </p>
               )}
-              <ol className="debt-activity">
-                {[...(debt.activity ?? [])].reverse().map((row) => (
-                  <li key={row.id}>
-                    <time dateTime={row.date}>
-                      {new Date(row.date + "T12:00:00").toLocaleDateString(
-                        "es-ES",
-                      )}
-                    </time>
-                    <span>{row.description}</span>
-                  </li>
-                ))}
-              </ol>
-              {!debt.activity?.length && (
-                <p className="empty">
-                  Los cambios que hagas desde ahora aparecerán aquí. Tus cuotas
-                  anteriores se conservan.
-                </p>
+              {debt.archivedOn ? (
+                <button onClick={() => action(restoreDebt(debt))}>
+                  <RotateCcw size={16} />
+                  Recuperar deuda
+                </button>
+              ) : (
+                <button
+                  className="debt-remove"
+                  aria-label="Eliminar deuda"
+                  title="Eliminar deuda"
+                  onClick={() => open("archive")}
+                >
+                  <Trash2 size={16} />
+                </button>
               )}
-              <PanelInfo title="Historial de deuda">
-                Este historial recoge las operaciones realizadas en Zentro desde
-                la incorporación de esta función; las cuotas importadas siguen
-                en el plan de pagos.
-              </PanelInfo>
-            </section>
+            </div>
+          </section>
+          {debt.completedOn && (
+            <div className="debt-completed-note">
+              <CheckCheck size={19} />
+              <span>
+                Completada el{" "}
+                {new Date(debt.completedOn + "T12:00:00").toLocaleDateString(
+                  "es-ES",
+                )}
+                . Esta deuda se conserva en tu historial.
+              </span>
+            </div>
           )}
+          {!debt.completedOn &&
+            !debt.archivedOn &&
+            debt.total > 0 &&
+            externalDebtTotals(debt).remaining === 0 && (
+              <div className="debt-ready-note">
+                <CheckCheck size={19} />
+                <span>
+                  Todas las cuotas están pagadas. Ya puedes completar esta
+                  deuda.
+                </span>
+              </div>
+            )}
+          <DebtDetail
+            key={debt.id}
+            debt={debt}
+            profile={profile}
+            onSave={onSave}
+            onFullyPaid={(paidDebt) =>
+              setModal({ mode: "complete", debt: paidDebt })
+            }
+          />
         </>
       ) : (
         <>
@@ -288,7 +278,13 @@ export default function DebtsPage({
           )}
           <section className="panel debts-list-panel">
             <div className="section-title">
-              <h3>Listado de deudas</h3>
+              <h3>
+                {filter === "completed"
+                  ? "Historial de deudas completadas"
+                  : filter === "archived"
+                    ? "Deudas eliminadas"
+                    : "Deudas activas"}
+              </h3>
               <label className="debt-search">
                 Buscar deuda
                 <input
@@ -351,6 +347,14 @@ export default function DebtsPage({
                     <small>
                       {euro(a.totals.paid)} de {euro(item.total)} pagados
                     </small>
+                    {item.completedOn && (
+                      <small className="debt-completed-date">
+                        Completada el{" "}
+                        {new Date(
+                          item.completedOn + "T12:00:00",
+                        ).toLocaleDateString("es-ES")}
+                      </small>
+                    )}
                     {a.next && (
                       <small>
                         Siguiente: {monthName(a.next.month)} ·{" "}

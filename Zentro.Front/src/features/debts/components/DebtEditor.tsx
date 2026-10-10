@@ -34,7 +34,7 @@ export default function DebtEditor({
     create: "Añadir deuda",
     edit: "Editar deuda",
     plan: "Planificar cuotas",
-    complete: "Completar deuda",
+    complete: "¿Completar esta deuda?",
     archive: "Eliminar deuda",
   }[mode];
   function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -179,13 +179,26 @@ export default function DebtEditor({
             </div>
           )}
           {mode === "complete" && (
-            <p className="debt-confirm-copy">
-              Vas a cerrar <strong>{debt?.name}</strong> y registrar como
-              pagados los{" "}
-              <strong>{euro(externalDebtTotals(debt!).remaining)}</strong>{" "}
-              restantes. El calendario y el historial se conservarán. El saldo
-              diario, el ahorro y la inversión no cambian.
-            </p>
+            <div className="debt-confirm-summary">
+              <strong>{debt?.name}</strong>
+              {externalDebtTotals(debt!).remaining === 0 ? (
+                <p>
+                  Has pagado todas las cuotas. ¿Quieres marcar esta deuda como
+                  completada?
+                </p>
+              ) : (
+                <p>
+                  ¿Seguro que ya has pagado todo? Al completar la deuda se
+                  marcarán como pagados los{" "}
+                  <strong>{euro(externalDebtTotals(debt!).remaining)}</strong>{" "}
+                  que aún figuran pendientes.
+                </p>
+              )}
+              <small>
+                Se guardará en el historial de deudas completadas con sus cuotas
+                y su fecha de cierre.
+              </small>
+            </div>
           )}
           {mode === "archive" && (
             <p className="debt-confirm-copy">
@@ -194,7 +207,7 @@ export default function DebtEditor({
               en «Eliminadas», desde donde podrás recuperarla.
             </p>
           )}
-          <div className="modal-footer">
+          <div className="modal-footer debt-editor-footer">
             <button type="button" onClick={onClose}>
               Cancelar
             </button>
