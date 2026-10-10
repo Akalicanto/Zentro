@@ -4,17 +4,19 @@ $zentroDesktop = [Environment]::GetFolderPath('Desktop')
 $zentroLocal = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Zentro'
 New-Item -ItemType Directory -Path $zentroLocal -Force | Out-Null
 
-# The ICO embeds the existing PNG without changing its pixels or identity.
-$zentroPng = [IO.File]::ReadAllBytes((Join-Path $zentroRoot 'Zentro.Front\public\brand\symbol-mini.png'))
-$zentroIcon = Join-Path $zentroLocal 'zentro.ico'
+# Embed the Android PNG at its actual size. A versioned path avoids Windows' old icon cache.
+$zentroPngPath = Join-Path $zentroRoot 'Zentro.Front\public\brand\icon-192.png'
+$zentroPng = [IO.File]::ReadAllBytes($zentroPngPath)
+$zentroHash = (Get-FileHash -LiteralPath $zentroPngPath -Algorithm SHA256).Hash.Substring(0, 12).ToLowerInvariant()
+$zentroIcon = Join-Path $zentroLocal ('zentro-' + $zentroHash + '.ico')
 $zentroStream = [IO.File]::Create($zentroIcon)
 $zentroWriter = [IO.BinaryWriter]::new($zentroStream)
 try {
     $zentroWriter.Write([uint16]0)
     $zentroWriter.Write([uint16]1)
     $zentroWriter.Write([uint16]1)
-    $zentroWriter.Write([byte]64)
-    $zentroWriter.Write([byte]64)
+    $zentroWriter.Write([byte]192)
+    $zentroWriter.Write([byte]192)
     $zentroWriter.Write([byte]0)
     $zentroWriter.Write([byte]0)
     $zentroWriter.Write([uint16]1)
