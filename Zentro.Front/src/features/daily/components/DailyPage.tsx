@@ -1,3 +1,4 @@
+import PageHeading from "../../../shared/components/PageHeading.tsx";
 import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
@@ -133,6 +134,12 @@ export default function DailyPage({ data, open, save }: Props) {
   }
   return (
     <>
+      <PageHeading
+        title="Día a día"
+        actions={
+          <span className="page-banner-date">{monthName(dailyMonth)}</span>
+        }
+      />
       <div className="cards daily-primary">
         <MetricCard
           label="Saldo actual · ING"
@@ -178,14 +185,7 @@ export default function DailyPage({ data, open, save }: Props) {
           tone="blue"
         />
       </div>
-      <div className="daily-current-month">
-        <span className="month-marker">{dailyMonth.slice(5)}</span>
-        <h3>
-          {monthName(dailyMonth).replace(/^./, (letter) =>
-            letter.toUpperCase(),
-          )}
-        </h3>
-      </div>
+
       <div className="cards two">
         {cashTable("expenses")}
         {cashTable("incomes")}

@@ -1,3 +1,4 @@
+import HistoryYearFilter from "./HistoryYearFilter.tsx";
 import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
@@ -20,11 +21,17 @@ type Props = {
   data: Profile;
   open: OpenProfileForm;
   controls: HistoryControls;
+  hideYearFilter?: boolean;
 };
-export default function MonthlyHistory({ kind, data, open, controls }: Props) {
+export default function MonthlyHistory({
+  kind,
+  data,
+  open,
+  controls,
+  hideYearFilter = false,
+}: Props) {
   const {
     year,
-    setYear,
     view,
     setView,
     tableOrder,
@@ -123,26 +130,9 @@ export default function MonthlyHistory({ kind, data, open, controls }: Props) {
               </Button>
             ))}
           </div>
-          <label>
-            Año del historial
-            <select
-              aria-label="Año del historial"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-            >
-              <option value="all">Todos los años</option>
-              {[
-                ...new Set([
-                  currentMonth().slice(0, 4),
-                  ...rows.map((r) => r.month.slice(0, 4)),
-                ]),
-              ]
-                .sort((a, b) => b.localeCompare(a))
-                .map((y) => (
-                  <option key={y}>{y}</option>
-                ))}
-            </select>
-          </label>
+          {!hideYearFilter && (
+            <HistoryYearFilter data={data} kind={kind} controls={controls} />
+          )}
         </div>
         <Chart profile={data} kind={kind} year={year} view={view} showGoal />
         <PanelInfo

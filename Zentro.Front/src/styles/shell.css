@@ -222,12 +222,6 @@ header {
 .dark .negative {
   color: #eda995;
 }
-.dark .savings-page-bar {
-  border-left-color: var(--accent);
-}
-.dark .savings-page-bar h1 svg {
-  color: var(--accent);
-}
 .dark .recharts-cartesian-axis-tick-value {
   fill: var(--muted);
 }

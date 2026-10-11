@@ -10,17 +10,6 @@
   max-width: 1660px;
   margin: auto;
 }
-.page-heading {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.page-heading p {
-  margin-bottom: 0;
-  font-size: 17px;
-}
 .primary {
   background: var(--accent);
   color: #fff;
@@ -300,9 +289,6 @@ td small {
   header {
     padding: 0 25px;
   }
-  .page-heading {
-    align-items: flex-start;
-  }
   .metric {
     padding: 17px;
   }
@@ -319,9 +305,6 @@ td small {
   }
   .two {
     grid-template-columns: 1fr;
-  }
-  .page-heading {
-    flex-direction: column;
   }
   .section-title {
     flex-wrap: wrap;

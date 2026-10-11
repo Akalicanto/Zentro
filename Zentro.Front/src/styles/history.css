@@ -1,23 +1,4 @@
 /* history: kept in cascade order by styles/index.css. */
-.savings-page-bar {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-left: 5px solid var(--accent);
-  border-radius: 12px;
-  padding: 20px 24px;
-  margin-bottom: 24px;
-}
-.savings-page-bar h1 {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  font-size: 30px;
-  letter-spacing: -0.6px;
-}
-.savings-page-bar h1 svg {
-  color: var(--accent);
-}
 .savings-primary .metric {
   min-width: 0;
   min-height: 210px;

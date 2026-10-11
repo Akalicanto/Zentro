@@ -1,3 +1,4 @@
+import PageHeading from "../../../shared/components/PageHeading.tsx";
 import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
@@ -7,12 +8,13 @@ import {
   savingsDistribution,
   euro,
   currentMonth,
+  today,
 } from "../../../domain/index.ts";
 import { type OpenProfileForm } from "../types.ts";
 import { type Page } from "../../../app/navigation.ts";
 import { useMemo } from "react";
 import MetricCard from "../../../shared/components/MetricCard.tsx";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Settings } from "lucide-react";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
 import Chart from "../../history/components/ContributionChart.tsx";
 import MonthlyPlanning from "../../planning/components/MonthlyPlanning.tsx";
@@ -43,6 +45,28 @@ export default function OverviewPage({
   );
   return (
     <>
+      <PageHeading
+        title="Mi espacio"
+        actions={
+          <>
+            <time className="page-banner-date" dateTime={today()}>
+              {new Date(today() + "T12:00:00").toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </time>
+            <Button
+              className="history-edit-toggle"
+              aria-label="Abrir configuración"
+              onClick={() => open({ type: "settings" })}
+            >
+              <Settings size={17} />
+              Configuración
+            </Button>
+          </>
+        }
+      />
       <div className="cards home-summary">
         <MetricCard
           label="Patrimonio neto"

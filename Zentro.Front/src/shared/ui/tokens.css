@@ -22,6 +22,12 @@
   --sidebar-tab-height: 76px;
   --chart-primary: #8060b4;
   --chart-secondary: #a198aa;
+  --page-violet: #c5b0e5;
+  --page-peach: #e4b89b;
+  --page-sage: #aacbb7;
+  --page-blue: #b6c6e8;
+  --page-rose: #dbadbd;
+  --positive: #487962;
 }
 .app.dark {
   --text: #f1edf5;
@@ -39,5 +45,6 @@
   --sidebar-tab-bg: #352b43;
   --sidebar-tab-hover: #443454;
   --chart-primary: #c2a5ee;
+  --positive: #b3d8c1;
   --chart-secondary: #a198aa;
 }

@@ -99,7 +99,11 @@ export async function verifySettings({ page, state, root, original }) {
     230,
   );
 
-  await settings().getByText("Copias de seguridad", { exact: true }).click();
+  assert.ok(
+    await settings()
+      .getByRole("heading", { name: "Copias de seguridad", exact: true })
+      .isVisible(),
+  );
   const downloading = page.waitForEvent("download");
   await settings()
     .getByRole("button", { name: "Exportar copia", exact: true })
@@ -111,12 +115,48 @@ export async function verifySettings({ page, state, root, original }) {
     JSON.parse(Buffer.concat(chunks).toString("utf8")),
     await state(),
   );
-  page.once("dialog", (dialog) => dialog.accept());
   const imported = page.waitForResponse(
     (response) =>
       new URL(response.url()).pathname === "/api/state" &&
       response.request().method() === "PUT" &&
       response.status() === 204,
+  );
+  const beforeImport = await state();
+  const backupFile = {
+    name: "copia-ficticia.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(original)),
+  };
+  await settings()
+    .getByLabel("Importar copia de seguridad")
+    .setInputFiles(backupFile);
+  await settings()
+    .getByRole("heading", { name: "Revisar copia antes de importar" })
+    .waitFor();
+  await settings()
+    .getByRole("button", { name: "Cancelar importación", exact: true })
+    .click();
+  assert.deepEqual(await state(), beforeImport);
+  assert.equal(
+    await settings()
+      .getByRole("heading", { name: "Revisar copia antes de importar" })
+      .count(),
+    0,
+  );
+  await settings()
+    .getByLabel("Importar copia de seguridad")
+    .setInputFiles({
+      name: "invalida.json",
+      mimeType: "application/json",
+      buffer: Buffer.from("{json incompleto"),
+    });
+  await settings().getByRole("alert").waitFor();
+  assert.deepEqual(await state(), beforeImport);
+  assert.equal(
+    await settings()
+      .getByRole("button", { name: "Sustituir datos con esta copia" })
+      .count(),
+    0,
   );
   await settings()
     .getByLabel("Importar copia de seguridad")
@@ -125,6 +165,17 @@ export async function verifySettings({ page, state, root, original }) {
       mimeType: "application/json",
       buffer: Buffer.from(JSON.stringify(original)),
     });
+  await settings()
+    .getByRole("heading", { name: "Revisar copia antes de importar" })
+    .waitFor();
+  // Seleccionar el archivo no sustituye los datos hasta confirmar la revisión.
+  assert.notDeepEqual(await state(), original);
+  await settings()
+    .getByRole("button", {
+      name: "Sustituir datos con esta copia",
+      exact: true,
+    })
+    .click();
   await imported;
   await page.waitForFunction(
     () => localStorage.getItem("zentro.v3.pending") === null,

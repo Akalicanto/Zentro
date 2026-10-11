@@ -12,6 +12,7 @@ export { default as Badge } from "@mui/material/Chip";
 export { default as Tooltip } from "@mui/material/Tooltip";
 export { default as Stack } from "@mui/material/Stack";
 export { default as Box } from "@mui/material/Box";
+export { default as Snackbar } from "@mui/material/Snackbar";
 export { motionSettings, statusTones } from "./theme.ts";
 
 // Mantiene la API de un botón HTML, incluidos formularios y referencias.

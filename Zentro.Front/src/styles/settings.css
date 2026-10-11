@@ -163,22 +163,12 @@
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
-.settings-backups summary {
+.settings-backups h3 {
   display: flex;
   align-items: center;
   gap: 10px;
-  cursor: pointer;
   color: var(--muted);
   font-size: 16px;
-  list-style: none;
-}
-.settings-backups summary::after {
-  content: "+";
-  margin-left: auto;
-  font-size: 22px;
-}
-.settings-backups[open] summary::after {
-  content: "−";
 }
 .settings-backups .button-row {
   margin-top: 14px;

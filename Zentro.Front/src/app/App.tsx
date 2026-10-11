@@ -15,7 +15,8 @@ import InvestmentPage from "../features/investment/components/InvestmentPage.tsx
 import DebtsPage from "../features/debts/components/DebtsPage.tsx";
 
 export default function App({ initialData }: { initialData: Profile }) {
-  const { data, error, save } = useProfileStore(initialData);
+  const { data, error, save, saved, dismissSaved } =
+    useProfileStore(initialData);
   const editor = useProfileEditor(data, save),
     controls = useHistoryView();
   const [page, setPage] = useState<Page>(() => {
@@ -48,6 +49,8 @@ export default function App({ initialData }: { initialData: Profile }) {
     <AppShell
       page={page}
       error={error}
+      saved={saved}
+      dismissSaved={dismissSaved}
       navigate={navigate}
       open={open}
       debts={data.debts ?? []}

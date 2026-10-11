@@ -15,6 +15,14 @@ Las páginas importan `Button`, `Surface`, `Badge`, `Tooltip`, `Stack` y `Box` d
 
 Las animaciones son breves y respetan `prefers-reduced-motion`. No se animan cálculos ni importes financieros. Los modales conservan el bloqueo del fondo durante su salida y los gráficos no se vuelven a dibujar al abrirlos. Las dependencias se separan en paquetes de interfaz, animación, gráficos y bibliotecas compartidas para reutilizar la caché.
 
+## Cabeceras y copias
+
+`shared/components/PageHeading.tsx` reúne las cabeceras de las cinco pantallas. Sus acentos y distribución se editan en `styles/page-heading.css`. Ahorros integra sus pestañas; Inversión reutiliza `HistoryYearFilter` en la cabecera. Los controles no se duplican en el contenido.
+
+El aviso «Cambios guardados» usa `Snackbar` y aparece únicamente después de la respuesta correcta de la API para el último cambio pendiente. Un fallo conserva el aviso de error y la copia pendiente del navegador.
+
+Configuración ofrece exportación e importación visibles. Elegir un archivo valida el perfil y muestra una revisión con sus registros; solo confirmar sustituye los datos. Cancelar, cerrar el panel o seleccionar un archivo inválido descarta la revisión sin modificar el perfil. Las copias exportadas son archivos JSON portables; la base local sigue siendo SQLite con tablas relacionales.
+
 ## Cobros de deudas
 
 En crear/editar deuda puede elegirse un día del 1 al 31. Si no existe en el mes, se utiliza su último día, incluidos años bisiestos. Los registros anteriores pueden conservar «Sin día definido» hasta configurarlos.

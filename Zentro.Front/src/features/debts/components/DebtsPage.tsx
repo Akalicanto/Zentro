@@ -1,3 +1,4 @@
+import PageHeading from "../../../shared/components/PageHeading.tsx";
 import { AnimatePresence } from "motion/react";
 import { Button, Surface } from "../../../shared/ui/index.tsx";
 import { useState } from "react";
@@ -96,14 +97,31 @@ export default function DebtsPage({
   };
   return (
     <>
+      <PageHeading
+        title="Deudas"
+        actions={
+          !debt ? (
+            <>
+              <span>
+                {active.length}{" "}
+                {active.length === 1 ? "deuda activa" : "deudas activas"}
+              </span>
+              <Button className="primary" onClick={() => open("create")}>
+                <Plus size={17} />
+                Añadir deuda
+              </Button>
+            </>
+          ) : undefined
+        }
+      />
       {error && (
         <p className="error" role="alert">
           {error}
         </p>
       )}
-      <div className="debt-manager-heading">
-        <div>
-          {debt ? (
+      {debt && (
+        <div className="debt-manager-heading">
+          <div>
             <>
               <Button className="debt-back" onClick={() => onSelect(null)}>
                 <ArrowLeft size={16} />
@@ -123,20 +141,9 @@ export default function DebtsPage({
               </h2>
               {debt.notes && <p className="debt-notes">{debt.notes}</p>}
             </>
-          ) : (
-            <>
-              <h2>Tus deudas, bajo control</h2>
-              <p>Lo pendiente hoy y lo que ya has dejado atrás.</p>
-            </>
-          )}
+          </div>
         </div>
-        {!debt && (
-          <Button className="primary" onClick={() => open("create", undefined)}>
-            <Plus size={17} />
-            Añadir deuda
-          </Button>
-        )}
-      </div>
+      )}
       {debt ? (
         <>
           <section

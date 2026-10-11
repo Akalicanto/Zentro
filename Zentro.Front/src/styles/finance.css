@@ -181,9 +181,6 @@
   .month-value-fields {
     grid-template-columns: 1fr;
   }
-  .savings-page-bar {
-    padding: 18px;
-  }
 }
 .home-summary {
   grid-template-columns: repeat(4, minmax(0, 1fr));

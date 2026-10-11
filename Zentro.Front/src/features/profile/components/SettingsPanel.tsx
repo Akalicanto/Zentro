@@ -30,6 +30,9 @@ type Props = {
   formError: string;
   exportBackup: () => void;
   importBackup: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  pendingImport: { name: string; data: Profile } | null;
+  confirmImport: () => void;
+  cancelImport: () => void;
 };
 
 const percent = (value: number) => `${(value / 100).toLocaleString("es-ES")} %`;
@@ -41,6 +44,9 @@ export default function SettingsPanel({
   formError,
   exportBackup,
   importBackup,
+  pendingImport,
+  confirmImport,
+  cancelImport,
 }: Props) {
   const importInput = useRef<HTMLInputElement>(null);
 
@@ -216,11 +222,14 @@ export default function SettingsPanel({
             )}
           </div>
         </section>
-        <details className="settings-backups">
-          <summary>
+        <section
+          className="settings-section settings-backups"
+          aria-labelledby="settings-backups-title"
+        >
+          <h3 id="settings-backups-title">
             <ShieldCheck size={20} />
             <span>Copias de seguridad</span>
-          </summary>
+          </h3>
           <p>Exporta tus datos o recupera una copia anterior.</p>
           <div className="button-row">
             <Button onClick={exportBackup}>
@@ -240,7 +249,41 @@ export default function SettingsPanel({
               onChange={importBackup}
             />
           </div>
-        </details>
+          {pendingImport && (
+            <div
+              className="backup-review"
+              role="region"
+              aria-labelledby="backup-review-title"
+            >
+              <h4 id="backup-review-title">Revisar copia antes de importar</h4>
+              <p>{pendingImport.name}</p>
+              <dl>
+                <div>
+                  <dt>Meses de ahorro</dt>
+                  <dd>{pendingImport.data.savings.length}</dd>
+                </div>
+                <div>
+                  <dt>Meses de inversión</dt>
+                  <dd>{pendingImport.data.investment.length}</dd>
+                </div>
+                <div>
+                  <dt>Deudas</dt>
+                  <dd>{pendingImport.data.debts?.length ?? 0}</dd>
+                </div>
+              </dl>
+              <p>
+                Esta copia sustituirá tus datos actuales. Puedes exportarlos
+                antes de continuar.
+              </p>
+              <div className="button-row">
+                <Button onClick={cancelImport}>Cancelar importación</Button>
+                <Button className="primary" onClick={confirmImport}>
+                  Sustituir datos con esta copia
+                </Button>
+              </div>
+            </div>
+          )}
+        </section>
       </section>
     </ModalFrame>
   );

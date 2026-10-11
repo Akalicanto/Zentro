@@ -1,19 +1,26 @@
 import { type Profile, today, validateProfile } from "../../../domain/index.ts";
 import { type SaveProfile, type Modal } from "../types.ts";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { applyProfileForm } from "../forms/applyProfileForm.ts";
 
 export function useProfileEditor(data: Profile, save: SaveProfile) {
   const [modal, setModal] = useState<Modal>(null),
     [formError, setFormError] = useState(""),
     [returnToSettings, setReturnToSettings] = useState(false);
+  const [pendingImport, setPendingImport] = useState<{
+    name: string;
+    data: Profile;
+  } | null>(null);
+  const importSequence = useRef(0);
   function open(next: NonNullable<Modal>) {
     setFormError("");
     setReturnToSettings(modal?.type === "settings");
     setModal(next);
   }
   const close = () => {
+    importSequence.current++;
     setFormError("");
+    setPendingImport(null);
     setModal(returnToSettings ? { type: "settings" } : null);
     setReturnToSettings(false);
   };
@@ -55,13 +62,42 @@ export function useProfileEditor(data: Profile, save: SaveProfile) {
     const file = event.target.files?.[0];
     if (!file) return;
     setFormError("");
+    setPendingImport(null);
+    const sequence = ++importSequence.current;
     try {
-      const next = validateProfile(JSON.parse(await file.text()));
-      if (confirm("¿Sustituir tus datos por esta copia?")) save(next);
+      const contents = await file.text();
+      if (sequence !== importSequence.current) return;
+      const next = validateProfile(JSON.parse(contents));
+      setPendingImport({ name: file.name, data: next });
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Copia no válida.");
+      if (sequence === importSequence.current)
+        setFormError(err instanceof Error ? err.message : "Copia no válida.");
+    } finally {
+      event.target.value = "";
     }
-    event.target.value = "";
   }
-  return { modal, formError, open, close, submit, exportBackup, importBackup };
+  function confirmImport() {
+    if (!pendingImport) return;
+    try {
+      if (save(pendingImport.data)) setPendingImport(null);
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo importar la copia.",
+      );
+    }
+  }
+  return {
+    modal,
+    formError,
+    open,
+    close,
+    submit,
+    exportBackup,
+    importBackup,
+    pendingImport,
+    confirmImport,
+    cancelImport: () => setPendingImport(null),
+  };
 }

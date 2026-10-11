@@ -1,3 +1,4 @@
+import PageHeading from "../../../shared/components/PageHeading.tsx";
 import { Button } from "../../../shared/ui/index.tsx";
 import { type Profile, wealthTotals } from "../../../domain/index.ts";
 import { type OpenProfileForm, type SaveProfile } from "../../profile/types.ts";
@@ -26,6 +27,30 @@ export default function SavingsPage({
   const wealth = wealthTotals(data);
   return (
     <>
+      <PageHeading
+        title="Ahorros"
+        tabs={
+          <div
+            className="account-detail-tabs"
+            role="tablist"
+            aria-label="Apartados de ahorro"
+          >
+            {["Historial", "Distribución de ahorros", "Deuda interna"].map(
+              (label) => (
+                <Button
+                  role="tab"
+                  aria-selected={savingsTab === label}
+                  className={savingsTab === label ? "active" : ""}
+                  key={label}
+                  onClick={() => setSavingsTab(label)}
+                >
+                  {label}
+                </Button>
+              ),
+            )}
+          </div>
+        }
+      />
       <div className="cards three savings-primary">
         <MetricCard
           label="Ahorro por trabajo"
@@ -52,25 +77,6 @@ export default function SavingsPage({
 
           tone="lilac"
         />
-      </div>
-      <div
-        className="account-detail-tabs"
-        role="tablist"
-        aria-label="Apartados de ahorro"
-      >
-        {["Historial", "Distribución de ahorros", "Deuda interna"].map(
-          (label) => (
-            <Button
-              role="tab"
-              aria-selected={savingsTab === label}
-              className={savingsTab === label ? "active" : ""}
-              key={label}
-              onClick={() => setSavingsTab(label)}
-            >
-              {label}
-            </Button>
-          ),
-        )}
       </div>
       <div className="savings-tab-content" key={savingsTab}>
         {savingsTab === "Historial" && (

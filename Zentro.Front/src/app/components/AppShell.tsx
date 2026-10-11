@@ -1,4 +1,4 @@
-import { Button } from "../../shared/ui/index.tsx";
+import { Button, Snackbar, Surface } from "../../shared/ui/index.tsx";
 import { type Page, pages } from "../navigation.ts";
 import { type OpenProfileForm } from "../../features/profile/types.ts";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import {
   Sun,
   Moon,
   Settings,
+  CheckCheck,
 } from "lucide-react";
 
 import type { ReactNode } from "react";
@@ -23,6 +24,8 @@ import { motionSettings, Tooltip } from "../../shared/ui/index.tsx";
 type Props = {
   page: Page;
   error: string;
+  saved: boolean;
+  dismissSaved: () => void;
   navigate: (page: Page) => void;
   open: OpenProfileForm;
   children: ReactNode;
@@ -34,6 +37,8 @@ type Props = {
 export default function AppShell({
   page,
   error,
+  saved,
+  dismissSaved,
   navigate: onNavigate,
   open,
   children,
@@ -153,26 +158,6 @@ export default function AppShell({
           animate={{ opacity: 1, y: 0 }}
           transition={motionSettings.page}
         >
-          <div className="page-heading savings-page-bar">
-            <div>
-              <h1>
-                {page === "Mi espacio" && (
-                  <LayoutDashboard size={27} aria-hidden="true" />
-                )}
-                {page === "Ahorros" && <Sprout size={27} aria-hidden="true" />}
-                {page === "Día a día" && (
-                  <Wallet size={27} aria-hidden="true" />
-                )}
-                {page === "Inversión" && (
-                  <TrendingUp size={27} aria-hidden="true" />
-                )}
-                {page === "Deudas" && (
-                  <CreditCard size={27} aria-hidden="true" />
-                )}
-                {page}
-              </h1>
-            </div>
-          </div>
           {error && (
             <p className="error" role="alert">
               {error}
@@ -204,6 +189,19 @@ export default function AppShell({
         })}
       </nav>
       <AnimatePresence>{overlay}</AnimatePresence>
+      <Snackbar
+        open={saved}
+        autoHideDuration={3000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        onClose={(_, reason) => {
+          if (reason !== "clickaway") dismissSaved();
+        }}
+      >
+        <Surface className="save-notice" role="status" aria-live="polite">
+          <CheckCheck size={20} aria-hidden="true" />
+          Cambios guardados
+        </Surface>
+      </Snackbar>
     </div>
   );
 }
