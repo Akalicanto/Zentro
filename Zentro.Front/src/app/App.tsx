@@ -15,7 +15,7 @@ import InvestmentPage from "../features/investment/components/InvestmentPage.tsx
 import DebtsPage from "../features/debts/components/DebtsPage.tsx";
 
 export default function App({ initialData }: { initialData: Profile }) {
-  const { data, error, save, saved, dismissSaved } =
+  const { data, error, save, saved, dismissSaved, resetProfile } =
     useProfileStore(initialData);
   const editor = useProfileEditor(data, save),
     controls = useHistoryView();
@@ -59,7 +59,11 @@ export default function App({ initialData }: { initialData: Profile }) {
       overlay={
         editor.modal ? (
           editor.modal.type === "settings" ? (
-            <SettingsPanel data={data} {...editor} />
+            <SettingsPanel
+              data={data}
+              {...editor}
+              resetProfile={resetProfile}
+            />
           ) : editor.modal.type === "placement" ? (
             <PlacementForm
               profile={data}

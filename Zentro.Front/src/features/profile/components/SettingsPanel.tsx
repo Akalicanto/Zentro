@@ -1,6 +1,7 @@
 import { Button } from "../../../shared/ui/index.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import ResetProfileDialog from "./ResetProfileDialog.tsx";
 import {
   X,
   Wallet,
@@ -13,6 +14,7 @@ import {
   Download,
   Upload,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import {
   cashTotals,
@@ -33,6 +35,7 @@ type Props = {
   pendingImport: { name: string; data: Profile } | null;
   confirmImport: () => void;
   cancelImport: () => void;
+  resetProfile: () => Promise<void>;
 };
 
 const percent = (value: number) => `${(value / 100).toLocaleString("es-ES")} %`;
@@ -47,8 +50,19 @@ export default function SettingsPanel({
   pendingImport,
   confirmImport,
   cancelImport,
+  resetProfile,
 }: Props) {
   const importInput = useRef<HTMLInputElement>(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  if (resetOpen)
+    return (
+      <ResetProfileDialog
+        onCancel={() => setResetOpen(false)}
+        onComplete={close}
+        resetProfile={resetProfile}
+        exportBackup={exportBackup}
+      />
+    );
 
   const balances = [
     {
@@ -283,6 +297,26 @@ export default function SettingsPanel({
               </div>
             </div>
           )}
+        </section>
+        <section
+          className="settings-section settings-danger"
+          aria-labelledby="settings-danger-title"
+        >
+          <h3 id="settings-danger-title">Empezar de nuevo</h3>
+          <p>
+            Vacía todos tus datos financieros y vuelve a configurar Zentro desde
+            cero.
+          </p>
+          <Button
+            className="danger-action"
+            onClick={() => {
+              cancelImport();
+              setResetOpen(true);
+            }}
+          >
+            <Trash2 size={17} />
+            Borrar todos los datos
+          </Button>
         </section>
       </section>
     </ModalFrame>

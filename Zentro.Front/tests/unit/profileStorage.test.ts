@@ -1,3 +1,4 @@
+import type { Profile } from "../../src/domain/types.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createProfileStorage } from "../../src/features/profile/services/profileStorage.ts";
@@ -108,4 +109,70 @@ test("Si el navegador no conserva el cambio, no se anuncia un guardado ni se env
     /almacenamiento/,
   );
   assert.equal(requests, 0);
+});
+
+test("Borrar espera las escrituras anteriores y bloquea cambios que podrían reponer los datos", async () => {
+  const storage = memoryStorage();
+  let release!: () => void;
+  const bodies: Profile[] = [];
+  const client = createProfileStorage(storage, async (_method, body) => {
+    bodies.push(JSON.parse(body!));
+    if (bodies.length === 1)
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+    return new Response(null, { status: 204 });
+  });
+  const saving = client.saveData(testProfile(), () => {});
+  await Promise.resolve();
+  const resetting = client.resetData();
+  assert.throws(
+    () => client.saveData(testProfile(), () => {}),
+    /termine el borrado/,
+  );
+  await assert.rejects(client.resetData(), /en curso/);
+  assert.equal(bodies.length, 1);
+  release();
+  await saving;
+  const empty = await resetting;
+  assert.equal(bodies.length, 2);
+  assert.deepEqual(bodies[1], empty);
+  assert.equal(empty.cash, 0);
+  assert.deepEqual(empty.debts, []);
+  assert.deepEqual(empty.savings, []);
+  assert.deepEqual(empty.investment, []);
+  assert.equal(storage.getItem(pendingKey), null);
+});
+
+test("Un borrado fallido conserva los cambios anteriores y nunca guarda un borrado para reintentarlo al arrancar", async () => {
+  const storage = memoryStorage();
+  const previous = JSON.stringify(testProfile());
+  storage.setItem(pendingKey, previous);
+  let fail = true;
+  const client = createProfileStorage(storage, async () => {
+    if (fail) throw Error("Sin conexión");
+    return new Response(null, { status: 204 });
+  });
+  await assert.rejects(client.resetData(), /Sin conexión/);
+  assert.equal(storage.getItem(pendingKey), previous);
+  fail = false;
+  await client.saveData({ ...testProfile(), cash: 200 }, () => {});
+  assert.equal(storage.getItem(pendingKey), null);
+});
+
+test("Si no se puede limpiar la copia pendiente del navegador, no se envía el borrado a la API", async () => {
+  const storage = memoryStorage();
+  const previous = JSON.stringify(testProfile());
+  storage.setItem(pendingKey, previous);
+  storage.removeItem = () => {
+    throw Error("Almacenamiento bloqueado");
+  };
+  let calls = 0;
+  const client = createProfileStorage(storage, async () => {
+    calls++;
+    return new Response();
+  });
+  await assert.rejects(client.resetData(), /bloqueado/);
+  assert.equal(calls, 0);
+  assert.equal(storage.getItem(pendingKey), previous);
 });

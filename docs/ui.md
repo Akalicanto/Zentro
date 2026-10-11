@@ -23,6 +23,12 @@ El aviso «Cambios guardados» usa `Snackbar` y aparece únicamente después de 
 
 Configuración ofrece exportación e importación visibles. Elegir un archivo valida el perfil y muestra una revisión con sus registros; solo confirmar sustituye los datos. Cancelar, cerrar el panel o seleccionar un archivo inválido descarta la revisión sin modificar el perfil. Las copias exportadas son archivos JSON portables; la base local sigue siendo SQLite con tablas relacionales.
 
+## Borrado de datos
+
+Configuración → Empezar de nuevo abre `ResetProfileDialog`: exige escribir exactamente «BORRAR TODO» y marcar la aceptación. El foco inicial está en cancelar y se puede exportar una copia antes. Cerrar o cancelar descarta la confirmación. Durante el envío no se permiten cierres ni envíos duplicados.
+
+`profileStorage.resetData` espera las escrituras pendientes, bloquea nuevas escrituras y utiliza la sustitución transaccional del perfil para guardar un perfil vacío. La interfaz cambia solo tras la respuesta correcta de la API. Un borrado fallido no se conserva como operación pendiente para ejecutarlo al arrancar. El tema y los archivos de copia de seguridad se conservan.
+
 ## Cobros de deudas
 
 En crear/editar deuda puede elegirse un día del 1 al 31. Si no existe en el mes, se utiliza su último día, incluidos años bisiestos. Los registros anteriores pueden conservar «Sin día definido» hasta configurarlos.

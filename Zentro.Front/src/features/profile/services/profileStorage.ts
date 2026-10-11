@@ -13,6 +13,7 @@ export function createProfileStorage(
   request = requestProfile,
 ) {
   let queue: Promise<void> = Promise.resolve();
+  let resetting = false;
   async function loadData(): Promise<Profile> {
     const pending = storage.getItem(PENDING);
     if (pending) {
@@ -26,6 +27,7 @@ export function createProfileStorage(
       : validateProfile(await response.json());
   }
   function saveData(data: Profile, onError: (message: string) => void) {
+    if (resetting) throw Error("Espera a que termine el borrado de datos.");
     const snapshot = JSON.stringify(validateProfile(data));
     try {
       storage.setItem(PENDING, snapshot);
@@ -52,7 +54,34 @@ export function createProfileStorage(
     });
     return queue;
   }
-  return { loadData, saveData };
+  async function resetData(): Promise<Profile> {
+    if (resetting) throw Error("Ya hay un borrado en curso.");
+    resetting = true;
+    const empty = validateProfile(blankProfile());
+    // Espera las escrituras anteriores. No conserva un borrado fallido para
+    // ejecutarlo silenciosamente al volver a abrir la aplicación.
+    const reset = queue.then(async () => {
+      const pending = storage.getItem(PENDING);
+      storage.removeItem(PENDING);
+      try {
+        await request("PUT", JSON.stringify(empty));
+      } catch (error) {
+        if (pending) storage.setItem(PENDING, pending);
+        throw error;
+      }
+      return empty;
+    });
+    queue = reset.then(
+      () => {},
+      () => {},
+    );
+    try {
+      return await reset;
+    } finally {
+      resetting = false;
+    }
+  }
+  return { loadData, saveData, resetData };
 }
 
 // localStorage se obtiene al llamar, no al importar el módulo.
@@ -61,4 +90,4 @@ const storage = createProfileStorage({
   setItem: (key, value) => localStorage.setItem(key, value),
   removeItem: (key) => localStorage.removeItem(key),
 });
-export const { loadData, saveData } = storage;
+export const { loadData, saveData, resetData } = storage;

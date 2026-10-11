@@ -98,6 +98,9 @@ export function useProfileEditor(data: Profile, save: SaveProfile) {
     importBackup,
     pendingImport,
     confirmImport,
-    cancelImport: () => setPendingImport(null),
+    cancelImport: () => {
+      importSequence.current++;
+      setPendingImport(null);
+    },
   };
 }

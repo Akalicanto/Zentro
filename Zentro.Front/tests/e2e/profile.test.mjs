@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { testProfile } from "../fixtures/profile.ts";
 import { verifySettings } from "./settingsChecks.mjs";
 import { verifyDebtManagement } from "./debtManagementChecks.mjs";
+import { verifyResetProfile } from "./resetProfileChecks.mjs";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const folder = fs.mkdtempSync(
   path.join(os.tmpdir(), "zentro-profile-browser-"),
@@ -696,6 +697,7 @@ try {
   assert.deepEqual(await state(), saved);
   assert.deepEqual(errors, []);
   await verifyDebtManagement({ page, state, root });
+  await verifyResetProfile({ page, state, root });
   assert.deepEqual(errors, []);
   console.log(
     "OK: cinco páginas, calendario, saldo/previsión, gastos/ingresos, retirada/reposición, intereses, inversión, distribución editable sin redibujar gráficos al abrir modal, cuotas del dentista, SQLite, recarga y móvil. Base del usuario intacta.",
