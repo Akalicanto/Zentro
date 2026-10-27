@@ -337,7 +337,7 @@ try {
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
   sql = new DatabaseSync(path.join(folder, "test.db"));
-  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 6);
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 7);
   assert.equal(
     sql
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -412,7 +412,7 @@ try {
   assert.throws(
     () =>
       sql.exec(
-        "INSERT INTO cuotas_deudas VALUES(1,0,'inexistente','2029-01',100,'pendiente')",
+        "INSERT INTO cuotas_deudas(perfil_id,orden,deuda_id,mes,importe_centimos,estado) VALUES(1,0,'inexistente','2029-01',100,'pendiente')",
       ),
     /FOREIGN KEY/,
   );
@@ -508,6 +508,73 @@ try {
     invalid.debts.at(-1).advances = [row];
     assert.equal((await put(invalid)).status, 400);
     assert.deepEqual(await (await fetch(base + "/api/state")).json(), advanced);
+  }
+  const partial = structuredClone(advanced);
+  partial.debts.push({
+    id: "partial",
+    name: "Cuota parcial",
+    total: 10540,
+    installments: [
+      {
+        month: "2027-01",
+        amount: 10540,
+        status: "reserved",
+        paidAmount: 0,
+        reservedAmount: 9000,
+      },
+    ],
+  });
+  assert.equal((await put(partial)).status, 204);
+  await stop();
+  await start();
+  assert.deepEqual(await (await fetch(base + "/api/state")).json(), partial);
+  const partialDb = new DatabaseSync(path.join(folder, "test.db"), {
+    readOnly: true,
+  });
+  assert.deepEqual(
+    {
+      ...partialDb
+        .prepare(
+          "SELECT importe_centimos,pagado_centimos,apartado_centimos FROM cuotas_deudas WHERE deuda_id='partial'",
+        )
+        .get(),
+    },
+    { importe_centimos: 10540, pagado_centimos: 0, apartado_centimos: 9000 },
+  );
+  const view = partialDb
+    .prepare("SELECT * FROM vista_deudas WHERE id='partial'")
+    .get();
+  assert.equal(view.apartado_euros, 90);
+  assert.equal(view.pagado_euros, 0);
+  assert.equal(view.restante_euros, 105.4);
+  partialDb.close();
+  const constraints = new DatabaseSync(path.join(folder, "test.db"));
+  assert.throws(
+    () =>
+      constraints.exec(
+        "UPDATE cuotas_deudas SET pagado_centimos=2000 WHERE deuda_id='partial'",
+      ),
+    /CHECK/,
+  );
+  assert.throws(
+    () =>
+      constraints.exec(
+        "UPDATE cuotas_deudas SET apartado_centimos=-1 WHERE deuda_id='partial'",
+      ),
+    /CHECK/,
+  );
+  constraints.close();
+  for (const bad of [
+    { paidAmount: -1 },
+    { paidAmount: 2000, reservedAmount: 9000 },
+    { reservedAmount: 10541 },
+    { paidAmount: 0.5 },
+    { status: "paid" },
+  ]) {
+    const invalid = structuredClone(partial);
+    Object.assign(invalid.debts.at(-1).installments[0], bad);
+    assert.equal((await put(invalid)).status, 400);
+    assert.deepEqual(await (await fetch(base + "/api/state")).json(), partial);
   }
   assert.equal((await put(interestWithdrawal)).status, 204);
   await stop();

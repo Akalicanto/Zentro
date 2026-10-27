@@ -1,3 +1,4 @@
+import { setCell } from "./inlineEditHelpers.mjs";
 import { chromium, expect } from "@playwright/test";
 import { currentMonth } from "../../src/domain/index.ts";
 import assert from "node:assert/strict";
@@ -84,34 +85,34 @@ try {
     0,
   );
   const debtRow = page.locator(".debt-table-panel tbody tr").first();
-  await page.getByRole("button", { name: "Editar deuda", exact: true }).click();
-  await debtRow.getByRole("button", { name: /^Editar/ }).click();
-  let dialog = page.getByRole("dialog");
-  await dialog.locator('[name="concept"]').fill("Viaje editado");
-  await dialog.locator('[name="amount"]').fill("10");
-  await dialog.getByRole("button", { name: "Guardar", exact: true }).click();
-  await dialog.getByRole("alert").waitFor();
-  await dialog.locator('[name="amount"]').fill("100");
-  await dialog.getByRole("button", { name: "Guardar", exact: true }).click();
+  await setCell(
+    page,
+    "Concepto deuda interna " + state.internalDebt.items[0].concept,
+    "Viaje editado",
+  );
   await page
-    .getByRole("button", { name: "Editar Viaje editado", exact: true })
+    .getByRole("button", { name: "Retirado Viaje editado", exact: true })
+    .click();
+  await page.getByLabel("Retirado Viaje editado", { exact: true }).fill("10");
+  await page
+    .getByLabel("Retirado Viaje editado", { exact: true })
+    .press("Enter");
+  await page.getByRole("alert").waitFor();
+  await page.getByLabel("Retirado Viaje editado", { exact: true }).fill("100");
+  await page
+    .getByLabel("Retirado Viaje editado", { exact: true })
+    .press("Enter");
+  await page
+    .getByRole("button", { name: "Retirado Viaje editado", exact: true })
     .waitFor();
   assert.ok((await debtRow.innerText()).includes("80,00"));
   const firstMonth = page.locator(".distribution-panel tbody tr").first();
-  await page
-    .getByRole("button", { name: "Editar distribución", exact: true })
-    .click();
-  await firstMonth.getByRole("button").click();
-  dialog = page.getByRole("dialog");
-  await dialog.locator('[name="amount"]').fill("0");
-  await dialog.getByRole("button", { name: "Guardar", exact: true }).click();
+  const scheduleLabel = await firstMonth
+    .locator(".inline-edit-value")
+    .getAttribute("aria-label");
+  await setCell(page, scheduleLabel, "0");
   assert.ok((await firstMonth.innerText()).includes("0,00"));
-  await firstMonth.getByRole("button").click();
-  await page.getByRole("dialog").locator('[name="amount"]').fill("25");
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Guardar", exact: true })
-    .click();
+  await setCell(page, scheduleLabel, "25");
   assert.ok((await firstMonth.innerText()).includes("25,00"));
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({

@@ -1,3 +1,4 @@
+import { installmentAmounts } from "./installments.ts";
 import type { Profile } from "./types.ts";
 import {
   cashTotals,
@@ -142,7 +143,17 @@ export function validateProfile(raw: unknown): Profile {
             !month(r.month) ||
             !nonnegative(r.amount) ||
             r.amount === 0 ||
-            !["paid", "reserved", "pending"].includes(r.status),
+            !["paid", "reserved", "pending"].includes(r.status) ||
+            (r.paidAmount !== undefined && !nonnegative(r.paidAmount)) ||
+            (r.reservedAmount !== undefined &&
+              !nonnegative(r.reservedAmount)) ||
+            installmentAmounts(r).pending < 0 ||
+            r.status !==
+              (installmentAmounts(r).paid === r.amount
+                ? "paid"
+                : installmentAmounts(r).reserved > 0
+                  ? "reserved"
+                  : "pending"),
         ) ||
         sum([
           ...debt.installments.map((r) => r.amount),
@@ -159,9 +170,10 @@ export function validateProfile(raw: unknown): Profile {
         (debt.notes !== undefined &&
           (typeof debt.notes !== "string" || debt.notes.length > 2000)) ||
         (debt.completedOn !== undefined &&
-          debt.installments
-            .filter((r) => r.status === "paid")
-            .reduce((n, r) => n + r.amount, 0) +
+          debt.installments.reduce(
+            (n, r) => n + installmentAmounts(r).paid,
+            0,
+          ) +
             sum((debt.advances ?? []).map((row) => row.amount)) !==
             debt.total) ||
         (debt.activity !== undefined &&

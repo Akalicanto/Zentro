@@ -1,3 +1,4 @@
+import InlineEdit from "../../../shared/components/InlineEdit.tsx";
 import HistoryYearFilter from "./HistoryYearFilter.tsx";
 import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
@@ -5,6 +6,7 @@ import {
   currentMonth,
   wealthTotals,
   monthSeries,
+  setMonthlyActual,
   monthName,
   euro,
 } from "../../../domain/index.ts";
@@ -14,13 +16,13 @@ import { useMemo, Fragment } from "react";
 import MetricCard from "../../../shared/components/MetricCard.tsx";
 import Chart from "./ContributionChart.tsx";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
-import { ArrowUpDown, Check, Pencil, Plus } from "lucide-react";
-
+import { ArrowUpDown, Plus } from "lucide-react";
 type Props = {
   kind: "savings" | "investment";
   data: Profile;
   open: OpenProfileForm;
   controls: HistoryControls;
+  save: (profile: Profile) => boolean;
   hideYearFilter?: boolean;
 };
 export default function MonthlyHistory({
@@ -28,17 +30,10 @@ export default function MonthlyHistory({
   data,
   open,
   controls,
+  save,
   hideYearFilter = false,
 }: Props) {
-  const {
-    year,
-    view,
-    setView,
-    tableOrder,
-    setTableOrder,
-    editingHistory,
-    setEditingHistory,
-  } = controls;
+  const { year, view, setView, tableOrder, setTableOrder } = controls;
   const dailyMonth = currentMonth();
   const { wealth, savingsSeries, investmentSeries } = useMemo(
     () => ({
@@ -79,7 +74,6 @@ export default function MonthlyHistory({
             label="Capital aportado"
             amount={wealth.invested}
             note="Historial registrado, sin previsiones"
-
             tone="lilac"
           />
         )}
@@ -87,7 +81,6 @@ export default function MonthlyHistory({
           label="Aportación mensual"
           amount={saving ? data.plan.saving : data.plan.investment}
           note="Aportación base del plan"
-
           tone="peach"
         />
         <MetricCard
@@ -98,7 +91,6 @@ export default function MonthlyHistory({
               ? `Hasta ${monthName(closingMonth.month)}`
               : "Sin importes registrados en este período"
           }
-
           tone="blue"
         />
       </div>
@@ -143,9 +135,7 @@ export default function MonthlyHistory({
             : "El objetivo ideal sigue los objetivos mensuales de inversión. Registrado refleja las aportaciones reales, sin rentabilidad de los fondos. Previsto aplica el plan a los meses pendientes. Los acumulados conservan las aportaciones de los años anteriores."}
         </PanelInfo>
       </Surface>
-      <section
-        className={`panel history-panel${editingHistory ? " is-editing" : ""}`}
-      >
+      <section className={`panel history-panel`}>
         <div className="section-title">
           <div>
             <h3>Historial mensual</h3>
@@ -166,14 +156,7 @@ export default function MonthlyHistory({
               <ArrowUpDown size={16} />
               {tableOrder === "desc" ? "Recientes primero" : "Antiguos primero"}
             </Button>
-            <Button
-              className={`history-edit-toggle${editingHistory ? " active" : ""}`}
-              aria-pressed={editingHistory}
-              onClick={() => setEditingHistory(!editingHistory)}
-            >
-              {editingHistory ? <Check size={16} /> : <Pencil size={16} />}
-              {editingHistory ? "Terminar edición" : "Editar historial"}
-            </Button>
+
             <Button
               className="history-edit-toggle history-add"
               title="Registrar una aportación en un mes"
@@ -184,11 +167,7 @@ export default function MonthlyHistory({
             </Button>
           </div>
         </div>
-        {editingHistory && (
-          <p className="history-edit-note">
-            Selecciona un mes para editar sus datos.
-          </p>
-        )}
+
         <div className="table-wrap">
           <table className="monthly-history">
             <thead>
@@ -238,26 +217,61 @@ export default function MonthlyHistory({
                           className={`history-status-dot${row.real === null ? " forecast" : ""}`}
                           title={row.real === null ? "Previsión" : "Registrado"}
                         />
-                        {editingHistory ? (
-                          <Button
-                            className="history-month-edit"
-                            aria-label={`Editar ${row.month}`}
-                            onClick={() =>
-                              open({ type: "month", kind, item: row })
-                            }
-                          >
-                            {monthName(row.month).replace(/ de \d{4}$/, "")}
-                          </Button>
-                        ) : (
-                          monthName(row.month).replace(/ de \d{4}$/, "")
-                        )}
+                        <Button
+                          className="history-month-edit"
+                          aria-label={`Editar ${row.month}`}
+                          onClick={() =>
+                            open({ type: "month", kind, item: row })
+                          }
+                        >
+                          {monthName(row.month).replace(/ de \d{4}$/, "")}
+                        </Button>
                       </span>
                     </td>
-                    <td>{row.goal === null ? "—" : euro(row.goal)}</td>
+                    <td>
+                      <InlineEdit
+                        label={"Objetivo " + row.month}
+                        value={row.goal}
+                        nullable
+                        onSave={(value) =>
+                          save(
+                            setMonthlyActual(
+                              data,
+                              kind,
+                              row.month,
+                              row.actual,
+                              value as number | null,
+                            ),
+                          )
+                        }
+                      />
+                    </td>
                     <td
                       className={`history-actual${row.real !== null && row.real < 0 ? " negative" : ""}`}
                     >
-                      {row.real === null ? "—" : euro(row.real)}
+                      <InlineEdit
+                        label={
+                          (saving ? "Ahorrado neto " : "Invertido ") + row.month
+                        }
+                        value={row.real}
+                        nullable
+                        onSave={(value) =>
+                          save(
+                            setMonthlyActual(
+                              data,
+                              kind,
+                              row.month,
+                              value === null
+                                ? null
+                                : Number(value) -
+                                    (saving
+                                      ? row.repayment - row.withdrawal
+                                      : 0),
+                              row.goal,
+                            ),
+                          )
+                        }
+                      />
                     </td>
                     <td className="history-forecast-value">
                       {row.planned === null ? "—" : euro(row.planned)}

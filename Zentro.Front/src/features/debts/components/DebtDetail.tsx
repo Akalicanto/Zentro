@@ -1,3 +1,4 @@
+import InlineEdit from "../../../shared/components/InlineEdit.tsx";
 import { AnimatePresence } from "motion/react";
 import DebtPaymentWatch from "./DebtPaymentWatch.tsx";
 import MetricCard from "../../../shared/components/MetricCard.tsx";
@@ -5,13 +6,16 @@ import { Button, Surface } from "../../../shared/ui/index.tsx";
 import MonthSelector from "../../../shared/components/MonthSelector.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { Fragment, useState } from "react";
-import { ArrowUpDown, Check, Pencil, Plus, X } from "lucide-react";
+import { ArrowUpDown, Plus, X } from "lucide-react";
 import {
   addMonth,
   cents,
   currentMonth,
   euro,
   externalDebtTotals,
+  installmentAmounts,
+  withInstallmentAmounts,
+  editInstallmentAmount,
   monthName,
   sum,
   validateProfile,
@@ -22,12 +26,6 @@ import {
 } from "../../../domain/index.ts";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
 import DebtAnalytics from "./DebtAnalytics.tsx";
-
-const statuses = [
-  { value: "paid", label: "Pagado" },
-  { value: "reserved", label: "Apartado" },
-  { value: "pending", label: "Pendiente" },
-] as const;
 
 export default function DebtDetail({
   profile,
@@ -41,7 +39,6 @@ export default function DebtDetail({
   onFullyPaid: (debt: ExternalDebt) => void;
 }) {
   const editable = !debt.completedOn && !debt.archivedOn;
-  const [editing, setEditing] = useState(false);
   const [descending, setDescending] = useState(false);
   const [modal, setModal] = useState<"total" | "installment" | null>(null);
   const [selected, setSelected] = useState<DebtInstallment>();
@@ -90,7 +87,6 @@ export default function DebtDetail({
     const saved = onSave(next);
     if (
       saved &&
-      modal === "installment" &&
       debt.total > 0 &&
       externalDebtTotals(debt).remaining > 0 &&
       externalDebtTotals(nextDebt).remaining === 0
@@ -110,11 +106,12 @@ export default function DebtDetail({
           throw Error("Este mes ya tiene una cuota. Edítala desde la tabla.");
         next.installments = [
           ...next.installments.filter((r) => r.month !== selected?.month),
-          {
-            month,
+          withInstallmentAmounts(
+            { month, amount, status: "pending" },
             amount,
-            status: form.get("status") as DebtInstallment["status"],
-          },
+            cents(String(form.get("paid") || "0")),
+            cents(String(form.get("reserved") || "0")),
+          ),
         ].sort((a, b) => a.month.localeCompare(b.month));
       }
       if (
@@ -123,7 +120,7 @@ export default function DebtDetail({
             next,
             modal === "total"
               ? `Total actualizado a ${euro(next.total)}.`
-              : `Cuota de ${monthName(month)}: ${euro(amount)}, ${statuses.find((s) => s.value === form.get("status"))?.label.toLowerCase()}.`,
+              : `Cuota de ${monthName(month)}: ${euro(amount)}, ${euro(cents(String(form.get("paid") || "0")))} pagados, ${euro(cents(String(form.get("reserved") || "0")))} apartados.`,
           ),
         )
       )
@@ -193,9 +190,7 @@ export default function DebtDetail({
       </div>
       <DebtPaymentWatch debts={[debt]} />
       <DebtAnalytics debt={debt} />
-      <section
-        className={`panel history-panel external-debt-panel${editing ? " is-editing" : ""}`}
-      >
+      <section className={`panel history-panel external-debt-panel`}>
         <div className="section-title table-heading">
           <div>
             <span className="table-eyebrow">CUOTA A CUOTA</span>
@@ -211,18 +206,7 @@ export default function DebtDetail({
                 {descending ? "Recientes primero" : "Antiguos primero"}
               </Button>
             </div>
-            <Button
-              className={`history-edit-toggle${editing ? " active" : ""}`}
-              aria-label={
-                editing ? "Terminar edición de cuotas" : "Editar cuotas"
-              }
-              aria-pressed={editing}
-              disabled={!rows.length || !editable}
-              onClick={() => setEditing(!editing)}
-            >
-              {editing ? <Check size={16} /> : <Pencil size={16} />}{" "}
-              {editing ? "Terminar edición" : "Editar"}
-            </Button>
+
             <Button
               className="history-edit-toggle"
               disabled={!editable}
@@ -233,82 +217,108 @@ export default function DebtDetail({
             </Button>
           </div>
         </div>
-        {editing && (
-          <p className="history-edit-note">
-            Selecciona un mes para cambiar el importe o su estado.
-          </p>
-        )}
         <div className="table-wrap">
           <table className="monthly-history debt-payment-history">
             <thead>
               <tr>
                 <th>Mes</th>
-                {statuses.map((s) => (
-                  <th key={s.value} className={`debt-column-${s.value}`}>
-                    {s.label}
-                  </th>
-                ))}
+                <th>Cuota</th>
+                <th>Pagado</th>
+                <th>Apartado</th>
+                <th>Por preparar</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
-                <Fragment key={row.month}>
-                  {(i === 0 ||
-                    rows[i - 1].month.slice(0, 4) !==
-                      row.month.slice(0, 4)) && (
-                    <tr className="history-year">
-                      <th colSpan={4} scope="rowgroup">
-                        <span className="history-year-label">
-                          {row.month.slice(0, 4)}
-                        </span>
-                      </th>
-                    </tr>
-                  )}
-                  <tr
-                    className={
-                      row.month === currentMonth()
-                        ? "current-month-row"
-                        : undefined
-                    }
-                    aria-current={
-                      row.month === currentMonth() ? "date" : undefined
-                    }
-                  >
-                    <td>
-                      <span className="history-month-cell">
-                        {editing ? (
-                          <Button
-                            className="history-month-edit"
-                            aria-label={`Editar cuota ${row.month}`}
-                            onClick={() => openInstallment(row)}
-                          >
-                            {monthName(row.month).replace(/ de \d{4}$/, "")}
-                          </Button>
-                        ) : (
-                          monthName(row.month).replace(/ de \d{4}$/, "")
-                        )}
-                      </span>
-                    </td>
-                    {statuses.map((s) => (
-                      <td key={s.value} className={`debt-column-${s.value}`}>
-                        {row.status === s.value ? (
-                          <span className={`debt-amount debt-${s.value}`}>
-                            {euro(row.amount)}
+              {rows.map((row, i) => {
+                const amounts = installmentAmounts(row);
+                const update = (
+                  field: "amount" | "paid" | "reserved",
+                  value: string | number | null,
+                ) =>
+                  saveDebt({
+                    ...debt,
+                    installments: debt.installments.map((item) =>
+                      item.month === row.month
+                        ? editInstallmentAmount(item, field, Number(value))
+                        : item,
+                    ),
+                  });
+                return (
+                  <Fragment key={row.month}>
+                    {(i === 0 ||
+                      rows[i - 1].month.slice(0, 4) !==
+                        row.month.slice(0, 4)) && (
+                      <tr className="history-year">
+                        <th colSpan={5} scope="rowgroup">
+                          <span className="history-year-label">
+                            {row.month.slice(0, 4)}
                           </span>
-                        ) : (
-                          <span className="debt-empty">—</span>
-                        )}
+                        </th>
+                      </tr>
+                    )}
+                    <tr
+                      className={
+                        row.month === currentMonth()
+                          ? "current-month-row"
+                          : undefined
+                      }
+                      aria-current={
+                        row.month === currentMonth() ? "date" : undefined
+                      }
+                    >
+                      <td className="debt-installment-month">
+                        <Button
+                          className="history-month-edit"
+                          aria-label={"Editar cuota " + row.month}
+                          disabled={!editable}
+                          onClick={() => openInstallment(row)}
+                        >
+                          {monthName(row.month).replace(/ de \d{4}$/, "")}
+                        </Button>
                       </td>
-                    ))}
-                  </tr>
-                </Fragment>
-              ))}
+                      <td data-label="Cuota">
+                        <InlineEdit
+                          label={"Cuota " + row.month}
+                          value={row.amount}
+                          disabled={!editable}
+                          onSave={(value) => update("amount", value)}
+                        />
+                      </td>
+                      <td data-label="Pagado" className="debt-column-paid">
+                        <InlineEdit
+                          label={"Pagado " + row.month}
+                          value={amounts.paid}
+                          disabled={!editable}
+                          onSave={(value) => update("paid", value)}
+                        />
+                      </td>
+                      <td
+                        data-label="Apartado"
+                        className="debt-column-reserved"
+                      >
+                        <InlineEdit
+                          label={"Apartado " + row.month}
+                          value={amounts.reserved}
+                          disabled={!editable}
+                          onSave={(value) => update("reserved", value)}
+                        />
+                      </td>
+                      <td
+                        data-label="Por preparar"
+                        className="debt-column-pending"
+                      >
+                        <span className="debt-amount debt-pending">
+                          {euro(amounts.pending)}
+                        </span>
+                      </td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
               {!rows.length && (
                 <tr>
-                  <td colSpan={4} className="empty">
-                    {debt
-                      ? "Añade las cuotas de esta deuda."
-                      : "Indica el total de la deuda para empezar."}
+                  <td colSpan={5} className="empty">
+                    Añade las cuotas de esta deuda.
                   </td>
                 </tr>
               )}
@@ -317,23 +327,16 @@ export default function DebtDetail({
               <tfoot>
                 <tr>
                   <th scope="row">Total del calendario</th>
-                  <td>
-                    {euro(
-                      sum(
-                        rows
-                          .filter((row) => row.status === "paid")
-                          .map((row) => row.amount),
-                      ),
-                    )}
+                  <td data-label="Cuota">
+                    {euro(sum(rows.map((row) => row.amount)))}
                   </td>
-                  <td>{euro(totals.reserved)}</td>
-                  <td>
+                  <td data-label="Pagado">
+                    {euro(sum(rows.map((row) => installmentAmounts(row).paid)))}
+                  </td>
+                  <td data-label="Apartado">{euro(totals.reserved)}</td>
+                  <td data-label="Por preparar">
                     {euro(
-                      sum(
-                        rows
-                          .filter((r) => r.status === "pending")
-                          .map((r) => r.amount),
-                      ),
+                      sum(rows.map((row) => installmentAmounts(row).pending)),
                     )}
                   </td>
                 </tr>
@@ -347,11 +350,13 @@ export default function DebtDetail({
           </p>
         )}
         <PanelInfo title="Calendario de pagos">
-          Pagado: dinero ya abonado. Apartado: dinero preparado que todavía no
-          has pagado. Pendiente: dinero que aún falta preparar y pagar. Falta
-          por pagar incluye el dinero apartado. Cambiar una cuota actualiza
-          únicamente esta deuda; no modifica el saldo diario, el ahorro, la
-          inversión ni la deuda interna.
+          Pulsa un importe para editarlo. Enter o salir del campo guarda; Escape
+          cancela. Al registrar un pago se descuenta primero del dinero
+          apartado. Pagado: dinero ya abonado. Apartado: dinero preparado que
+          todavía no has pagado. Pendiente: dinero que aún falta preparar y
+          pagar. Falta por pagar incluye el dinero apartado. Cambiar una cuota
+          actualiza únicamente esta deuda; no modifica el saldo diario, el
+          ahorro, la inversión ni la deuda interna.
         </PanelInfo>
       </section>
       {!!debt.advances?.length && (
@@ -458,27 +463,34 @@ export default function DebtDetail({
                     />
                   </label>
                   {modal === "installment" && (
-                    <fieldset className="installment-status full">
-                      <legend>Estado de la cuota</legend>
-                      <div className="installment-status-options">
-                        {statuses.map((s) => (
-                          <label
-                            key={s.value}
-                            className={`installment-status-choice debt-${s.value}`}
-                          >
-                            <input
-                              type="radio"
-                              name="status"
-                              value={s.value}
-                              defaultChecked={
-                                (selected?.status ?? "pending") === s.value
-                              }
-                            />
-                            <span>{s.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </fieldset>
+                    <>
+                      <label>
+                        Ya pagado (€)
+                        <input
+                          name="paid"
+                          inputMode="decimal"
+                          defaultValue={
+                            selected
+                              ? installmentAmounts(selected).paid / 100
+                              : 0
+                          }
+                          required
+                        />
+                      </label>
+                      <label>
+                        Dinero apartado (€)
+                        <input
+                          name="reserved"
+                          inputMode="decimal"
+                          defaultValue={
+                            selected
+                              ? installmentAmounts(selected).reserved / 100
+                              : 0
+                          }
+                          required
+                        />
+                      </label>
+                    </>
                   )}
                 </div>
                 <div className="modal-footer debt-installment-footer">

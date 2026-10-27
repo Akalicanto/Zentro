@@ -38,6 +38,8 @@ export type DebtInstallment = {
   month: string;
   amount: number;
   status: "paid" | "reserved" | "pending";
+  paidAmount?: number;
+  reservedAmount?: number;
 };
 export type ExternalDebt = {
   id: string;

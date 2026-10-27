@@ -1,3 +1,4 @@
+import { installmentAmounts, withInstallmentAmounts } from "./installments.ts";
 import type { DebtInstallment, ExternalDebt, DebtAdvance } from "./types.ts";
 import { externalDebtTotals } from "./totals.ts";
 import { sum } from "../shared/utils/money.ts";
@@ -23,11 +24,11 @@ export function simulateDebtAdvance(
       "Introduce un adelanto mayor que cero y que no supere lo pendiente.",
     );
   const outstanding = debt.installments
-    .filter((r) => r.status !== "paid")
+    .filter((r) => installmentAmounts(r).remaining > 0)
     .sort((a, b) => a.month.localeCompare(b.month));
   if (
     !outstanding.length ||
-    sum(outstanding.map((r) => r.amount)) !== remaining
+    sum(outstanding.map((r) => installmentAmounts(r).remaining)) !== remaining
   )
     throw Error(
       "Planifica primero todas las cuotas pendientes para comparar las dos opciones.",
@@ -43,21 +44,36 @@ export function simulateDebtAdvance(
   const installments: DebtInstallment[] = outstanding.flatMap((row, index) => {
     const value =
       strategy === "term"
-        ? Math.min(left, row.amount)
+        ? Math.min(left, installmentAmounts(row).remaining)
         : base + (index < extra ? 1 : 0);
     left -= value;
-    return value > 0 ? [{ ...row, amount: value }] : [];
+    const old = installmentAmounts(row);
+    return value + old.paid > 0
+      ? [
+          withInstallmentAmounts(
+            row,
+            value + old.paid,
+            old.paid,
+            Math.min(old.reserved, value),
+          ),
+        ]
+      : [];
   });
+  const pendingInstallments = installments.filter(
+    (row) => installmentAmounts(row).remaining > 0,
+  );
+  const first = pendingInstallments[0],
+    last = pendingInstallments.at(-1);
   return {
     balance,
-    count: installments.length,
-    removed: outstanding.length - installments.length,
-    firstAmount: installments[0]?.amount ?? 0,
-    lastAmount: installments.at(-1)?.amount ?? 0,
-    lastMonth: installments.at(-1)?.month,
+    count: pendingInstallments.length,
+    removed: outstanding.length - pendingInstallments.length,
+    firstAmount: first ? installmentAmounts(first).remaining : 0,
+    lastAmount: last ? installmentAmounts(last).remaining : 0,
+    lastMonth: last?.month,
     installments: [
       ...debt.installments
-        .filter((r) => r.status === "paid")
+        .filter((r) => installmentAmounts(r).remaining === 0)
         .map((r) => ({ ...r })),
       ...installments,
     ].sort((a, b) => a.month.localeCompare(b.month)),

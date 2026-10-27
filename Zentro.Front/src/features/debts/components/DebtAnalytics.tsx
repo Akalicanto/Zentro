@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import {
   debtAnalytics,
+  installmentAmounts,
   euro,
   monthName,
   sum,
@@ -60,13 +61,13 @@ const DebtAnalytics = memo(function DebtAnalytics({
       return {
         month,
         paid: sum([
-          row?.status === "paid" ? row.amount : 0,
+          row ? installmentAmounts(row).paid : 0,
           ...(debt.advances ?? [])
             .filter((advance) => advance.date.startsWith(month))
             .map((advance) => advance.amount),
         ]),
-        reserved: row?.status === "reserved" ? row.amount : 0,
-        pending: row?.status === "pending" ? row.amount : 0,
+        reserved: row ? installmentAmounts(row).reserved : 0,
+        pending: row ? installmentAmounts(row).pending : 0,
       };
     });
   const slices = categories.map((category) => ({
@@ -93,10 +94,14 @@ const DebtAnalytics = memo(function DebtAnalytics({
             <Clock3 size={18} />
             Primera cuota pendiente
           </span>
-          <strong>{analytics.next ? euro(analytics.next.amount) : "—"}</strong>
+          <strong>
+            {analytics.next
+              ? euro(installmentAmounts(analytics.next).remaining)
+              : "—"}
+          </strong>
           <small>
             {analytics.next
-              ? `${monthName(analytics.next.month)} · ${analytics.next.status === "reserved" ? "Apartada" : "Por preparar"}`
+              ? `${monthName(analytics.next.month)} · ${euro(installmentAmounts(analytics.next).reserved)} apartados · ${euro(installmentAmounts(analytics.next).pending)} por preparar`
               : analytics.totals.remaining
                 ? "Sin mes asignado"
                 : "Todo pagado"}

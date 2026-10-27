@@ -1,3 +1,4 @@
+import { installmentAmounts } from "./installments.ts";
 import type { Profile } from "./types.ts";
 import { monthSeries } from "./contributions.ts";
 import { addMonth } from "../shared/utils/dates.ts";
@@ -24,14 +25,10 @@ export function monthlyPlanning(
       .flatMap((debt) => debt.installments)
       .filter((row) => row.month === month);
     const debts = sum(
-      installments
-        .filter((row) => row.status === "pending")
-        .map((row) => row.amount),
+      installments.map((row) => installmentAmounts(row).pending),
     );
     const reserved = sum(
-      installments
-        .filter((row) => row.status === "reserved")
-        .map((row) => row.amount),
+      installments.map((row) => installmentAmounts(row).reserved),
     );
     return {
       month,

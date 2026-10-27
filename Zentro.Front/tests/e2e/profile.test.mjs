@@ -1,3 +1,4 @@
+import { setCell } from "./inlineEditHelpers.mjs";
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -286,10 +287,13 @@ try {
     await page
       .getByLabel("Importe de la cuota (€)", { exact: true })
       .fill(row.amount);
-    await page
-      .getByRole("dialog")
-      .getByText(row.status, { exact: true })
-      .click();
+    if (row.status !== "Pendiente")
+      await page
+        .getByLabel(
+          row.status === "Pagado" ? "Ya pagado (€)" : "Dinero apartado (€)",
+          { exact: true },
+        )
+        .fill(row.amount);
     await page.getByRole("button", { name: "Guardar", exact: true }).click();
   }
   assert.ok((await metric("Ya pagado").innerText()).includes("100,00"));
@@ -342,12 +346,10 @@ try {
   });
   await page.setViewportSize({ width: 1512, height: 1100 });
   await page
-    .getByRole("button", { name: "Editar cuotas", exact: true })
-    .click();
-  await page
     .getByRole("button", { name: "Editar cuota 2026-11", exact: true })
     .click();
-  await page.getByRole("dialog").getByText("Pagado", { exact: true }).click();
+  await page.getByLabel("Ya pagado (€)", { exact: true }).fill("50");
+  await page.getByLabel("Dinero apartado (€)", { exact: true }).fill("0");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
   assert.ok((await metric("Ya pagado").innerText()).includes("150,00"));
   assert.ok((await metric("Falta por pagar").innerText()).includes("100,00"));
@@ -431,15 +433,8 @@ try {
       "310,00",
     ),
   );
-  await page
-    .getByRole("button", { name: "Editar gastos", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Editar Gasto de prueba", exact: true })
-    .click();
-  assert.equal(await page.getByLabel("Estado", { exact: true }).count(), 0);
-  await page.getByLabel("Importe (€)", { exact: true }).fill("60");
-  await page.getByRole("button", { name: "Guardar", exact: true }).click();
+  await setCell(page, "Importe Gasto de prueba", "60");
+  assert.equal(await page.getByRole("dialog").count(), 0);
   assert.ok(
     (await metric("Saldo actual · ING").innerText()).includes("300,00"),
   );
@@ -460,9 +455,6 @@ try {
       "350,00",
     ),
   );
-  await page
-    .getByRole("button", { name: "Terminar edición de gastos", exact: true })
-    .click();
   await page
     .getByRole("button", { name: "Actualizar saldo", exact: true })
     .click();
@@ -493,23 +485,7 @@ try {
     .fill("Posible gasto de prueba");
   await page.getByLabel("Importe estimado (€)", { exact: true }).fill("80");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Editar posibles gastos", exact: true })
-    .click();
-  await page
-    .getByRole("button", {
-      name: "Editar posible gasto Posible gasto de prueba",
-      exact: true,
-    })
-    .click();
-  await page.getByLabel("Importe estimado (€)", { exact: true }).fill("90");
-  await page.getByRole("button", { name: "Guardar", exact: true }).click();
-  await page
-    .getByRole("button", {
-      name: "Terminar edición de posibles gastos",
-      exact: true,
-    })
-    .click();
+  await setCell(page, "Importe posible gasto Posible gasto de prueba", "90");
   await page.waitForFunction(
     () => localStorage.getItem("zentro.v3.pending") === null,
   );
@@ -525,16 +501,12 @@ try {
   ])
     assert.deepEqual(independent[key], beforeIndependent[key]);
   await page
-    .getByRole("button", { name: "Editar ingresos", exact: true })
+    .getByRole("button", { name: "Importe Ingreso de prueba", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Editar Ingreso de prueba", exact: true })
-    .click();
-  await page.getByRole("dialog", { name: "Ingreso", exact: true }).waitFor();
-  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Terminar edición de ingresos", exact: true })
-    .click();
+    .getByLabel("Importe Ingreso de prueba", { exact: true })
+    .fill("99");
+  await page.keyboard.press("Escape");
   await page
     .locator("nav")
     .getByRole("button", { name: "Ahorros", exact: true })
@@ -651,17 +623,12 @@ try {
   assert.ok(dentalHelp.x >= 0 && dentalHelp.x + dentalHelp.width <= 390);
   await page.keyboard.press("Escape");
   await page
-    .getByRole("button", { name: "Editar cuotas", exact: true })
-    .click();
-  await page
     .getByRole("button", { name: "Editar cuota 2026-11", exact: true })
     .click();
   assert.ok(await page.getByRole("dialog").isVisible());
-  assert.ok(
-    await page
-      .getByRole("dialog")
-      .getByRole("radio", { name: "Pagado", exact: true })
-      .isChecked(),
+  assert.equal(
+    await page.getByLabel("Ya pagado (€)", { exact: true }).inputValue(),
+    "50",
   );
   await page.getByRole("button", { name: "Cancelar", exact: true }).click();
   assert.deepEqual(await state(), saved);

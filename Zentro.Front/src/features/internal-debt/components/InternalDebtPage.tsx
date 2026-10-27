@@ -1,3 +1,4 @@
+import InlineEdit from "../../../shared/components/InlineEdit.tsx";
 import { Button, Surface } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
@@ -5,25 +6,21 @@ import {
   debtTotals,
   monthSeries,
   debtItemPaid,
+  editDebtItem,
   euro,
   monthName,
 } from "../../../domain/index.ts";
 import { type OpenProfileForm } from "../../profile/types.ts";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import MetricCard from "../../../shared/components/MetricCard.tsx";
-import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  Check,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Trash2 } from "lucide-react";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
-
-type Props = { data: Profile; open: OpenProfileForm };
-export default function InternalDebtPage({ data, open }: Props) {
-  const [editingDebt, setEditingDebt] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState(false);
+type Props = {
+  data: Profile;
+  open: OpenProfileForm;
+  save: (profile: Profile) => boolean;
+};
+export default function InternalDebtPage({ data, open, save }: Props) {
   const dailyMonth = currentMonth();
   const { debt, savingsSeries } = useMemo(
     () => ({
@@ -46,14 +43,12 @@ export default function InternalDebtPage({ data, open }: Props) {
           label="Deuda interna pendiente"
           amount={debt.pending}
           note="Ahorro retirado que falta por reponer"
-
           tone="rose"
         />
         <MetricCard
           label="Reposición mensual"
           amount={data.plan.repayment}
           note="Además de la aportación base, hasta saldar la deuda"
-
           tone="sage"
         />
       </div>
@@ -93,26 +88,9 @@ export default function InternalDebtPage({ data, open }: Props) {
               {data.internalDebt.items.length}{" "}
               {data.internalDebt.items.length === 1 ? "concepto" : "conceptos"}
             </span>
-            <Button
-              className={`history-edit-toggle${editingDebt ? " active" : ""}`}
-              aria-label={
-                editingDebt ? "Terminar edición de deuda" : "Editar deuda"
-              }
-              aria-pressed={editingDebt}
-              disabled={!data.internalDebt.items.length}
-              onClick={() => setEditingDebt(!editingDebt)}
-            >
-              {editingDebt ? <Check size={16} /> : <Pencil size={16} />}
-              {editingDebt ? "Terminar edición" : "Editar"}
-            </Button>
           </div>
         </div>
-        {editingDebt && (
-          <p className="history-edit-note">
-            Selecciona un concepto para editarlo. También puedes borrar una
-            deuda.
-          </p>
-        )}
+
         <div className="table-wrap">
           <table>
             <thead>
@@ -121,7 +99,7 @@ export default function InternalDebtPage({ data, open }: Props) {
                 <th>Retirado</th>
                 <th>Repuesto</th>
                 <th>Pendiente</th>
-                {editingDebt && <th className="right">Borrar</th>}
+                <th aria-label="Acciones" />
               </tr>
             </thead>
             <tbody>
@@ -130,25 +108,62 @@ export default function InternalDebtPage({ data, open }: Props) {
                 return (
                   <tr key={item.id}>
                     <td>
-                      {editingDebt ? (
-                        <Button
-                          className="history-month-edit"
-                          aria-label={`Editar ${item.concept}`}
-                          onClick={() => open({ type: "editDebt", item })}
-                        >
-                          {item.concept}
-                        </Button>
-                      ) : (
-                        <strong>{item.concept}</strong>
-                      )}
+                      <InlineEdit
+                        kind="text"
+                        label={"Concepto deuda interna " + item.concept}
+                        value={item.concept}
+                        onSave={(value) =>
+                          save(
+                            editDebtItem(
+                              data,
+                              item.id,
+                              String(value),
+                              item.amount,
+                              item.date,
+                            ),
+                          )
+                        }
+                      />
                       <small>
-                        {item.date.split("-").reverse().join("/")} ·{" "}
+                        <InlineEdit
+                          kind="date"
+                          label={"Fecha " + item.concept}
+                          value={item.date}
+                          onSave={(value) =>
+                            save(
+                              editDebtItem(
+                                data,
+                                item.id,
+                                item.concept,
+                                item.amount,
+                                String(value),
+                              ),
+                            )
+                          }
+                        />{" "}
+                        ·{" "}
                         {item.source === "work"
                           ? "Ahorro por trabajo"
                           : "Intereses"}
                       </small>
                     </td>
-                    <td className="amount">{euro(item.amount)}</td>
+                    <td className="amount">
+                      <InlineEdit
+                        label={"Retirado " + item.concept}
+                        value={item.amount}
+                        onSave={(value) =>
+                          save(
+                            editDebtItem(
+                              data,
+                              item.id,
+                              item.concept,
+                              Number(value),
+                              item.date,
+                            ),
+                          )
+                        }
+                      />
+                    </td>
                     <td className="repaid-value">
                       {euro(paid)}
                       <div
@@ -173,19 +188,15 @@ export default function InternalDebtPage({ data, open }: Props) {
                           : "Saldado"}
                       </span>
                     </td>
-                    {editingDebt && (
-                      <td>
-                        <div className="table-row-actions">
-                          <Button
-                            className="table-action delete"
-                            aria-label={`Borrar ${item.concept}`}
-                            onClick={() => open({ type: "deleteDebt", item })}
-                          >
-                            <Trash2 size={15} />
-                          </Button>
-                        </div>
-                      </td>
-                    )}
+                    <td>
+                      <Button
+                        className="table-row-delete"
+                        aria-label={"Borrar " + item.concept}
+                        onClick={() => open({ type: "deleteDebt", item })}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </td>
                   </tr>
                 );
               })}
@@ -213,27 +224,9 @@ export default function InternalDebtPage({ data, open }: Props) {
               {plan.length}{" "}
               {plan.length === 1 ? "mes previsto" : "meses previstos"}
             </span>
-            <Button
-              className={`history-edit-toggle${editingSchedule ? " active" : ""}`}
-              aria-label={
-                editingSchedule
-                  ? "Terminar edición de distribución"
-                  : "Editar distribución"
-              }
-              aria-pressed={editingSchedule}
-              disabled={!plan.length}
-              onClick={() => setEditingSchedule(!editingSchedule)}
-            >
-              {editingSchedule ? <Check size={16} /> : <Pencil size={16} />}
-              {editingSchedule ? "Terminar edición" : "Editar"}
-            </Button>
           </div>
         </div>
-        {editingSchedule && (
-          <p className="history-edit-note">
-            Selecciona un mes para ajustar su reposición prevista.
-          </p>
-        )}
+
         <div className="table-wrap">
           <table>
             <thead>
@@ -256,31 +249,44 @@ export default function InternalDebtPage({ data, open }: Props) {
                   <td>
                     <span className="distribution-month">
                       <span className="month-marker">{row.month.slice(5)}</span>
-                      {editingSchedule ? (
-                        <Button
-                          className="history-month-edit"
-                          aria-label={`Editar distribución ${row.month}`}
-                          onClick={() =>
-                            open({
-                              type: "schedule",
-                              item: {
-                                month: row.month,
-                                amount: row.plannedRepayment,
-                              },
-                            })
-                          }
-                        >
-                          {monthName(row.month)}
-                        </Button>
-                      ) : (
-                        monthName(row.month)
-                      )}
+                      <Button
+                        className="history-month-edit"
+                        aria-label={`Editar distribución ${row.month}`}
+                        onClick={() =>
+                          open({
+                            type: "schedule",
+                            item: {
+                              month: row.month,
+                              amount: row.plannedRepayment,
+                            },
+                          })
+                        }
+                      >
+                        {monthName(row.month)}
+                      </Button>
                     </span>
                   </td>
                   <td>{euro(row.plannedBase ?? 0)}</td>
                   <td>
                     <span className="amount-pill scheduled">
-                      +{euro(row.plannedRepayment)}
+                      <InlineEdit
+                        label={"Reposición " + row.month}
+                        value={row.plannedRepayment}
+                        onSave={(value) =>
+                          save({
+                            ...data,
+                            internalDebt: {
+                              ...data.internalDebt,
+                              schedule: [
+                                ...data.internalDebt.schedule.filter(
+                                  (item) => item.month !== row.month,
+                                ),
+                                { month: row.month, amount: Number(value) },
+                              ],
+                            },
+                          })
+                        }
+                      />
                     </span>
                   </td>
                   <td className="forecast-total">{euro(row.planned ?? 0)}</td>

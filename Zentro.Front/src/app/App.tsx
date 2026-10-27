@@ -100,7 +100,12 @@ export default function App({ initialData }: { initialData: Profile }) {
         />
       )}
       {page === "Inversión" && (
-        <InvestmentPage data={data} open={open} controls={controls} />
+        <InvestmentPage
+          data={data}
+          open={open}
+          controls={controls}
+          save={save}
+        />
       )}
       {page === "Deudas" && (
         <DebtsPage

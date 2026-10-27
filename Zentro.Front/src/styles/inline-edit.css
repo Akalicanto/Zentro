@@ -1,0 +1,112 @@
+.inline-edit-value {
+  border: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  border-radius: 8px;
+  padding: 8px 7px;
+  margin: -4px -7px;
+  min-height: 40px;
+  text-align: inherit;
+  justify-content: flex-start;
+  border-bottom: 1px dashed color-mix(in srgb, var(--muted) 32%, transparent);
+}
+.inline-edit-value:hover {
+  background: var(--soft);
+  border-color: var(--line);
+}
+.inline-editor {
+  display: inline-grid;
+  gap: 5px;
+  width: 100%;
+  min-width: 95px;
+  max-width: 300px;
+}
+.inline-editor input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 7px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font: inherit;
+  background: var(--panel);
+  color: var(--text);
+}
+.inline-editor-error {
+  white-space: normal;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  background: color-mix(in srgb, var(--page-rose) 30%, var(--panel));
+  padding: 6px 8px;
+  border-radius: 7px;
+}
+.debt-installment-breakdown {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 8px 0 0;
+}
+.table-row-delete {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+  padding: 8px;
+}
+.table-row-delete:hover {
+  background: color-mix(in srgb, var(--page-rose) 20%, var(--panel));
+}
+@media (max-width: 650px) {
+  .inline-edit-value {
+    min-height: 44px;
+  }
+  .debt-payment-history {
+    min-width: 0;
+    width: 100%;
+  }
+  .debt-payment-history thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .debt-payment-history tbody,
+  .debt-payment-history tfoot {
+    display: block;
+  }
+  .debt-payment-history tbody tr:not(.history-year),
+  .debt-payment-history tfoot tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .debt-payment-history td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    padding: 10px !important;
+    text-align: left !important;
+  }
+  .debt-payment-history td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .debt-payment-history .debt-installment-month,
+  .debt-payment-history tfoot th,
+  .debt-payment-history td.empty {
+    grid-column: 1/-1;
+  }
+  .debt-payment-history .history-year,
+  .debt-payment-history .history-year th {
+    display: block;
+  }
+  .debt-payment-history .inline-editor {
+    min-width: 0;
+  }
+}

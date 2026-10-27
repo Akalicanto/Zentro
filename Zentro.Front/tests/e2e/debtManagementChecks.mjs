@@ -185,17 +185,15 @@ export async function verifyDebtManagement({ page, state, root }) {
     .getByLabel("Año de la cuota", { exact: true })
     .selectOption("2026");
   await page.getByLabel("Importe de la cuota (€)", { exact: true }).fill("50");
-  await page.getByRole("dialog").getByText("Apartado", { exact: true }).click();
+  await page.getByLabel("Dinero apartado (€)", { exact: true }).fill("50");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
   await page.getByRole("dialog").waitFor({ state: "detached" });
   assert.equal(await page.getByRole("dialog").count(), 0);
   await page
-    .getByRole("button", { name: "Editar cuotas", exact: true })
-    .click();
-  await page
     .getByRole("button", { name: "Editar cuota 2026-10", exact: true })
     .click();
-  await page.getByRole("dialog").getByText("Pagado", { exact: true }).click();
+  await page.getByLabel("Ya pagado (€)", { exact: true }).fill("50");
+  await page.getByLabel("Dinero apartado (€)", { exact: true }).fill("0");
   await page.getByRole("button", { name: "Guardar", exact: true }).click();
   await page
     .getByRole("dialog", { name: "¿Completar esta deuda?", exact: true })

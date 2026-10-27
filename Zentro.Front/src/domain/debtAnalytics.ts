@@ -1,13 +1,16 @@
 import type { ExternalDebt } from "./types.ts";
 import { externalDebtTotals } from "./totals.ts";
 import { sum } from "../shared/utils/money.ts";
+import { installmentAmounts } from "./installments.ts";
 
 export function debtAnalytics(debt: ExternalDebt) {
   const totals = externalDebtTotals(debt);
   const calendar = [...debt.installments].sort((a, b) =>
     a.month.localeCompare(b.month),
   );
-  const outstanding = calendar.filter((row) => row.status !== "paid");
+  const outstanding = calendar.filter(
+    (row) => installmentAmounts(row).remaining > 0,
+  );
   return {
     totals,
     calendar,

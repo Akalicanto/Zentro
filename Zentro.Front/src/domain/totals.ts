@@ -1,5 +1,6 @@
 import type { CashRow, ExternalDebt, Profile } from "./types.ts";
 import { sum } from "../shared/utils/money.ts";
+import { installmentAmounts } from "./installments.ts";
 
 export function cashTotals(profile: Profile) {
   const realizedChange = (rows: CashRow[]) =>
@@ -33,15 +34,11 @@ export function debtTotals(profile: Profile) {
 }
 export function externalDebtTotals(debt: ExternalDebt) {
   const paid = sum([
-    ...debt.installments
-      .filter((r) => r.status === "paid")
-      .map((r) => r.amount),
+    ...debt.installments.map((r) => installmentAmounts(r).paid),
     ...(debt.advances ?? []).map((r) => r.amount),
   ]);
   const reserved = sum(
-    debt.installments
-      .filter((r) => r.status === "reserved")
-      .map((r) => r.amount),
+    debt.installments.map((r) => installmentAmounts(r).reserved),
   );
   return {
     total: debt.total,

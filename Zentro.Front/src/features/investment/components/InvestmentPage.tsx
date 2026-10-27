@@ -9,6 +9,7 @@ type Props = {
   data: Profile;
   open: OpenProfileForm;
   controls: HistoryControls;
+  save: (profile: Profile) => boolean;
 };
 export default function InvestmentPage(props: Props) {
   return (

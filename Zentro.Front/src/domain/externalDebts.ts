@@ -2,6 +2,7 @@ import type { ExternalDebt } from "./types.ts";
 import { today, currentMonth, addMonth } from "../shared/utils/dates.ts";
 import { uid } from "../shared/utils/id.ts";
 import { sum } from "../shared/utils/money.ts";
+import { withInstallmentAmounts } from "./installments.ts";
 
 export function debtStatus(debt: ExternalDebt) {
   if (debt.archivedOn) return "archived";
@@ -68,13 +69,21 @@ export function completeDebt(debt: ExternalDebt): ExternalDebt {
       ...debt.installments.map((r) => r.amount),
       ...(debt.advances ?? []).map((r) => r.amount),
     ]);
-  const installments = debt.installments.map((r) => ({
-    ...r,
-    status: "paid" as const,
-  }));
+  const installments = debt.installments.map((r) =>
+    withInstallmentAmounts(r, r.amount, r.amount, 0),
+  );
   if (missing > 0) {
     const row = installments.find((r) => r.month === currentMonth());
-    if (row) row.amount += missing;
+    if (row)
+      Object.assign(
+        row,
+        withInstallmentAmounts(
+          row,
+          row.amount + missing,
+          row.amount + missing,
+          0,
+        ),
+      );
     else
       installments.push({
         month: currentMonth(),

@@ -2,6 +2,7 @@ import { CalendarClock, ArrowUpRight, ClockAlert } from "lucide-react";
 import {
   debtPaymentWatch,
   installmentStatus,
+  installmentAmounts,
   euro,
   monthName,
   type ExternalDebt,
@@ -87,6 +88,7 @@ export default function DebtPaymentWatch({
               >
                 {watch.rows.map((row) => {
                   const status = installmentStatus(debt, row);
+                  const amounts = installmentAmounts(row);
                   return (
                     <Box
                       key={row.month}
@@ -109,6 +111,14 @@ export default function DebtPaymentWatch({
                         </span>
                         <strong>{euro(row.amount)}</strong>
                       </Stack>
+                      {((amounts.paid > 0 && amounts.remaining > 0) ||
+                        (amounts.reserved > 0 && amounts.pending > 0)) && (
+                        <p className="debt-installment-breakdown">
+                          {euro(amounts.paid)} pagados ·{" "}
+                          {euro(amounts.reserved)} apartados ·{" "}
+                          {euro(amounts.pending)} por preparar
+                        </p>
+                      )}
                       <Badge
                         size="small"
                         label={status.label}

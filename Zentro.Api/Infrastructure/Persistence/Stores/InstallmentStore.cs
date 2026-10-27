@@ -11,6 +11,8 @@ internal static class InstallmentStore
             {
                 Month = row.Text("mes"),
                 Amount = row.Number("importe_centimos"),
+                PaidAmount = row.OptionalNumber("pagado_centimos"),
+                ReservedAmount = row.OptionalNumber("apartado_centimos"),
                 Status = row.Text("estado") switch
                 {
                     "pagado" => "paid",
@@ -31,6 +33,8 @@ internal static class InstallmentStore
                 ("deuda_id", parent),
                 ("mes", row.Month),
                 ("importe_centimos", row.Amount),
+                ("pagado_centimos", row.PaidAmount),
+                ("apartado_centimos", row.ReservedAmount),
                 ("estado", row.Status switch
                 {
                     "paid" => "pagado",

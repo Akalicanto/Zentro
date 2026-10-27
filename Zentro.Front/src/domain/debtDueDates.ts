@@ -1,3 +1,4 @@
+import { installmentAmounts } from "./installments.ts";
 import type { ExternalDebt, DebtInstallment } from "./types.ts";
 import { addMonth, today } from "../shared/utils/dates.ts";
 import { sum } from "../shared/utils/money.ts";
@@ -20,11 +21,12 @@ export function installmentStatus(
   row: DebtInstallment,
   date = today(),
 ) {
+  const amounts = installmentAmounts(row);
   const due =
     debt.dueDay === undefined
       ? undefined
       : installmentDueDate(row.month, debt.dueDay);
-  if (row.status === "paid")
+  if (amounts.remaining === 0)
     return {
       key:
         (due && due > date) || row.month > date.slice(0, 7) ? "early" : "paid",
@@ -37,12 +39,15 @@ export function installmentStatus(
   if (due && due < date)
     return {
       key: "overdue",
-      label:
-        row.status === "reserved" ? "Con retraso · apartada" : "Con retraso",
+      label: amounts.reserved > 0 ? "Con retraso · apartada" : "Con retraso",
       due,
     } as const;
-  if (row.status === "reserved")
-    return { key: "reserved", label: "Dinero apartado", due } as const;
+  if (amounts.reserved > 0)
+    return {
+      key: "reserved",
+      label: amounts.pending > 0 ? "Parcialmente apartada" : "Dinero apartado",
+      due,
+    } as const;
   if (!due) return { key: "unknown", label: "Sin día definido", due } as const;
   if (due === date) return { key: "today", label: "Vence hoy", due } as const;
   return { key: "upcoming", label: "Próxima", due } as const;
@@ -60,6 +65,6 @@ export function debtPaymentWatch(debt: ExternalDebt, date = today()) {
   return {
     rows,
     overdue,
-    overdueAmount: sum(overdue.map((row) => row.amount)),
+    overdueAmount: sum(overdue.map((row) => installmentAmounts(row).remaining)),
   };
 }

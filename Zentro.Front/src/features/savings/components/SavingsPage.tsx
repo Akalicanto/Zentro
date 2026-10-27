@@ -85,10 +85,11 @@ export default function SavingsPage({
             data={data}
             open={open}
             controls={historyControls}
+            save={save}
           />
         )}
         {savingsTab === "Deuda interna" && (
-          <InternalDebtPage data={data} open={open} />
+          <InternalDebtPage data={data} open={open} save={save} />
         )}
         {savingsTab === "Distribución de ahorros" && (
           <SavingsDistribution profile={data} onSave={save} />

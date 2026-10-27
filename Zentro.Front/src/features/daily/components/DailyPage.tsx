@@ -1,3 +1,4 @@
+import InlineEdit from "../../../shared/components/InlineEdit.tsx";
 import PageHeading from "../../../shared/components/PageHeading.tsx";
 import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
@@ -9,20 +10,17 @@ import {
   monthName,
 } from "../../../domain/index.ts";
 import { type OpenProfileForm, type SaveProfile } from "../../profile/types.ts";
-import { useState } from "react";
-import { Check, Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import PanelInfo from "../../../shared/components/PanelInfo.tsx";
 import MetricCard from "../../../shared/components/MetricCard.tsx";
-
-type Props = { data: Profile; open: OpenProfileForm; save: SaveProfile };
+type Props = {
+  data: Profile;
+  open: OpenProfileForm;
+  save: SaveProfile;
+};
 export default function DailyPage({ data, open, save }: Props) {
   const daily = cashTotals(data),
     dailyMonth = currentMonth();
-  const [editingCash, setEditingCash] = useState({
-    expenses: false,
-    incomes: false,
-  });
-  const [editingPossible, setEditingPossible] = useState(false);
   function removeCash(kind: "expenses" | "incomes", id: string) {
     if (confirm("¿Eliminar este registro? Se recalculará la previsión."))
       save({
@@ -33,10 +31,45 @@ export default function DailyPage({ data, open, save }: Props) {
         },
       });
   }
+  function updateCash(
+    kind: "expenses" | "incomes",
+    id: string,
+    field: "concept" | "amount",
+    value: string | number | null,
+  ) {
+    return save({
+      ...data,
+      daily: {
+        ...data.daily,
+        [kind]: data.daily[kind].map((row) =>
+          row.id !== id
+            ? row
+            : field === "concept"
+              ? { ...row, concept: String(value) }
+              : { ...row, amount: Number(value) },
+        ),
+      },
+    });
+  }
+  function updatePossible(
+    id: string,
+    field: "concept" | "amount",
+    value: string | number | null,
+  ) {
+    return save({
+      ...data,
+      possibleExpenses: (data.possibleExpenses ?? []).map((row) =>
+        row.id !== id
+          ? row
+          : field === "concept"
+            ? { ...row, concept: String(value) }
+            : { ...row, amount: Number(value) },
+      ),
+    });
+  }
   function cashTable(kind: "expenses" | "incomes") {
     const rows = data.daily[kind].filter((row) => row.status === "planned");
     const expense = kind === "expenses";
-    const editing = editingCash[kind];
     return (
       <Surface component="section" className="panel cash-panel">
         <div className="section-title">
@@ -48,21 +81,6 @@ export default function DailyPage({ data, open, save }: Props) {
           </div>
           <div className="history-actions">
             <Button
-              className={`history-edit-toggle${editing ? " active" : ""}`}
-              aria-label={
-                editing
-                  ? `Terminar edición de ${expense ? "gastos" : "ingresos"}`
-                  : `Editar ${expense ? "gastos" : "ingresos"}`
-              }
-              aria-pressed={editing}
-              onClick={() =>
-                setEditingCash({ ...editingCash, [kind]: !editing })
-              }
-            >
-              {editing ? <Check size={16} /> : <Pencil size={16} />}
-              {editing ? "Terminar edición" : "Editar"}
-            </Button>
-            <Button
               className="history-edit-toggle"
               onClick={() => open({ type: "cash", kind })}
             >
@@ -71,48 +89,47 @@ export default function DailyPage({ data, open, save }: Props) {
             </Button>
           </div>
         </div>
-        {editing && (
-          <p className="history-edit-note">
-            Selecciona un concepto para editarlo.
-          </p>
-        )}
+
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Concepto</th>
                 <th>Importe</th>
-                {editing && <th aria-label="Acciones" />}
+                <th aria-label="Acciones" />
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
                   <td>
-                    {editing ? (
-                      <Button
-                        className="history-month-edit"
-                        aria-label={`Editar ${row.concept}`}
-                        onClick={() => open({ type: "cash", kind, item: row })}
-                      >
-                        {row.concept}
-                      </Button>
-                    ) : (
-                      row.concept
-                    )}
+                    <InlineEdit
+                      kind="text"
+                      label={"Concepto " + row.concept}
+                      value={row.concept}
+                      onSave={(value) =>
+                        updateCash(kind, row.id, "concept", value)
+                      }
+                    />
                   </td>
-                  <td>{euro(row.amount)}</td>
-                  {editing && (
-                    <td>
-                      <Button
-                        className="icon danger"
-                        aria-label={`Eliminar ${row.concept}`}
-                        onClick={() => removeCash(kind, row.id)}
-                      >
-                        <Trash2 size={15} />
-                      </Button>
-                    </td>
-                  )}
+                  <td>
+                    <InlineEdit
+                      label={"Importe " + row.concept}
+                      value={row.amount}
+                      onSave={(value) =>
+                        updateCash(kind, row.id, "amount", value)
+                      }
+                    />
+                  </td>
+                  <td>
+                    <Button
+                      className="table-row-delete"
+                      aria-label={"Eliminar " + row.concept}
+                      onClick={() => removeCash(kind, row.id)}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -156,7 +173,6 @@ export default function DailyPage({ data, open, save }: Props) {
           label="Efectivo"
           amount={data.cash ?? 0}
           note="Importe independiente"
-
           action={{
             label: "Actualizar efectivo",
             onClick: () => open({ type: "cashBalance" }),
@@ -167,21 +183,18 @@ export default function DailyPage({ data, open, save }: Props) {
           label="Gastos previstos"
           amount={daily.expenses}
           note="Pendientes de realizar"
-
           tone="rose"
         />
         <MetricCard
           label="Ingresos previstos"
           amount={daily.incomes}
           note="Pendientes de recibir"
-
           tone="sage"
         />
         <MetricCard
           label="Saldo después de pendientes"
           amount={daily.forecast}
           note="Previsión calculada sobre la marcha"
-
           tone="blue"
         />
       </div>
@@ -203,19 +216,6 @@ export default function DailyPage({ data, open, save }: Props) {
           </div>
           <div className="history-actions">
             <Button
-              className={`history-edit-toggle${editingPossible ? " active" : ""}`}
-              aria-label={
-                editingPossible
-                  ? "Terminar edición de posibles gastos"
-                  : "Editar posibles gastos"
-              }
-              aria-pressed={editingPossible}
-              onClick={() => setEditingPossible(!editingPossible)}
-            >
-              {editingPossible ? <Check size={16} /> : <Pencil size={16} />}
-              {editingPossible ? "Terminar edición" : "Editar"}
-            </Button>
-            <Button
               className="history-edit-toggle"
               onClick={() => open({ type: "possibleExpense" })}
             >
@@ -224,58 +224,55 @@ export default function DailyPage({ data, open, save }: Props) {
             </Button>
           </div>
         </div>
-        {editingPossible && (
-          <p className="history-edit-note">
-            Selecciona un concepto para editarlo.
-          </p>
-        )}
+
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Concepto</th>
                 <th>Importe estimado</th>
-                {editingPossible && <th>Borrar</th>}
+                <th aria-label="Acciones" />
               </tr>
             </thead>
             <tbody>
               {(data.possibleExpenses ?? []).map((row) => (
                 <tr key={row.id}>
                   <td>
-                    {editingPossible ? (
-                      <Button
-                        className="history-month-edit"
-                        aria-label={`Editar posible gasto ${row.concept}`}
-                        onClick={() =>
-                          open({ type: "possibleExpense", item: row })
-                        }
-                      >
-                        {row.concept}
-                      </Button>
-                    ) : (
-                      row.concept
-                    )}
+                    <InlineEdit
+                      kind="text"
+                      label={"Concepto posible gasto " + row.concept}
+                      value={row.concept}
+                      onSave={(value) =>
+                        updatePossible(row.id, "concept", value)
+                      }
+                    />
                   </td>
-                  <td>{euro(row.amount)}</td>
-                  {editingPossible && (
-                    <td>
-                      <Button
-                        className="icon danger"
-                        aria-label={`Eliminar posible gasto ${row.concept}`}
-                        onClick={() => {
-                          if (confirm("¿Eliminar este posible gasto?"))
-                            save({
-                              ...data,
-                              possibleExpenses: (
-                                data.possibleExpenses ?? []
-                              ).filter((r) => r.id !== row.id),
-                            });
-                        }}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </td>
-                  )}
+                  <td>
+                    <InlineEdit
+                      label={"Importe posible gasto " + row.concept}
+                      value={row.amount}
+                      onSave={(value) =>
+                        updatePossible(row.id, "amount", value)
+                      }
+                    />
+                  </td>
+                  <td>
+                    <Button
+                      className="table-row-delete"
+                      aria-label={"Eliminar posible gasto " + row.concept}
+                      onClick={() => {
+                        if (confirm("¿Eliminar este posible gasto?"))
+                          save({
+                            ...data,
+                            possibleExpenses: (
+                              data.possibleExpenses ?? []
+                            ).filter((r) => r.id !== row.id),
+                          });
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>

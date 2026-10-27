@@ -36,3 +36,9 @@ En crear/editar deuda puede elegirse un día del 1 al 31. Si no existe en el mes
 `DebtPaymentWatch` se comparte entre Mi espacio, Deudas y la ficha individual. Muestra las cuotas de este mes y el siguiente, además del importe vencido. Una cuota marcada pagada antes de vencer aparece adelantada; el dinero apartado continúa pendiente. Los estados se calculan sobre los registros del usuario y no suponen una conexión bancaria. Los adelantos de capital del simulador se reflejan en el calendario resultante y se distinguen de marcar una cuota mensual como pagada.
 
 Referencias: [tema de Material UI](https://mui.com/material-ui/customization/theme-components/) y [animaciones accesibles de Motion](https://motion.dev/docs/react-accessibility).
+
+## Edición de tablas
+
+`shared/components/InlineEdit.tsx` permite editar un dato con una pulsación: Enter o salir del campo guarda, Escape cancela. Un valor inválido conserva el borrador y muestra el error junto al campo. El componente sirve para importes, textos y fechas; los acumulados, previsiones y otros resultados calculados permanecen de solo lectura. Se usa en las tablas diarias, ahorro, inversión, deuda interna, reposiciones y cuotas. No hay que activar un modo de edición. Las eliminaciones conservan su confirmación.
+
+Las cuotas distinguen total, pagado, apartado y por preparar; registrar un pago consume primero el dinero apartado. Los calendarios móviles muestran cada cuota en un bloque con los cuatro valores visibles. Los adelantos del simulador son pagos efectivamente realizados, no dinero apartado. Los pagos parciales ya abonados se conservan al recalcular cuotas.
