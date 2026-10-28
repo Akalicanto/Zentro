@@ -337,7 +337,7 @@ try {
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
   sql = new DatabaseSync(path.join(folder, "test.db"));
-  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 7);
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 8);
   assert.equal(
     sql
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -577,6 +577,36 @@ try {
     assert.deepEqual(await (await fetch(base + "/api/state")).json(), partial);
   }
   assert.equal((await put(interestWithdrawal)).status, 204);
+  await stop();
+  await start();
+  const salaryProfile = { ...interestWithdrawal, monthlyNetSalary: 184567 };
+  assert.equal((await put(salaryProfile)).status, 204);
+  await stop();
+  await start();
+  assert.deepEqual(
+    await (await fetch(base + "/api/state")).json(),
+    salaryProfile,
+  );
+  const salaryDb = new DatabaseSync(path.join(folder, "test.db"), {
+    readOnly: true,
+  });
+  assert.equal(
+    salaryDb
+      .prepare("SELECT salario_neto_mensual_centimos FROM perfil WHERE id=1")
+      .get().salario_neto_mensual_centimos,
+    184567,
+  );
+  salaryDb.close();
+  for (const value of [-1, 1.5, null, "123", Number.MAX_SAFE_INTEGER + 1]) {
+    assert.equal(
+      (await put({ ...salaryProfile, monthlyNetSalary: value })).status,
+      400,
+    );
+    assert.deepEqual(
+      await (await fetch(base + "/api/state")).json(),
+      salaryProfile,
+    );
+  }
   await stop();
   await runMigrationChecks({
     folder,

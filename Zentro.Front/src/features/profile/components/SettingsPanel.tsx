@@ -2,6 +2,7 @@ import { Button } from "../../../shared/ui/index.tsx";
 import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { useRef, useState } from "react";
 import ResetProfileDialog from "./ResetProfileDialog.tsx";
+import SalaryReference from "./SalaryReference.tsx";
 import {
   X,
   Wallet,
@@ -36,6 +37,7 @@ type Props = {
   confirmImport: () => void;
   cancelImport: () => void;
   resetProfile: () => Promise<void>;
+  saveProfile: (profile: Profile) => boolean;
 };
 
 const percent = (value: number) => `${(value / 100).toLocaleString("es-ES")} %`;
@@ -51,6 +53,7 @@ export default function SettingsPanel({
   confirmImport,
   cancelImport,
   resetProfile,
+  saveProfile,
 }: Props) {
   const importInput = useRef<HTMLInputElement>(null);
   const [resetOpen, setResetOpen] = useState(false);
@@ -157,6 +160,7 @@ export default function SettingsPanel({
             ))}
           </div>
         </section>
+        <SalaryReference data={data} onSave={saveProfile} />
         <section
           className="settings-section settings-plan"
           aria-labelledby="settings-plan-title"

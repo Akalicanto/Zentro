@@ -63,6 +63,7 @@ export default function App({ initialData }: { initialData: Profile }) {
               data={data}
               {...editor}
               resetProfile={resetProfile}
+              saveProfile={save}
             />
           ) : editor.modal.type === "placement" ? (
             <PlacementForm
@@ -84,6 +85,7 @@ export default function App({ initialData }: { initialData: Profile }) {
           navigate={navigate}
           setSavingsTab={setSavingsTab}
           selectDebt={selectDebt}
+          saveProfile={save}
         />
       )}
       {page === "Día a día" && (

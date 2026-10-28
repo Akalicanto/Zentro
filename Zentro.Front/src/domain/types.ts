@@ -74,6 +74,7 @@ export type SavingsPlacement = {
   months: number | null;
 };
 export type Profile = {
+  monthlyNetSalary?: number;
   version: 2;
   cash?: number;
   mortgageOffer?: number;

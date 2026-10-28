@@ -8,7 +8,7 @@ namespace Zentro.Api.Infrastructure.Persistence;
 /// <summary>Migraciones de estructura, independientes de la versión del contrato HTTP.</summary>
 public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileValidator validator)
 {
-    private const int CurrentVersion = 7;
+    private const int CurrentVersion = 8;
     private static readonly JsonSerializerOptions ComparisonOptions = new(JsonSerializerDefaults.Web);
 
     public void Initialize()
@@ -41,7 +41,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
             Backup(connection);
         }
 
-        if (version is >= 1 and <= 6)
+        if (version is >= 1 and <= 7)
         {
             using var upgrade = connection.BeginTransaction();
             var upgradeSession = new SqliteSession(connection, upgrade);
@@ -70,7 +70,12 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
                 ApplyDueDays(upgradeSession);
             }
 
-            ApplyPartialInstallments(upgradeSession);
+            if (version < 7)
+            {
+                ApplyPartialInstallments(upgradeSession);
+            }
+
+            ApplyMonthlySalary(upgradeSession);
             upgradeSession.Execute($"PRAGMA user_version={CurrentVersion}");
             upgrade.Commit();
             return;
@@ -99,6 +104,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         ApplyAdvanceTotals(session);
         ApplyDueDays(session);
         ApplyPartialInstallments(session);
+        ApplyMonthlySalary(session);
         if (profile is not null)
         {
             ProfileRepository.WriteSnapshot(session, profile);
@@ -112,6 +118,14 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         LegacyProfileReader.DropTables(session, tables);
         session.Execute($"PRAGMA user_version={CurrentVersion}");
         transaction.Commit();
+    }
+
+    private static void ApplyMonthlySalary(SqliteSession session)
+    {
+        using var resource = typeof(SqliteSchema).Assembly.GetManifestResourceStream("Zentro.Api.Infrastructure.Persistence.Schema.008_salario_neto_mensual.sql")
+            ?? throw new InvalidOperationException("No se encuentra la migración del salario neto mensual.");
+        using var sql = new StreamReader(resource);
+        session.Execute(sql.ReadToEnd());
     }
 
     private static void ApplyPartialInstallments(SqliteSession session)

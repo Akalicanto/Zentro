@@ -42,3 +42,7 @@ Referencias: [tema de Material UI](https://mui.com/material-ui/customization/the
 `shared/components/InlineEdit.tsx` permite editar un dato con una pulsación: Enter o salir del campo guarda, Escape cancela. Un valor inválido conserva el borrador y muestra el error junto al campo. El componente sirve para importes, textos y fechas; los acumulados, previsiones y otros resultados calculados permanecen de solo lectura. Se usa en las tablas diarias, ahorro, inversión, deuda interna, reposiciones y cuotas. No hay que activar un modo de edición. Las eliminaciones conservan su confirmación.
 
 Las cuotas distinguen total, pagado, apartado y por preparar; registrar un pago consume primero el dinero apartado. Los calendarios móviles muestran cada cuota en un bloque con los cuatro valores visibles. Los adelantos del simulador son pagos efectivamente realizados, no dinero apartado. Los pagos parciales ya abonados se conservan al recalcular cuotas.
+
+## Salario neto mensual
+
+`SalaryReference` se comparte entre Mi espacio y Configuración. Permite editar directamente el importe, guardando con Enter o al salir del campo y cancelando con Escape. Es un dato de referencia del perfil; no interviene en patrimonio, disponibilidad ni planificación. No tiene acción individual de eliminación. Se incluye en las copias exportadas y las copias antiguas sin el campo siguen siendo válidas.

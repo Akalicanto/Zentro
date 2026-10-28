@@ -1,4 +1,5 @@
 import PageHeading from "../../../shared/components/PageHeading.tsx";
+import SalaryReference from "./SalaryReference.tsx";
 import { Surface, Button } from "../../../shared/ui/index.tsx";
 import {
   type Profile,
@@ -26,6 +27,7 @@ type Props = {
   navigate: (page: Page) => void;
   setSavingsTab: (tab: string) => void;
   selectDebt: (id: string) => void;
+  saveProfile: (profile: Profile) => boolean;
 };
 export default function OverviewPage({
   data,
@@ -33,6 +35,7 @@ export default function OverviewPage({
   navigate,
   setSavingsTab,
   selectDebt,
+  saveProfile,
 }: Props) {
   const { wealth, daily, debt, allocation } = useMemo(
     () => ({
@@ -143,6 +146,7 @@ export default function OverviewPage({
           tone="butter"
         />
       </div>
+      <SalaryReference data={data} onSave={saveProfile} />
       {!!allocation.rows.length && (
         <Surface component="section" className="panel overview-allocation">
           <div className="section-title">

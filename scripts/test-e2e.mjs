@@ -64,6 +64,7 @@ try {
         "tests/e2e/debtDueDates.test.mjs",
         "tests/e2e/pageHeadings.test.mjs",
         "tests/e2e/inlineTables.test.mjs",
+        "tests/e2e/salary.test.mjs",
         "tests/e2e/android.test.mjs",
       ];
   for (const suite of suites) await run(suite);

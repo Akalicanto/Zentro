@@ -94,6 +94,7 @@ export default function InlineEdit({
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             event.preventDefault();
+            event.stopPropagation();
             restoreFocus.current = true;
             finishing.current = true;
             setEditing(false);

@@ -48,6 +48,13 @@ export function validateProfile(raw: unknown): Profile {
   )
     throw Error("Perfil no válido.");
   if (
+    profile.monthlyNetSalary !== undefined &&
+    !nonnegative(profile.monthlyNetSalary)
+  )
+    throw Error(
+      "Introduce un salario neto mensual válido, mayor o igual que cero.",
+    );
+  if (
     (profile.cash !== undefined && !nonnegative(profile.cash)) ||
     (profile.mortgageOffer !== undefined &&
       !nonnegative(profile.mortgageOffer)) ||

@@ -11,6 +11,7 @@ internal static class ProfileSettingsStore
             Version = row.Integer("version"),
             Cash = row.OptionalNumber("efectivo_centimos"),
             MortgageOffer = row.OptionalNumber("oferta_hipoteca_centimos"),
+            MonthlyNetSalary = row.OptionalNumber("salario_neto_mensual_centimos"),
             Daily = null!,
             Interest = null!,
             Plan = null!,
@@ -54,6 +55,7 @@ internal static class ProfileSettingsStore
     {
         session.Insert("perfil", ("id", 1), ("version", profile.Version),
             ("efectivo_centimos", profile.Cash), ("oferta_hipoteca_centimos", profile.MortgageOffer),
+            ("salario_neto_mensual_centimos", profile.MonthlyNetSalary),
             ("actualizado_el", DateTimeOffset.UtcNow.ToString("O")));
         session.Insert("saldo_diario", ("perfil_id", 1), ("saldo_inicial_centimos", profile.Daily.Opening), ("fecha_saldo", profile.Daily.AsOf));
         session.Insert("saldo_intereses", ("perfil_id", 1), ("saldo_inicial_centimos", profile.Interest.Opening), ("fecha_saldo", profile.Interest.AsOf));
