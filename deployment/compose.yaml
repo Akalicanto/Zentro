@@ -1,0 +1,26 @@
+name: zentro
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: zentro:local
+    restart: unless-stopped
+    # Solo Linux: Caddy accede por loopback, que es el proxy de confianza de .NET.
+    network_mode: host
+    env_file:
+      - path: /etc/zentro/app.env
+        format: raw
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - /var/lib/zentro/data:/data
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"

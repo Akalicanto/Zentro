@@ -12,7 +12,7 @@
     "dev:api": "dotnet watch --project Zentro.Api --non-interactive run --launch-profile http",
     "setup": "npm --prefix Zentro.Front ci && dotnet restore Zentro.slnx",
     "build": "npm --prefix Zentro.Front run build && dotnet build Zentro.slnx",
-    "test": "npm --prefix Zentro.Front test && dotnet build Zentro.slnx && node tests/integration/api.test.mjs",
+    "test": "npm --prefix Zentro.Front test && dotnet build Zentro.slnx && node tests/integration/api.test.mjs && node tests/integration/access.test.mjs",
     "test:e2e": "npm --prefix Zentro.Front run build && dotnet build Zentro.slnx && node scripts/test-e2e.mjs",
     "format": "npm --prefix Zentro.Front run format && npm run format:repo && dotnet format Zentro.slnx --no-restore",
     "format:check": "npm --prefix Zentro.Front run format:check && npm run format:repo:check && dotnet format Zentro.slnx --no-restore --verify-no-changes",

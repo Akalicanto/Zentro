@@ -1,0 +1,15 @@
+[Unit]
+Description=Copia cifrada de Zentro y envío por correo
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/zentro/deployment/backup.py
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/zentro/mail-backups
+TimeoutStartSec=10min

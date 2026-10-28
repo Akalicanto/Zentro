@@ -77,3 +77,9 @@ La API sirve `wwwroot` desde el directorio de salida, donde MSBuild copia la com
 `DebtsPage` coordina la vista general, filtros de activas/completadas/eliminadas, detalle y selección por ID. `DebtNavigation` ofrece un desplegable por deuda activa. La URL conserva la deuda y la pestaña para recargar directamente su ficha. `DebtDetail` reutiliza calendario y gráficos, `DebtEditor` gestiona creación, datos, planificación y confirmaciones. `domain/externalDebts.ts` aplica cierre, reapertura, archivo, recuperación y reparto exacto en céntimos. Completar registra cuotas pagadas únicamente en la deuda; no modifica los otros saldos.
 
 El sistema visual compartido está documentado en [Componentes y estilo](ui.md): Material UI, tokens de tema, Motion y seguimiento de cobros reutilizable.
+
+## Acceso remoto y concurrencia
+
+`Security/SingleUserAccess` verifica una contraseña PBKDF2-SHA256 y un segundo factor TOTP. `AccessExtensions` centraliza cookie HTTPS, protección CSRF, límite de intentos y cabeceras de seguridad. Producción exige credenciales externas y no ofrece registro; desarrollo local mantiene su arranque habitual. La configuración y los procedimientos operativos están en [Servidor privado](hosting.md).
+
+`ProfileVersion` calcula la versión ETag del perfil leído. El repositorio comprueba `If-Match` dentro de la misma transacción de escritura; una versión obsoleta devuelve 412 sin modificar la SQLite. En producción, omitir la versión devuelve 428. El navegador conserva los cambios pendientes junto a su versión, permite descargarlos ante un conflicto y consulta actualizaciones al recuperar foco o cada 15 segundos. No aplica una actualización mientras hay un modal, una celda en edición o cambios pendientes.

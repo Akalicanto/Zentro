@@ -1,0 +1,12 @@
+{
+  "database": "/var/lib/zentro/data/zentro.db",
+  "outbox": "/var/lib/zentro/mail-backups",
+  "age_recipient": "REEMPLAZAR_POR_CLAVE_PUBLICA_age1",
+  "recipient": "tu-correo@example.invalid",
+  "smtp_host": "smtp.gmail.com",
+  "smtp_port": 465,
+  "smtp_user": "remitente@example.invalid",
+  "smtp_from": "remitente@example.invalid",
+  "smtp_password_file": "/etc/zentro/smtp.password",
+  "keep_sent": 24
+}

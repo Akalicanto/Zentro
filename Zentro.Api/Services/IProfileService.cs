@@ -7,6 +7,6 @@ namespace Zentro.Api.Services;
 public interface IProfileService
 {
     FinancialProfile? Read();
-    ProfileValidationResult Save(JsonElement document);
+    ProfileSaveResult Save(JsonElement document, string? expectedVersion = null);
     bool IsHealthy();
 }

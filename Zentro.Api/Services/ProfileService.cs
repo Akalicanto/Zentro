@@ -9,14 +9,10 @@ public sealed class ProfileService(IProfileRepository repository, IProfileValida
 {
     public FinancialProfile? Read() => repository.Read();
     public bool IsHealthy() => repository.IsHealthy();
-    public ProfileValidationResult Save(JsonElement document)
+    public ProfileSaveResult Save(JsonElement document, string? expectedVersion = null)
     {
         var validation = validator.Validate(document);
-        if (validation.IsValid)
-        {
-            repository.Write(validation.Profile!);
-        }
-
-        return validation;
+        var version = validation.IsValid ? repository.WriteIfCurrent(validation.Profile!, expectedVersion) : null;
+        return new(validation, version);
     }
 }

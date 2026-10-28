@@ -46,6 +46,15 @@ zentro-*.csv
 .env
 .env.*
 !.env.example
+*.env
 *.pem
 *.key
 .tools/
+secrets/
+*.age
+*.agekey
+*.gz
+deployment/*.private.*
+deployment/backup.json
+deployment/smtp.password
+__pycache__/

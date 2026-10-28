@@ -16,11 +16,22 @@ public sealed class ProfileRepository(SqliteConnectionFactory connections) : IPr
     }
 
     public void Write(FinancialProfile profile)
+        => WriteIfCurrent(profile, null);
+
+    public string? WriteIfCurrent(FinancialProfile profile, string? expectedVersion)
     {
         using var connection = connections.Open();
         using var transaction = connection.BeginTransaction();
-        WriteSnapshot(new SqliteSession(connection, transaction), profile);
+        var session = new SqliteSession(connection, transaction);
+        if (expectedVersion is not null && expectedVersion != ProfileVersion.For(ReadSnapshot(session)))
+        {
+            return null;
+        }
+
+        WriteSnapshot(session, profile);
+        var version = ProfileVersion.For(ReadSnapshot(session));
         transaction.Commit();
+        return version;
     }
 
     public bool IsHealthy()

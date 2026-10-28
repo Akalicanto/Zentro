@@ -1,6 +1,7 @@
 using Zentro.Api.Extensions;
 using Zentro.Api.Infrastructure.Persistence;
 using Zentro.Api.OpenApi;
+using Zentro.Api.Security;
 var webRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -17,9 +18,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddZentro();
+builder.Services.AddSingleUserAccess(builder.Configuration, builder.Environment);
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 5 * 1024 * 1024);
 var app = builder.Build();
 app.UseExceptionHandler();
+app.UseSingleUserAccess();
 app.Services.GetRequiredService<SqliteSchema>().Initialize();
 if (Directory.Exists(webRoot))
 {

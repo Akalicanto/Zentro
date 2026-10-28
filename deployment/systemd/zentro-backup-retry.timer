@@ -1,0 +1,10 @@
+[Unit]
+Description=Reintento diario de copias de Zentro sin enviar
+
+[Timer]
+OnCalendar=*-*-* 04:00:00 Europe/Madrid
+Persistent=true
+Unit=zentro-backup-retry.service
+
+[Install]
+WantedBy=timers.target

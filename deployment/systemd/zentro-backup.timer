@@ -1,0 +1,10 @@
+[Unit]
+Description=Copia de Zentro el 1 y el 16 de cada mes
+
+[Timer]
+OnCalendar=*-*-01,16 03:00:00 Europe/Madrid
+Persistent=true
+Unit=zentro-backup.service
+
+[Install]
+WantedBy=timers.target

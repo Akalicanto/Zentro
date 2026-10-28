@@ -1,4 +1,10 @@
 import { Button, Snackbar, Surface } from "../../shared/ui/index.tsx";
+import PendingChangesActions from "../../features/profile/components/PendingChangesActions.tsx";
+import {
+  isProtectedSession,
+  hasPendingChanges,
+} from "../../features/profile/services/profileStorage.ts";
+import { logout } from "../../shared/api/accessClient.ts";
 import { type Page, pages } from "../navigation.ts";
 import { type OpenProfileForm } from "../../features/profile/types.ts";
 import { useState } from "react";
@@ -129,6 +135,16 @@ export default function AppShell({
             </span>
           </div>
           <div className="header-right">
+            {isProtectedSession() && (
+              <Button
+                disabled={hasPendingChanges()}
+                onClick={() =>
+                  void logout().catch((error) => alert(error.message))
+                }
+              >
+                Cerrar sesión
+              </Button>
+            )}
             <PwaStatus />
             <Button
               className="theme-toggle"
@@ -163,6 +179,7 @@ export default function AppShell({
               {error}
             </p>
           )}
+          {error && <PendingChangesActions />}
           {children}
         </m.div>
       </main>

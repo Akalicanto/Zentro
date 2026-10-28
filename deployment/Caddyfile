@@ -1,0 +1,6 @@
+# Cambiar solo el dominio; el certificado HTTPS se obtiene y renueva solo.
+zentro.example.invalid {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:5080
+    header Permissions-Policy "camera=(), microphone=(), geolocation=()"
+}

@@ -3,7 +3,76 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createProfileStorage } from "../../src/features/profile/services/profileStorage.ts";
 import { testProfile } from "../fixtures/profile.ts";
+import { ApiError } from "../../src/shared/api/profileClient.ts";
 const pendingKey = "zentro.v3.pending";
+
+test("Cada guardado encadenado usa la versión confirmada por el servidor", async () => {
+  const storage = memoryStorage();
+  let serverVersion = '"first"';
+  const versions: (string | undefined)[] = [];
+  const client = createProfileStorage(
+    storage,
+    async (method, _body, version) => {
+      if (method === "GET")
+        return Response.json(testProfile(), {
+          headers: { ETag: serverVersion },
+        });
+      versions.push(version);
+      serverVersion = '"next-' + versions.length + '"';
+      return new Response(null, {
+        status: 204,
+        headers: { ETag: serverVersion },
+      });
+    },
+  );
+  await client.loadData();
+  await client.saveData(testProfile(), () => {});
+  await client.saveData({ ...testProfile(), cash: 100 }, () => {});
+  assert.deepEqual(versions, ['"first"', '"next-1"']);
+});
+
+test("Un conflicto conserva la copia y su versión, bloquea más cambios y no se reintenta sin protección", async () => {
+  const storage = memoryStorage();
+  const client = createProfileStorage(storage, async (method) => {
+    if (method === "GET")
+      return Response.json(testProfile(), { headers: { ETag: '"old"' } });
+    throw new ApiError("Conflicto", 412);
+  });
+  await client.loadData();
+  let message = "";
+  await client.saveData(
+    { ...testProfile(), cash: 100 },
+    (value) => (message = value),
+  );
+  assert.match(message, /conservado/);
+  assert.equal(storage.getItem("zentro.v3.pending-version"), '"old"');
+  assert.equal(JSON.parse(storage.getItem(pendingKey)!).cash, 100);
+  assert.throws(
+    () => client.saveData(testProfile(), () => {}),
+    /otro dispositivo/,
+  );
+  await assert.rejects(client.loadData(), /Conflicto/);
+  assert.ok(storage.getItem(pendingKey));
+});
+
+test("Actualizar desde otro dispositivo respeta una edición abierta y nunca pisa cambios pendientes", async () => {
+  const storage = memoryStorage();
+  let current = testProfile();
+  let version = '"initial"';
+  const client = createProfileStorage(storage, async () =>
+    Response.json(current, { headers: { ETag: version } }),
+  );
+  await client.loadData();
+  current = { ...current, cash: 1234 };
+  version = '"changed"';
+  assert.equal(await client.refreshData(() => false), null);
+  assert.equal((await client.refreshData(() => true))?.cash, 1234);
+  assert.equal(await client.refreshData(() => true), null);
+  storage.setItem(pendingKey, JSON.stringify(current));
+  current = { ...current, cash: 9999 };
+  version = '"newer"';
+  assert.equal(await client.refreshData(() => true), null);
+});
 function memoryStorage() {
   const values = new Map<string, string>();
   return {

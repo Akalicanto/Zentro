@@ -6,5 +6,6 @@ public interface IProfileRepository
 {
     FinancialProfile? Read();
     void Write(FinancialProfile profile);
+    string? WriteIfCurrent(FinancialProfile profile, string? expectedVersion);
     bool IsHealthy();
 }
