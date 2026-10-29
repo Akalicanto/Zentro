@@ -188,6 +188,61 @@
   width: auto;
   text-align: left;
 }
+.debt-payment-history {
+  --debt-column-fill: 34%;
+  --debt-column-heading-fill: 60%;
+}
+.dark .debt-payment-history {
+  --debt-column-fill: 16%;
+  --debt-column-heading-fill: 26%;
+}
+.debt-payment-history .debt-column-paid {
+  --debt-column-color: var(--page-sage);
+}
+.debt-payment-history .debt-column-reserved {
+  --debt-column-color: #edcd83;
+}
+.debt-payment-history .debt-column-pending {
+  --debt-column-color: var(--page-rose);
+}
+.app
+  .debt-payment-history
+  :is(.debt-column-paid, .debt-column-reserved, .debt-column-pending) {
+  background: color-mix(
+    in srgb,
+    var(--debt-column-color) var(--debt-column-fill),
+    var(--panel)
+  );
+}
+.app
+  .debt-payment-history
+  :is(thead, tfoot)
+  :is(.debt-column-paid, .debt-column-reserved, .debt-column-pending) {
+  background: color-mix(
+    in srgb,
+    var(--debt-column-color) var(--debt-column-heading-fill),
+    var(--panel)
+  );
+}
+.app
+  .debt-payment-history
+  .current-month-row
+  :is(.debt-column-paid, .debt-column-reserved, .debt-column-pending) {
+  background: color-mix(
+    in srgb,
+    var(--debt-column-color) var(--debt-column-fill),
+    var(--current-month-bg)
+  );
+  box-shadow:
+    inset 0 2px var(--current-month-accent),
+    inset 0 -2px var(--current-month-accent);
+}
+@media (max-width: 650px) {
+  .debt-payment-history
+    td:is(.debt-column-paid, .debt-column-reserved, .debt-column-pending) {
+    border-radius: 8px;
+  }
+}
 .debt-amount {
   display: inline-flex;
   justify-content: center;

@@ -82,7 +82,8 @@
     padding: 10px;
     border-bottom: 1px solid var(--line);
   }
-  .debt-payment-history td {
+  .debt-payment-history td,
+  .debt-payment-history td:not(:first-child) {
     display: block;
     width: auto;
     min-width: 0;

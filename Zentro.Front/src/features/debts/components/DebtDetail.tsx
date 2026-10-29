@@ -223,9 +223,9 @@ export default function DebtDetail({
               <tr>
                 <th>Mes</th>
                 <th>Cuota</th>
-                <th>Pagado</th>
-                <th>Apartado</th>
-                <th>Por preparar</th>
+                <th className="debt-column-paid">Pagado</th>
+                <th className="debt-column-reserved">Apartado</th>
+                <th className="debt-column-pending">Por preparar</th>
               </tr>
             </thead>
             <tbody>
@@ -330,11 +330,13 @@ export default function DebtDetail({
                   <td data-label="Cuota">
                     {euro(sum(rows.map((row) => row.amount)))}
                   </td>
-                  <td data-label="Pagado">
+                  <td data-label="Pagado" className="debt-column-paid">
                     {euro(sum(rows.map((row) => installmentAmounts(row).paid)))}
                   </td>
-                  <td data-label="Apartado">{euro(totals.reserved)}</td>
-                  <td data-label="Por preparar">
+                  <td data-label="Apartado" className="debt-column-reserved">
+                    {euro(totals.reserved)}
+                  </td>
+                  <td data-label="Por preparar" className="debt-column-pending">
                     {euro(
                       sum(rows.map((row) => installmentAmounts(row).pending)),
                     )}
