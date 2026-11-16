@@ -15,6 +15,12 @@ public sealed record FinancialProfile
     public long? MortgageOffer { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? MortgageYears { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MortgageBank { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? MonthlyNetSalary { get; init; }
 
     public List<ExternalDebt>? Debts { get; init; }

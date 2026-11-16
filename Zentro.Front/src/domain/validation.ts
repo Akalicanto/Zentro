@@ -55,6 +55,17 @@ export function validateProfile(raw: unknown): Profile {
       "Introduce un salario neto mensual válido, mayor o igual que cero.",
     );
   if (
+    (profile.mortgageYears !== undefined &&
+      (!integer(profile.mortgageYears) ||
+        profile.mortgageYears < 1 ||
+        profile.mortgageYears > 60)) ||
+    (profile.mortgageBank !== undefined &&
+      (!text(profile.mortgageBank) || profile.mortgageBank.length > 100))
+  )
+    throw Error(
+      "Revisa el banco y el plazo de la oferta hipotecaria (de 1 a 60 años).",
+    );
+  if (
     (profile.cash !== undefined && !nonnegative(profile.cash)) ||
     (profile.mortgageOffer !== undefined &&
       !nonnegative(profile.mortgageOffer)) ||
@@ -137,6 +148,8 @@ export function validateProfile(raw: unknown): Profile {
         );
       if (
         !text(debt.name) ||
+        (debt.kind !== undefined &&
+          !["real", "fictional"].includes(debt.kind)) ||
         (debt.dueDay !== undefined &&
           (!Number.isInteger(debt.dueDay) ||
             debt.dueDay < 1 ||

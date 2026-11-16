@@ -93,11 +93,11 @@ const request = (url, { headers, ...options } = {}) =>
       ...headers,
     },
   });
-const login = (value = password) =>
+const login = (value = password, verificationCode = code()) =>
   request("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password: value, code: code() }),
+    body: JSON.stringify({ password: value, code: verificationCode }),
   });
 try {
   await assert.rejects(
@@ -109,7 +109,8 @@ try {
   assert.equal((await request("/api/state")).status, 401);
   assert.equal((await request("/swagger/index.html")).status, 404);
   assert.equal((await login("incorrecta")).status, 401);
-  const signedIn = await login();
+  const usedCode = code();
+  const signedIn = await login(password, usedCode);
   assert.equal(signedIn.status, 204, output);
   const cookieHeader = signedIn.headers.get("set-cookie");
   assert.match(cookieHeader, /__Host-Zentro=/);
@@ -119,7 +120,7 @@ try {
   const cookie = cookieHeader.split(";")[0];
   const headers = { Cookie: cookie, "Content-Type": "application/json" };
   assert.equal(
-    (await login()).status,
+    (await login(password, usedCode)).status,
     401,
     "Un código ya usado no se reutiliza.",
   );
@@ -200,7 +201,7 @@ try {
     "Sesión persiste tras reinicio con claves persistidas.",
   );
   assert.equal(
-    (await login()).status,
+    (await login(password, usedCode)).status,
     401,
     "El contador TOTP también persiste.",
   );

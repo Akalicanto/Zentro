@@ -4,7 +4,7 @@ Zentro utiliza **SQLite relacional** en `Zentro.Api/Data/zentro.db`. Las tablas 
 
 El [esquema SQL](../Zentro.Api/Infrastructure/Persistence/Schema/001_relacional.sql) y sus migraciones definen las 19 tablas, sus claves, restricciones, índices y vistas. Se incluye en el ensamblado de la API, también al publicar. `PRAGMA user_version` identifica la versión de estructura; es independiente de la versión del contrato HTTP.
 
-La versión de estructura actual es **8**. La [migración 002](../Zentro.Api/Infrastructure/Persistence/Schema/002_previsiones_sin_mes.sql) elimina `mes` de `movimientos_diarios`: las previsiones diarias no caducan al cambiar de mes. Se conserva cada registro y su importe. La API crea un respaldo privado antes de actualizar una base de versión 1. Los historiales de ahorro, inversión y cuotas siguen teniendo meses.
+La versión de estructura actual es **9**. La [migración 002](../Zentro.Api/Infrastructure/Persistence/Schema/002_previsiones_sin_mes.sql) elimina `mes` de `movimientos_diarios`: las previsiones diarias no caducan al cambiar de mes. Se conserva cada registro y su importe. La API crea un respaldo privado antes de actualizar una base de versión 1. Los historiales de ahorro, inversión y cuotas siguen teniendo meses.
 
 Los adelantos se guardan en `adelantos_deudas`: deuda, fecha, importe en céntimos y estrategia (`cuotas` o `importe`), con claves foráneas. La migración 004 añade la tabla y la 005 incluye estos pagos en `vista_deudas`, sin duplicar cuotas. Ambas conservan los datos existentes y crean un respaldo antes de actualizar.
 
@@ -13,6 +13,8 @@ La migración 006 añade `dia_cobro` sin cambiar cuotas ni importes. La aplicaci
 La migración 007 añade `pagado_centimos` y `apartado_centimos` a `cuotas_deudas`. `importe_centimos` conserva el total de la cuota; el dinero por preparar se calcula restando pagado y apartado. Los importes parciales pueden coexistir en un mismo mes sin duplicarse. Los valores NULL conservan la interpretación de las cuotas antiguas según su estado. La vista `vista_deudas` utiliza estos importes. La API valida que su suma no supere la cuota y la actualización conserva los registros existentes con respaldo privado previo.
 
 La migración 008 añade `salario_neto_mensual_centimos` a `perfil`, como dato opcional e independiente de saldos, movimientos y cálculos. Las bases y copias antiguas conservan el campo sin indicar hasta que se registre. No se crean ingresos a partir de esta cifra.
+
+La migración 009 añade `tipo` a `deudas` (`real` o `fictional`) y `oferta_hipoteca_anos` (1–60) y `oferta_hipoteca_banco` (hasta 100 caracteres) a `perfil`. Son datos informativos: las deudas ficticias participan en los mismos cálculos que las reales. Los campos hipotecarios son opcionales. Las deudas antiguas sin tipo se muestran como reales y pueden clasificarse al editarlas; se conservan sus importes, cuotas e historial. La actualización crea un respaldo privado antes de modificar el esquema.
 
 ## Consultar desde VS Code
 

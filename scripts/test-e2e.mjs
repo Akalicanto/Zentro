@@ -65,6 +65,8 @@ try {
         "tests/e2e/pageHeadings.test.mjs",
         "tests/e2e/inlineTables.test.mjs",
         "tests/e2e/salary.test.mjs",
+        "tests/e2e/debtMortgageMetadata.test.mjs",
+        "tests/e2e/mailBackup.test.mjs",
         "tests/e2e/android.test.mjs",
         "tests/e2e/access.test.mjs",
       ];

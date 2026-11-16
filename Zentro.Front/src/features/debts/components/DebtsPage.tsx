@@ -129,6 +129,9 @@ export default function DebtsPage({
               </Button>
               <h2>
                 {debt.name}
+                <span className="debt-state">
+                  {debt.kind === "fictional" ? "Deuda ficticia" : "Deuda real"}
+                </span>
                 <span className={`debt-state debt-state-${debtStatus(debt)}`}>
                   {
                     {
@@ -322,6 +325,11 @@ export default function DebtsPage({
                       <h4>{item.name}</h4>
                       <ChevronRight size={20} />
                     </div>
+                    <small>
+                      {item.kind === "fictional"
+                        ? "Deuda ficticia"
+                        : "Deuda real"}
+                    </small>
                     <span>
                       {debtStatus(item) === "completed"
                         ? "Completada"

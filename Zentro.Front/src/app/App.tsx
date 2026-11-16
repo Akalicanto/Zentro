@@ -13,6 +13,7 @@ import DailyPage from "../features/daily/components/DailyPage.tsx";
 import SavingsPage from "../features/savings/components/SavingsPage.tsx";
 import InvestmentPage from "../features/investment/components/InvestmentPage.tsx";
 import DebtsPage from "../features/debts/components/DebtsPage.tsx";
+import MonthlyBackupPrompt from "../features/profile/components/MonthlyBackupPrompt.tsx";
 
 export default function App({ initialData }: { initialData: Profile }) {
   const { data, error, save, saved, dismissSaved, resetProfile } =
@@ -78,6 +79,7 @@ export default function App({ initialData }: { initialData: Profile }) {
         ) : null
       }
     >
+      <MonthlyBackupPrompt />
       {page === "Mi espacio" && (
         <OverviewPage
           data={data}

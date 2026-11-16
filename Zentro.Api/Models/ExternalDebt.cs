@@ -11,6 +11,9 @@ public sealed record ExternalDebt
     public string Name { get; init; } = null!;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Kind { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? DueDay { get; init; }
 
     [JsonRequired]

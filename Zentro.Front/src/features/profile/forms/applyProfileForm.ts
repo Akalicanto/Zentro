@@ -40,6 +40,10 @@ export function applyProfileForm(
     ];
   } else if (modal.type === "mortgageBalance") {
     next.mortgageOffer = money("amount");
+    next.mortgageYears = text("mortgageYears")
+      ? Number(text("mortgageYears"))
+      : undefined;
+    next.mortgageBank = text("mortgageBank") || undefined;
   } else if (modal.type === "cashBalance") {
     next.cash = money("amount");
   } else if (modal.type === "possibleExpense") {

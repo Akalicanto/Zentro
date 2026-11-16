@@ -137,7 +137,14 @@ export default function OverviewPage({
         <MetricCard
           label="Hipoteca ofrecida"
           amount={data.mortgageOffer ?? 0}
-          note="Referencia disponible"
+          note={
+            [
+              data.mortgageBank,
+              data.mortgageYears ? `${data.mortgageYears} años` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || "Referencia disponible"
+          }
 
           action={{
             label: "Actualizar oferta",

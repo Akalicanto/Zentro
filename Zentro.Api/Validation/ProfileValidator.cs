@@ -10,7 +10,7 @@ namespace Zentro.Api.Validation;
 public sealed class ProfileValidator : IProfileValidator
 {
     private static readonly string[] OptionalFields =
-        ["cash", "mortgageOffer", "monthlyNetSalary", "debts", "savingsPlacements", "possibleExpenses"];
+        ["cash", "mortgageOffer", "mortgageYears", "mortgageBank", "monthlyNetSalary", "debts", "savingsPlacements", "possibleExpenses"];
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -60,6 +60,8 @@ public sealed class ProfileValidator : IProfileValidator
 
         Check(OptionalMoney(profile.Cash, true), "cash", "Revisa el efectivo.");
         Check(OptionalMoney(profile.MortgageOffer, true), "mortgageOffer", "Revisa la oferta hipotecaria.");
+        Check(profile.MortgageYears is null or >= 1 and <= 60, "mortgageYears", "El plazo debe ser de 1 a 60 años.");
+        Check(profile.MortgageBank is null || NotEmpty(profile.MortgageBank) && profile.MortgageBank.Length <= 100, "mortgageBank", "Revisa el banco de la oferta hipotecaria.");
         Check(OptionalMoney(profile.MonthlyNetSalary, true), "monthlyNetSalary", "Revisa el salario neto mensual.");
         Check(DailyBudgetRules.IsValid(profile.Daily), "daily", "Revisa el saldo, las fechas y los movimientos diarios.");
         Check(ContributionRules.IsValid(profile.Savings), "savings", "Revisa los meses, importes y objetivos de ahorro.");

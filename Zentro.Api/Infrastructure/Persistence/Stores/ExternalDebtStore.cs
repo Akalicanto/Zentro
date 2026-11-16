@@ -11,6 +11,7 @@ internal static class ExternalDebtStore
             {
                 Id = row.Text("id"),
                 Name = row.Text("nombre"),
+                Kind = row.OptionalText("tipo"),
                 DueDay = row.OptionalInteger("dia_cobro"),
                 Total = row.Number("total_centimos"),
                 CreatedOn = row.OptionalText("fecha_creacion"),
@@ -32,6 +33,7 @@ internal static class ExternalDebtStore
                 ("orden", index),
                 ("id", row.Id),
                 ("nombre", row.Name),
+                ("tipo", row.Kind),
                 ("dia_cobro", row.DueDay),
                 ("total_centimos", row.Total),
                 ("fecha_creacion", row.CreatedOn),

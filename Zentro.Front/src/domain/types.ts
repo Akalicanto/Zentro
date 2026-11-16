@@ -44,6 +44,7 @@ export type DebtInstallment = {
 export type ExternalDebt = {
   id: string;
   name: string;
+  kind?: "real" | "fictional";
   dueDay?: number;
   total: number;
   installments: DebtInstallment[];
@@ -78,6 +79,8 @@ export type Profile = {
   version: 2;
   cash?: number;
   mortgageOffer?: number;
+  mortgageYears?: number;
+  mortgageBank?: string;
   debts?: ExternalDebt[];
   savingsPlacements?: SavingsPlacement[];
   possibleExpenses?: { id: string; concept: string; amount: number }[];

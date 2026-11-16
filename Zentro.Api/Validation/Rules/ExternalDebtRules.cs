@@ -13,6 +13,7 @@ internal static class ExternalDebtRules
         }
 
         return Unique(debts, debt => debt.Id) && debts.All(debt => NotEmpty(debt.Name) && Money(debt.Total, true) &&
+            (debt.Kind is null or "real" or "fictional") &&
             (debt.DueDay is null or >= 1 and <= 31) &&
             Unique(debt.Installments, row => row.Month) && debt.Installments.All(ValidInstallment) &&
             (debt.Advances is null || Unique(debt.Advances, row => row.Id) && debt.Advances.All(row => Date(row.Date) && Money(row.Amount, true) && row.Amount > 0 && row.Strategy is "term" or "payment")) &&

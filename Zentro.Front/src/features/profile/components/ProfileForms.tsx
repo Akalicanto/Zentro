@@ -156,12 +156,36 @@ export default function ProfileForms({
                 )}
               </>
             )}
-            {modal.type === "mortgageBalance" &&
-              field(
-                "Hipoteca ofrecida (€)",
-                "amount",
-                (data.mortgageOffer ?? 0) / 100,
-              )}
+            {modal.type === "mortgageBalance" && (
+              <>
+                {field(
+                  "Hipoteca ofrecida (€)",
+                  "amount",
+                  (data.mortgageOffer ?? 0) / 100,
+                )}
+                <label>
+                  Banco
+                  <input
+                    name="mortgageBank"
+                    maxLength={100}
+                    defaultValue={data.mortgageBank ?? ""}
+                    placeholder="Nombre del banco"
+                  />
+                </label>
+                <label>
+                  Plazo ofrecido (años)
+                  <input
+                    name="mortgageYears"
+                    type="number"
+                    min={1}
+                    max={60}
+                    step={1}
+                    defaultValue={data.mortgageYears ?? ""}
+                    placeholder="Por ejemplo, 30"
+                  />
+                </label>
+              </>
+            )}
             {modal.type === "interestBalance" &&
               field(
                 "Intereses acumulados (€)",

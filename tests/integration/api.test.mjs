@@ -337,7 +337,7 @@ try {
   assert.equal((await put(repaid)).status, 204);
   assert.deepEqual(await (await fetch(`${base}/api/state`)).json(), repaid);
   sql = new DatabaseSync(path.join(folder, "test.db"));
-  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 8);
+  assert.equal(sql.prepare("PRAGMA user_version").get().user_version, 9);
   assert.equal(
     sql
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -606,6 +606,33 @@ try {
       await (await fetch(base + "/api/state")).json(),
       salaryProfile,
     );
+  }
+  await stop();
+  const details = {
+    ...salaryProfile,
+    mortgageBank: "Banco de prueba",
+    mortgageYears: 30,
+    debts: salaryProfile.debts.map((debt, index) => ({
+      ...debt,
+      kind: index % 2 ? "real" : "fictional",
+    })),
+  };
+  await start();
+  assert.equal((await put(details)).status, 204);
+  await stop();
+  await start();
+  assert.deepEqual(await (await fetch(base + "/api/state")).json(), details);
+  for (const bad of [
+    { mortgageYears: 0 },
+    { mortgageYears: 61 },
+    { mortgageYears: 1.5 },
+    { mortgageYears: null },
+    { mortgageBank: " " },
+    { mortgageBank: "x".repeat(101) },
+    { debts: details.debts.map((debt) => ({ ...debt, kind: "invalid" })) },
+  ]) {
+    assert.equal((await put({ ...details, ...bad })).status, 400);
+    assert.deepEqual(await (await fetch(base + "/api/state")).json(), details);
   }
   await stop();
   await runMigrationChecks({

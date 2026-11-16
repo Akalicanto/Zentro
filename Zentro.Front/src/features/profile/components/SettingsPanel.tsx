@@ -3,6 +3,7 @@ import ModalFrame from "../../../shared/components/ModalFrame.tsx";
 import { useRef, useState } from "react";
 import ResetProfileDialog from "./ResetProfileDialog.tsx";
 import SalaryReference from "./SalaryReference.tsx";
+import MailBackupSettings from "./MailBackupSettings.tsx";
 import {
   X,
   Wallet,
@@ -94,7 +95,13 @@ export default function SettingsPanel({
     },
     {
       title: "Hipoteca ofrecida",
-      note: "El importe que te ofrece el banco.",
+      note:
+        [
+          data.mortgageBank,
+          data.mortgageYears ? `${data.mortgageYears} años` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ") || "El importe que te ofrece el banco.",
       value: data.mortgageOffer,
       type: "mortgageBalance" as const,
       Icon: House,
@@ -267,6 +274,7 @@ export default function SettingsPanel({
               onChange={importBackup}
             />
           </div>
+          <MailBackupSettings />
           {pendingImport && (
             <div
               className="backup-review"

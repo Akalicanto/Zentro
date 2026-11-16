@@ -3,6 +3,12 @@ import { DatabaseSync } from "node:sqlite";
 import { readdirSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
+function removeDetails(database) {
+  database.exec(
+    "ALTER TABLE deudas DROP COLUMN tipo; ALTER TABLE perfil DROP COLUMN oferta_hipoteca_anos; ALTER TABLE perfil DROP COLUMN oferta_hipoteca_banco;",
+  );
+}
+
 const collections = [
   ["savings_months", ["savings"]],
   ["investment_months", ["investment"]],
@@ -105,7 +111,7 @@ export async function runMigrationChecks({
       const migrated = new DatabaseSync(file, { readOnly: true });
       assert.equal(
         migrated.prepare("PRAGMA user_version").get().user_version,
-        8,
+        9,
       );
       assert.deepEqual(migrated.prepare("PRAGMA foreign_key_check").all(), []);
       assert.equal(
@@ -170,6 +176,7 @@ export async function runMigrationChecks({
     ),
   };
   const versionOne = new DatabaseSync(versionOneFile);
+  removeDetails(versionOne);
   versionOne.exec(
     "ALTER TABLE perfil DROP COLUMN salario_neto_mensual_centimos; DROP VIEW IF EXISTS vista_deudas; ALTER TABLE cuotas_deudas DROP COLUMN apartado_centimos; ALTER TABLE cuotas_deudas DROP COLUMN pagado_centimos; ALTER TABLE deudas DROP COLUMN dia_cobro; DROP VIEW IF EXISTS vista_deudas; DROP TABLE adelantos_deudas; ALTER TABLE deudas DROP COLUMN adelantos_registrados; DROP TABLE historial_deudas; ALTER TABLE deudas DROP COLUMN fecha_creacion; ALTER TABLE deudas DROP COLUMN fecha_cierre; ALTER TABLE deudas DROP COLUMN fecha_archivo; ALTER TABLE deudas DROP COLUMN notas; ALTER TABLE deudas DROP COLUMN historial_registrado; ALTER TABLE movimientos_diarios ADD COLUMN mes TEXT NOT NULL DEFAULT '2025-01'; DROP INDEX movimientos_por_tipo; CREATE INDEX movimientos_por_mes ON movimientos_diarios(perfil_id,mes,tipo); PRAGMA user_version=1;",
   );
@@ -182,7 +189,7 @@ export async function runMigrationChecks({
   );
   await stop();
   const upgraded = new DatabaseSync(versionOneFile, { readOnly: true });
-  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 8);
+  assert.equal(upgraded.prepare("PRAGMA user_version").get().user_version, 9);
   assert.equal(
     upgraded
       .prepare("PRAGMA table_info(movimientos_diarios)")
@@ -194,6 +201,7 @@ export async function runMigrationChecks({
   upgraded.close();
   // Actualiza también la versión 2 que utiliza el perfil local actual.
   const versionTwo = new DatabaseSync(versionOneFile);
+  removeDetails(versionTwo);
   versionTwo.exec(
     "ALTER TABLE perfil DROP COLUMN salario_neto_mensual_centimos; DROP VIEW IF EXISTS vista_deudas; ALTER TABLE cuotas_deudas DROP COLUMN apartado_centimos; ALTER TABLE cuotas_deudas DROP COLUMN pagado_centimos; ALTER TABLE deudas DROP COLUMN dia_cobro; DROP VIEW IF EXISTS vista_deudas; DROP TABLE adelantos_deudas; ALTER TABLE deudas DROP COLUMN adelantos_registrados; DROP TABLE historial_deudas; ALTER TABLE deudas DROP COLUMN fecha_creacion; ALTER TABLE deudas DROP COLUMN fecha_cierre; ALTER TABLE deudas DROP COLUMN fecha_archivo; ALTER TABLE deudas DROP COLUMN notas; ALTER TABLE deudas DROP COLUMN historial_registrado; PRAGMA user_version=2;",
   );
@@ -207,7 +215,7 @@ export async function runMigrationChecks({
   const versionThree = new DatabaseSync(versionOneFile, { readOnly: true });
   assert.equal(
     versionThree.prepare("PRAGMA user_version").get().user_version,
-    8,
+    9,
   );
   assert.equal(
     versionThree
@@ -221,6 +229,7 @@ export async function runMigrationChecks({
   versionThree.close();
   assert.equal(readdirSync(snapshots).length, backupCount + 2);
   const legacyThree = new DatabaseSync(versionOneFile);
+  removeDetails(legacyThree);
   legacyThree.exec(
     "ALTER TABLE perfil DROP COLUMN salario_neto_mensual_centimos; DROP VIEW IF EXISTS vista_deudas; ALTER TABLE cuotas_deudas DROP COLUMN apartado_centimos; ALTER TABLE cuotas_deudas DROP COLUMN pagado_centimos; ALTER TABLE deudas DROP COLUMN dia_cobro; DROP VIEW IF EXISTS vista_deudas; DROP TABLE adelantos_deudas; ALTER TABLE deudas DROP COLUMN adelantos_registrados; PRAGMA user_version=3;",
   );
@@ -232,7 +241,7 @@ export async function runMigrationChecks({
   );
   await stop();
   const latest = new DatabaseSync(versionOneFile, { readOnly: true });
-  assert.equal(latest.prepare("PRAGMA user_version").get().user_version, 8);
+  assert.equal(latest.prepare("PRAGMA user_version").get().user_version, 9);
   assert.equal(
     latest
       .prepare(
@@ -245,6 +254,7 @@ export async function runMigrationChecks({
   latest.close();
   assert.equal(readdirSync(snapshots).length, backupCount + 3);
   const versionFour = new DatabaseSync(versionOneFile);
+  removeDetails(versionFour);
   versionFour.exec(
     "ALTER TABLE perfil DROP COLUMN salario_neto_mensual_centimos; DROP VIEW IF EXISTS vista_deudas; ALTER TABLE cuotas_deudas DROP COLUMN apartado_centimos; ALTER TABLE cuotas_deudas DROP COLUMN pagado_centimos; ALTER TABLE deudas DROP COLUMN dia_cobro; DROP VIEW IF EXISTS vista_deudas; CREATE VIEW vista_deudas AS SELECT id,nombre FROM deudas; PRAGMA user_version=4;",
   );
@@ -258,7 +268,7 @@ export async function runMigrationChecks({
   const viewUpgraded = new DatabaseSync(versionOneFile, { readOnly: true });
   assert.equal(
     viewUpgraded.prepare("PRAGMA user_version").get().user_version,
-    8,
+    9,
   );
   assert.ok(
     viewUpgraded
@@ -269,6 +279,7 @@ export async function runMigrationChecks({
   viewUpgraded.close();
   assert.equal(readdirSync(snapshots).length, backupCount + 4);
   const versionFive = new DatabaseSync(versionOneFile);
+  removeDetails(versionFive);
   versionFive.exec(
     "ALTER TABLE perfil DROP COLUMN salario_neto_mensual_centimos; DROP VIEW IF EXISTS vista_deudas; ALTER TABLE cuotas_deudas DROP COLUMN apartado_centimos; ALTER TABLE cuotas_deudas DROP COLUMN pagado_centimos; ALTER TABLE deudas DROP COLUMN dia_cobro; PRAGMA user_version=5;",
   );
@@ -282,7 +293,7 @@ export async function runMigrationChecks({
   const dueUpgraded = new DatabaseSync(versionOneFile, { readOnly: true });
   assert.equal(
     dueUpgraded.prepare("PRAGMA user_version").get().user_version,
-    8,
+    9,
   );
   assert.ok(
     dueUpgraded
@@ -293,6 +304,7 @@ export async function runMigrationChecks({
   dueUpgraded.close();
   assert.equal(readdirSync(snapshots).length, backupCount + 5);
   const versionSix = new DatabaseSync(versionOneFile);
+  removeDetails(versionSix);
   versionSix.exec(
     "ALTER TABLE perfil DROP COLUMN salario_neto_mensual_centimos; DROP VIEW vista_deudas; ALTER TABLE cuotas_deudas DROP COLUMN apartado_centimos; ALTER TABLE cuotas_deudas DROP COLUMN pagado_centimos; PRAGMA user_version=6;",
   );
@@ -315,7 +327,7 @@ export async function runMigrationChecks({
   const partialUpgrade = new DatabaseSync(versionOneFile, { readOnly: true });
   assert.equal(
     partialUpgrade.prepare("PRAGMA user_version").get().user_version,
-    8,
+    9,
   );
   assert.ok(
     partialUpgrade
@@ -330,6 +342,7 @@ export async function runMigrationChecks({
   partialUpgrade.close();
   assert.equal(readdirSync(snapshots).length, backupCount + 6);
   const versionSeven = new DatabaseSync(versionOneFile);
+  removeDetails(versionSeven);
   versionSeven.exec(
     "ALTER TABLE perfil DROP COLUMN salario_neto_mensual_centimos; PRAGMA user_version=7;",
   );
@@ -343,7 +356,7 @@ export async function runMigrationChecks({
   const salaryUpgrade = new DatabaseSync(versionOneFile, { readOnly: true });
   assert.equal(
     salaryUpgrade.prepare("PRAGMA user_version").get().user_version,
-    8,
+    9,
   );
   assert.equal(
     salaryUpgrade
@@ -353,6 +366,35 @@ export async function runMigrationChecks({
   );
   salaryUpgrade.close();
   assert.equal(readdirSync(snapshots).length, backupCount + 7);
+  const versionEight = new DatabaseSync(versionOneFile);
+  removeDetails(versionEight);
+  versionEight.exec("PRAGMA user_version=8");
+  versionEight.close();
+  await start(versionOneFile);
+  assert.deepEqual(
+    await (await fetch(base + "/api/state")).json(),
+    relationalProfile,
+  );
+  await stop();
+  const detailsUpgrade = new DatabaseSync(versionOneFile, { readOnly: true });
+  assert.equal(
+    detailsUpgrade.prepare("PRAGMA user_version").get().user_version,
+    9,
+  );
+  assert.equal(
+    detailsUpgrade
+      .prepare("SELECT oferta_hipoteca_anos, oferta_hipoteca_banco FROM perfil")
+      .get().oferta_hipoteca_anos,
+    null,
+  );
+  assert.ok(
+    detailsUpgrade
+      .prepare("PRAGMA table_info(deudas)")
+      .all()
+      .some((column) => column.name === "tipo"),
+  );
+  detailsUpgrade.close();
+  assert.equal(readdirSync(snapshots).length, backupCount + 8);
   const invalid = structuredClone(original);
   delete invalid.savings[0].actual;
   const file = path.join(folder, "invalid-legacy.db");

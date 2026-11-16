@@ -8,7 +8,7 @@ namespace Zentro.Api.Infrastructure.Persistence;
 /// <summary>Migraciones de estructura, independientes de la versión del contrato HTTP.</summary>
 public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileValidator validator)
 {
-    private const int CurrentVersion = 8;
+    private const int CurrentVersion = 9;
     private static readonly JsonSerializerOptions ComparisonOptions = new(JsonSerializerDefaults.Web);
 
     public void Initialize()
@@ -41,7 +41,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
             Backup(connection);
         }
 
-        if (version is >= 1 and <= 7)
+        if (version is >= 1 and <= 8)
         {
             using var upgrade = connection.BeginTransaction();
             var upgradeSession = new SqliteSession(connection, upgrade);
@@ -75,7 +75,11 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
                 ApplyPartialInstallments(upgradeSession);
             }
 
-            ApplyMonthlySalary(upgradeSession);
+            if (version < 8)
+            {
+                ApplyMonthlySalary(upgradeSession);
+            }
+            ApplyDebtAndMortgageDetails(upgradeSession);
             upgradeSession.Execute($"PRAGMA user_version={CurrentVersion}");
             upgrade.Commit();
             return;
@@ -105,6 +109,7 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         ApplyDueDays(session);
         ApplyPartialInstallments(session);
         ApplyMonthlySalary(session);
+        ApplyDebtAndMortgageDetails(session);
         if (profile is not null)
         {
             ProfileRepository.WriteSnapshot(session, profile);
@@ -118,6 +123,14 @@ public sealed class SqliteSchema(SqliteConnectionFactory connections, IProfileVa
         LegacyProfileReader.DropTables(session, tables);
         session.Execute($"PRAGMA user_version={CurrentVersion}");
         transaction.Commit();
+    }
+
+    private static void ApplyDebtAndMortgageDetails(SqliteSession session)
+    {
+        using var resource = typeof(SqliteSchema).Assembly.GetManifestResourceStream("Zentro.Api.Infrastructure.Persistence.Schema.009_tipo_deuda_oferta_hipoteca.sql")
+            ?? throw new InvalidOperationException("No se encuentra la migración de tipos de deuda y oferta hipotecaria.");
+        using var sql = new StreamReader(resource);
+        session.Execute(sql.ReadToEnd());
     }
 
     private static void ApplyMonthlySalary(SqliteSession session)

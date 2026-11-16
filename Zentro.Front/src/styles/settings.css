@@ -34,6 +34,39 @@
 .settings-section {
   margin-bottom: 28px;
 }
+.mail-backup-settings {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--soft);
+}
+.mail-backup-settings h4 {
+  margin: 0 0 12px;
+}
+.mail-backup-settings strong,
+.monthly-backup-confirmation strong {
+  overflow-wrap: anywhere;
+}
+.monthly-backup-confirmation .modal-footer {
+  flex-wrap: wrap;
+}
+.monthly-backup-confirmation .section-title {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+.monthly-backup-confirmation .section-title h3 {
+  min-width: 0;
+  flex: 1;
+}
+.monthly-backup-confirmation .section-title .icon {
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .monthly-backup-confirmation .modal-footer button {
+    width: 100%;
+  }
+}
 .settings-section h3 {
   font-size: 20px;
   margin-bottom: 14px;

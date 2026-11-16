@@ -62,6 +62,7 @@ export default function DebtEditor({
             ...debt,
             id: debt?.id ?? uid(),
             name,
+            kind: form.get("kind") === "fictional" ? "fictional" : "real",
             total,
             dueDay: form.get("dueDay") ? Number(form.get("dueDay")) : undefined,
             installments: debt?.installments ?? [],
@@ -71,7 +72,7 @@ export default function DebtEditor({
           },
           mode === "create"
             ? "Deuda creada."
-            : "Nombre, total, día de cobro o notas actualizados.",
+            : "Nombre, tipo, total, día de cobro o notas actualizados.",
         );
         if (mode === "create" && plan)
           next = planDebtInstallments(
@@ -130,6 +131,21 @@ export default function DebtEditor({
                   defaultValue={debt ? debt.total / 100 : ""}
                 />
               </label>
+              <label className="full">
+                Tipo de deuda
+                <select
+                  name="kind"
+                  aria-label="Tipo de deuda"
+                  defaultValue={debt?.kind ?? "real"}
+                >
+                  <option value="real">Deuda real</option>
+                  <option value="fictional">Deuda ficticia</option>
+                </select>
+              </label>
+              <p className="form-note full">
+                El tipo sirve para identificarla y no cambia los importes ni los
+                cálculos.
+              </p>
               <label className="full">
                 Día de cobro de cada mes
                 <select
