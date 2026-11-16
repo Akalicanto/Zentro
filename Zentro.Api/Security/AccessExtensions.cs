@@ -89,6 +89,14 @@ public static class AccessExtensions
         app.Use(async (context, next) =>
         {
             var path = context.Request.Path;
+            // This credential is accepted ONLY on the aggregate read endpoint, never on state or writes.
+            if (path == "/api/integrations/habita/v1/snapshot" && context.Request.Method == "GET")
+            {
+                if (!Zentro.Api.Controllers.HabitaController.Authorized(context, app.Configuration))
+                { context.Response.StatusCode = 401; return; }
+                await next();
+                return;
+            }
             if (access.Enabled && path.StartsWithSegments("/api") && path != "/api/auth/login" && path != "/api/health" && context.User.Identity?.IsAuthenticated != true)
             { context.Response.StatusCode = 401; return; }
             if (access.Enabled && path.StartsWithSegments("/api") && context.Request.Method is "POST" or "PUT" or "DELETE" && context.Request.Headers["X-Zentro-Client"] != "web")

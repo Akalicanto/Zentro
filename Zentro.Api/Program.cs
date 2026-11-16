@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 
 builder.Services.AddControllers();
+// Optional private integration configuration. Environment variables keep precedence.
+builder.Configuration.AddJsonFile("Data/habita.local.json", optional: true, reloadOnChange: true).AddEnvironmentVariables();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
